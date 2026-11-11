@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 08**: Staff & HR Management (Teachers, Employees, Designations, Leave, Assignments) (`apps/staff`).
+  - Core Models:
+    - `Department`: Academic and administrative departments with optional Head of Department link.
+    - `Designation`: Hierarchical job ranks (`rank_order`) categorized by `role_category` (`teacher`, `admin`, `support`, `driver`, `security`).
+    - `Staff`: Multi-tenant master employee directory with institution-scoped `employee_id` sequence (`EMP-YYYY-XXXXX`), normalized phone numbers, NID, MPO status flag and index number, TIN, joining/confirmation dates, and portal user account linkage.
+    - `StaffEducation`, `StaffDocument`, and `StaffIDCard`: Academic credentials, verification documents, and official badges.
+  - Leave Management Subsystem:
+    - `LeaveType`: Institutional leave categories (CL, ML, MAT, EL, SPL) with yearly quotas, carry-forward limits, and gender restrictions.
+    - `LeaveBalance`: Per-staff, per-session annual quota ledger calculating available remaining days.
+    - `LeaveRequest`: Application lifecycle (`pending` → `recommended` → `approved` / `rejected` / `cancelled`) with concurrency-safe `select_for_update` balance ledger modifications and date overlap prevention.
+  - Teaching Workload & Assignments:
+    - `TeacherAssignment`: Explicit instructor-to-subject/section mapping with periods per week and primary teacher flag.
+    - Academics Integration: Added nullable `teacher_staff` foreign keys on `Section`, `RoutineSlot`, and `SubstituteAssignment` models for seamless transition from user-based references.
+    - `WorkloadSummarySelector`: Computed metrics on assigned periods, weekly routine slots, unique sections, and subjects.
+  - REST API (`/api/v1/staff/`):
+    - Endpoints for Department, Designation, Staff CRUD, `/me/`, `/workload/`, `/create-portal-account/`.
+    - Leave Types, Leave Balances (`/initialize-session/`), and Leave Requests (`/recommend/`, `/approve/`, `/reject/`, `/cancel/`).
+    - Teacher Assignments CRUD.
 - **Task 07**: Guardian Portal & Student-Guardian Relationship (`apps/guardians`).
   - Core Models:
     - `Guardian`: Multi-tenant master guardian directory storing normalized contact numbers (`+8801XXXXXXXXX`), NID (10/13/17 digits), occupation, annual income, addresses, emergency contact flag, and optional User linkage for parent portal access. Unique active phone constraint per tenant.

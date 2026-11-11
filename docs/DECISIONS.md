@@ -146,3 +146,17 @@
   - **Object-Level Security (`IsGuardianOfStudent`)**: Guardian users are restricted from listing or viewing students outside their authorized `StudentGuardian` links.
 - **Consequences**:
   - Delivers a secure, multi-child parent experience while maintaining strict multi-tenant isolation, automated primary contact invariants, and verified school pickup security.
+
+---
+
+## ADR-010: Staff HR Architecture, Multi-Tier Leave Ledger & Teacher Workload Integration
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: Bangladeshi schools require distinct employee identity management (with MPO indexing, educational qualifications, and department hierarchies), a robust leave management workflow (with annual quotas for Casual, Medical, and Maternity leave, and multi-tier HOD recommendation to Principal approval), and explicit curriculum teaching assignments replacing loose user references in academic timetables.
+- **Decision**:
+  - **Master Employee Directory (`Staff`)**: Encapsulates employee profile, sequential `employee_id` (`EMP-{YEAR}-{SEQUENCE}`), MPO status, NID, and contact details. Portal `User` account (`UserType.TEACHER` or `STAFF`) is linked via optional OneToOneField.
+  - **Annual Leave Ledger (`LeaveBalance` & `LeaveRequest`)**: Leave quotas are instantiated per academic session. Applications compute exact calendar day spans and validate against date overlaps. Balance deductions reserve `pending_days` on application, convert to `used_days` on approval, and restore to balance on rejection or cancellation using row-level locking (`select_for_update()`).
+  - **Hierarchical Approval Chain**: Leave transitions from `pending` to `recommended` (by HOD or supervisor) and `approved` (by Principal / authorized manager).
+  - **Academic Bridge**: `Section`, `RoutineSlot`, and `SubstituteAssignment` models are extended with nullable `teacher_staff` foreign keys. Backward compatibility is retained for existing `teacher_user` fields while enabling transition to rich Staff profiles.
+- **Consequences**:
+  - Eliminates leave balance overdraws and concurrency race conditions, provides clean MPO tracking for Bangladeshi school regulatory audits, and unifies academic routine management under concrete Staff profiles.

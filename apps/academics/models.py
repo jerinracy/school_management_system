@@ -131,6 +131,14 @@ class Section(TenantOwnedModel):
         related_name="managed_sections",
         help_text="Class teacher user account reference",
     )
+    teacher_staff = models.ForeignKey(
+        "staff.Staff",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="managed_sections",
+        help_text="Class teacher official Staff profile reference",
+    )
 
     class Meta(TenantOwnedModel.Meta):
         verbose_name = "Section"
@@ -396,6 +404,14 @@ class RoutineSlot(TenantOwnedModel):
         related_name="routine_slots",
         help_text="Assigned teacher user account",
     )
+    teacher_staff = models.ForeignKey(
+        "staff.Staff",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="routine_slots",
+        help_text="Assigned teacher staff profile reference",
+    )
     room = models.ForeignKey(
         Room,
         on_delete=models.SET_NULL,
@@ -466,9 +482,23 @@ class SubstituteAssignment(TenantOwnedModel):
         blank=True,
         related_name="original_substitutions",
     )
+    original_staff = models.ForeignKey(
+        "staff.Staff",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="original_substitutions",
+    )
     substitute_teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name="substitute_assignments",
+    )
+    substitute_staff = models.ForeignKey(
+        "staff.Staff",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="substitute_assignments",
     )
     reason = models.CharField(max_length=255, blank=True)

@@ -6993,6 +6993,1490 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/staff/departments/:
+    get:
+      operationId: staff_departments_list
+      description: Department master data endpoints.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDepartmentList'
+          description: ''
+    post:
+      operationId: staff_departments_create
+      description: Department master data endpoints.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+  /api/v1/staff/departments/{id}/:
+    get:
+      operationId: staff_departments_retrieve
+      description: Department master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Department.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    put:
+      operationId: staff_departments_update
+      description: Department master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Department.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    patch:
+      operationId: staff_departments_partial_update
+      description: Department master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Department.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    delete:
+      operationId: staff_departments_destroy
+      description: Department master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Department.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/designations/:
+    get:
+      operationId: staff_designations_list
+      description: Designation hierarchy master data endpoints.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: role_category
+        schema:
+          type: string
+          enum:
+          - admin
+          - driver
+          - other
+          - security
+          - support
+          - teacher
+        description: |-
+          * `teacher` - Teacher (শিক্ষক)
+          * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
+          * `support` - Support Staff (সহায়ক কর্মচারী)
+          * `driver` - Driver (চালক)
+          * `security` - Security (নিরাপত্তা কর্মী)
+          * `other` - Other (অন্যান্য)
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDesignationList'
+          description: ''
+    post:
+      operationId: staff_designations_create
+      description: Designation hierarchy master data endpoints.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DesignationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DesignationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Designation'
+          description: ''
+  /api/v1/staff/designations/{id}/:
+    get:
+      operationId: staff_designations_retrieve
+      description: Designation hierarchy master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Designation.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Designation'
+          description: ''
+    put:
+      operationId: staff_designations_update
+      description: Designation hierarchy master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Designation.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DesignationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DesignationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Designation'
+          description: ''
+    patch:
+      operationId: staff_designations_partial_update
+      description: Designation hierarchy master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Designation.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDesignationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDesignationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDesignationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Designation'
+          description: ''
+    delete:
+      operationId: staff_designations_destroy
+      description: Designation hierarchy master data endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Designation.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/leave-balances/:
+    get:
+      operationId: staff_leave_balances_list
+      description: Employee annual leave quota and usage balances.
+      parameters:
+      - in: query
+        name: leave_type
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLeaveBalanceList'
+          description: ''
+  /api/v1/staff/leave-balances/{id}/:
+    get:
+      operationId: staff_leave_balances_retrieve
+      description: Employee annual leave quota and usage balances.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave balance.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveBalance'
+          description: ''
+  /api/v1/staff/leave-balances/initialize-session/:
+    post:
+      operationId: staff_leave_balances_initialize_session_create
+      description: Initialize standard annual leave balances for all active staff
+        for a specified session.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveBalanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveBalanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveBalanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/staff/leave-requests/:
+    get:
+      operationId: staff_leave_requests_list
+      description: Leave application submission and multi-tier approval workflow.
+      parameters:
+      - in: query
+        name: leave_type
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - cancelled
+          - pending
+          - recommended
+          - rejected
+        description: |-
+          * `pending` - Pending Recommendation
+          * `recommended` - Recommended by HOD
+          * `approved` - Approved
+          * `rejected` - Rejected
+          * `cancelled` - Cancelled
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLeaveRequestList'
+          description: ''
+    post:
+      operationId: staff_leave_requests_create
+      description: Submit a new leave application with date validation and balance
+        deduction.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveApplyActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveApplyActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveApplyActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+  /api/v1/staff/leave-requests/{id}/:
+    get:
+      operationId: staff_leave_requests_retrieve
+      description: Leave application submission and multi-tier approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+    put:
+      operationId: staff_leave_requests_update
+      description: Leave application submission and multi-tier approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+    patch:
+      operationId: staff_leave_requests_partial_update
+      description: Leave application submission and multi-tier approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLeaveRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+    delete:
+      operationId: staff_leave_requests_destroy
+      description: Leave application submission and multi-tier approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/leave-requests/{id}/approve/:
+    post:
+      operationId: staff_leave_requests_approve_create
+      description: 'Executive stage: Grant final leave approval and deduct from used
+        days.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+  /api/v1/staff/leave-requests/{id}/cancel/:
+    post:
+      operationId: staff_leave_requests_cancel_create
+      description: Cancel an application and restore days to balance ledger.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+  /api/v1/staff/leave-requests/{id}/recommend/:
+    post:
+      operationId: staff_leave_requests_recommend_create
+      description: 'HOD stage: Recommend leave application for final executive approval.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveDecideActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveDecideActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveDecideActionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+  /api/v1/staff/leave-requests/{id}/reject/:
+    post:
+      operationId: staff_leave_requests_reject_create
+      description: Decline leave request and release reserved pending days back to
+        balance.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave request.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveDecideActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveDecideActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveDecideActionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+          description: ''
+  /api/v1/staff/leave-types/:
+    get:
+      operationId: staff_leave_types_list
+      description: Institutional leave policy categories.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLeaveTypeList'
+          description: ''
+    post:
+      operationId: staff_leave_types_create
+      description: Institutional leave policy categories.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveType'
+          description: ''
+  /api/v1/staff/leave-types/{id}/:
+    get:
+      operationId: staff_leave_types_retrieve
+      description: Institutional leave policy categories.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave type.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveType'
+          description: ''
+    put:
+      operationId: staff_leave_types_update
+      description: Institutional leave policy categories.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave type.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LeaveTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LeaveTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveType'
+          description: ''
+    patch:
+      operationId: staff_leave_types_partial_update
+      description: Institutional leave policy categories.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave type.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLeaveTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLeaveTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLeaveTypeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveType'
+          description: ''
+    delete:
+      operationId: staff_leave_types_destroy
+      description: Institutional leave policy categories.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this leave type.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/staff/:
+    get:
+      operationId: staff_staff_list
+      description: Comprehensive employee lifecycle management endpoints.
+      parameters:
+      - in: query
+        name: department
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: designation
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: gender
+        schema:
+          type: string
+          enum:
+          - female
+          - male
+          - other
+        description: |-
+          * `male` - Male
+          * `female` - Female
+          * `other` - Other
+      - in: query
+        name: is_mpo
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: staff_type
+        schema:
+          type: string
+          enum:
+          - admin
+          - driver
+          - other
+          - security
+          - support
+          - teacher
+        description: |-
+          * `teacher` - Teacher (শিক্ষক)
+          * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
+          * `support` - Support Staff (সহায়ক কর্মচারী)
+          * `driver` - Driver (চালক)
+          * `security` - Security (নিরাপত্তা কর্মী)
+          * `other` - Other (অন্যান্য)
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - on_leave
+          - resigned
+          - retired
+          - suspended
+          - terminated
+        description: |-
+          * `active` - Active
+          * `on_leave` - On Leave
+          * `suspended` - Suspended
+          * `resigned` - Resigned
+          * `terminated` - Terminated
+          * `retired` - Retired
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffListList'
+          description: ''
+    post:
+      operationId: staff_staff_create
+      description: Comprehensive employee lifecycle management endpoints.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffCreateUpdate'
+          description: ''
+  /api/v1/staff/staff/{id}/:
+    get:
+      operationId: staff_staff_retrieve
+      description: Comprehensive employee lifecycle management endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffDetail'
+          description: ''
+    put:
+      operationId: staff_staff_update
+      description: Comprehensive employee lifecycle management endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffCreateUpdate'
+          description: ''
+    patch:
+      operationId: staff_staff_partial_update
+      description: Comprehensive employee lifecycle management endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffCreateUpdate'
+          description: ''
+    delete:
+      operationId: staff_staff_destroy
+      description: Comprehensive employee lifecycle management endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/staff/staff/{id}/create-portal-account/:
+    post:
+      operationId: staff_staff_create_portal_account_create
+      description: Provision or reset portal access credentials for this staff member.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/staff/staff/{id}/workload/:
+    get:
+      operationId: staff_staff_workload_retrieve
+      description: Retrieve weekly teaching schedule and curriculum workload metrics
+        for a teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkloadSummary'
+          description: ''
+  /api/v1/staff/staff/me/:
+    get:
+      operationId: staff_staff_me_retrieve
+      description: Retrieve profile of the currently authenticated staff member.
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffDetail'
+          description: ''
+  /api/v1/staff/teacher-assignments/:
+    get:
+      operationId: staff_teacher_assignments_list
+      description: Teacher curriculum assignments to classes, sections, and subjects.
+      parameters:
+      - in: query
+        name: is_primary_teacher
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeacherAssignmentList'
+          description: ''
+    post:
+      operationId: staff_teacher_assignments_create
+      description: Teacher curriculum assignments to classes, sections, and subjects.
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeacherAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeacherAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherAssignment'
+          description: ''
+  /api/v1/staff/teacher-assignments/{id}/:
+    get:
+      operationId: staff_teacher_assignments_retrieve
+      description: Teacher curriculum assignments to classes, sections, and subjects.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this teacher assignment.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherAssignment'
+          description: ''
+    put:
+      operationId: staff_teacher_assignments_update
+      description: Teacher curriculum assignments to classes, sections, and subjects.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this teacher assignment.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeacherAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeacherAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherAssignment'
+          description: ''
+    patch:
+      operationId: staff_teacher_assignments_partial_update
+      description: Teacher curriculum assignments to classes, sections, and subjects.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this teacher assignment.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTeacherAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTeacherAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTeacherAssignmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherAssignment'
+          description: ''
+    delete:
+      operationId: staff_teacher_assignments_destroy
+      description: Teacher curriculum assignments to classes, sections, and subjects.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this teacher assignment.
+        required: true
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/students/:
     get:
       operationId: students_list
@@ -9253,22 +10737,118 @@ components:
       required:
       - source_session_id
       - target_session_id
-    DocumentTypeEnum:
-      enum:
-      - birth_certificate
-      - national_id
-      - previous_marksheet
-      - transfer_certificate
-      - medical_certificate
-      - other
-      type: string
-      description: |-
-        * `birth_certificate` - Birth Registration Certificate
-        * `national_id` - National ID (NID)
-        * `previous_marksheet` - Previous Marksheet
-        * `transfer_certificate` - Transfer Certificate (TC)
-        * `medical_certificate` - Medical Certificate
-        * `other` - Other
+    Department:
+      type: object
+      description: Department master data serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. Science, Mathematics, Bengali, Accounts
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 20
+        description:
+          type: string
+        head_of_department:
+          type: string
+          format: uuid
+          nullable: true
+        head_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - head_name
+      - id
+      - name
+    DepartmentRequest:
+      type: object
+      description: Department master data serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Science, Mathematics, Bengali, Accounts
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 20
+        description:
+          type: string
+        head_of_department:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - name
+    Designation:
+      type: object
+      description: Designation master data serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          description: e.g. Principal, Senior Teacher, Assistant Teacher
+          maxLength: 100
+        title_bn:
+          type: string
+          description: e.g. অধ্যক্ষ, সিনিয়র শিক্ষক
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 30
+        rank_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: 'Hierarchy rank: lower number represents higher seniority'
+        role_category:
+          $ref: '#/components/schemas/RoleCategoryEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - title
+    DesignationRequest:
+      type: object
+      description: Designation master data serializer.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: e.g. Principal, Senior Teacher, Assistant Teacher
+          maxLength: 100
+        title_bn:
+          type: string
+          description: e.g. অধ্যক্ষ, সিনিয়র শিক্ষক
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 30
+        rank_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: 'Hierarchy rank: lower number represents higher seniority'
+        role_category:
+          $ref: '#/components/schemas/RoleCategoryEnum'
+      required:
+      - title
     Family:
       type: object
       description: Serializer for Family households.
@@ -9330,6 +10910,16 @@ components:
         * `male` - Male
         * `female` - Female
         * `other` - Other
+    GenderRestrictionEnum:
+      enum:
+      - all
+      - male
+      - female
+      type: string
+      description: |-
+        * `all` - All Staff
+        * `male` - Male Only
+        * `female` - Female Only
     Group:
       type: object
       properties:
@@ -9795,6 +11385,350 @@ components:
       description: |-
         * `bn` - Bangla
         * `en` - English
+    LeaveApplyActionRequest:
+      type: object
+      description: Payload to submit a leave request.
+      properties:
+        staff_id:
+          type: string
+          format: uuid
+        leave_type_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+        emergency_phone:
+          type: string
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - end_date
+      - leave_type_id
+      - reason
+      - session_id
+      - start_date
+    LeaveBalance:
+      type: object
+      description: Employee annual leave quota balance serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+        staff_name:
+          type: string
+          readOnly: true
+        leave_type:
+          type: string
+          format: uuid
+        leave_type_code:
+          type: string
+          readOnly: true
+        leave_type_name:
+          type: string
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        allocated_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        carried_forward_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        used_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        pending_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        remaining_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+      required:
+      - id
+      - leave_type
+      - leave_type_code
+      - leave_type_name
+      - remaining_days
+      - session
+      - session_name
+      - staff
+      - staff_name
+    LeaveBalanceRequest:
+      type: object
+      description: Employee annual leave quota balance serializer.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        leave_type:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        allocated_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        carried_forward_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        used_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+        pending_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+      required:
+      - leave_type
+      - session
+      - staff
+    LeaveDecideActionRequest:
+      type: object
+      description: Payload to recommend, approve, or reject a leave application.
+      properties:
+        reason:
+          type: string
+    LeaveRequest:
+      type: object
+      description: Leave application lifecycle serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+        staff_name:
+          type: string
+          readOnly: true
+        leave_type:
+          type: string
+          format: uuid
+        leave_type_code:
+          type: string
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        days_count:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+        reason:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/LeaveStatusEnum'
+          readOnly: true
+        emergency_phone:
+          type: string
+          maxLength: 20
+        attachment:
+          type: string
+          format: uri
+          nullable: true
+        recommender_name:
+          type: string
+          readOnly: true
+        approver_name:
+          type: string
+          readOnly: true
+        rejection_reason:
+          type: string
+          readOnly: true
+        decided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approver_name
+      - created_at
+      - days_count
+      - decided_at
+      - end_date
+      - id
+      - leave_type
+      - leave_type_code
+      - reason
+      - recommender_name
+      - rejection_reason
+      - session
+      - session_name
+      - staff
+      - staff_name
+      - start_date
+      - status
+    LeaveRequestRequest:
+      type: object
+      description: Leave application lifecycle serializer.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        leave_type:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+        emergency_phone:
+          type: string
+          maxLength: 20
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - end_date
+      - leave_type
+      - reason
+      - session
+      - staff
+      - start_date
+    LeaveStatusEnum:
+      enum:
+      - pending
+      - recommended
+      - approved
+      - rejected
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending Recommendation
+        * `recommended` - Recommended by HOD
+        * `approved` - Approved
+        * `rejected` - Rejected
+        * `cancelled` - Cancelled
+    LeaveType:
+      type: object
+      description: Institutional leave type configuration serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. Casual Leave, Medical Leave
+          maxLength: 100
+        name_bn:
+          type: string
+          description: e.g. নৈমিত্তিক ছুটি, অসুস্থতাজনিত ছুটি
+          maxLength: 100
+        code:
+          type: string
+          description: e.g. CL, ML, MAT, EL, SPL
+          maxLength: 20
+        yearly_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Standard allocated annual days
+        is_paid:
+          type: boolean
+        allow_carry_forward:
+          type: boolean
+        max_carry_forward_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        gender_restriction:
+          $ref: '#/components/schemas/GenderRestrictionEnum'
+      required:
+      - code
+      - id
+      - name
+    LeaveTypeRequest:
+      type: object
+      description: Institutional leave type configuration serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Casual Leave, Medical Leave
+          maxLength: 100
+        name_bn:
+          type: string
+          description: e.g. নৈমিত্তিক ছুটি, অসুস্থতাজনিত ছুটি
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          description: e.g. CL, ML, MAT, EL, SPL
+          maxLength: 20
+        yearly_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Standard allocated annual days
+        is_paid:
+          type: boolean
+        allow_carry_forward:
+          type: boolean
+        max_carry_forward_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        gender_restriction:
+          $ref: '#/components/schemas/GenderRestrictionEnum'
+      required:
+      - code
+      - name
     LinkSiblingsFamilyRequest:
       type: object
       description: Payload to link multiple students and their guardians to a Family.
@@ -10516,6 +12450,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ClassSubject'
+    PaginatedDepartmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Department'
+    PaginatedDesignationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Designation'
     PaginatedFamilyList:
       type: object
       required:
@@ -10608,6 +12588,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Holiday'
+    PaginatedLeaveBalanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeaveBalance'
+    PaginatedLeaveRequestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeaveRequest'
+    PaginatedLeaveTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeaveType'
     PaginatedLotteryDrawList:
       type: object
       required:
@@ -10861,6 +12910,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Shift'
+    PaginatedStaffListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffList'
     PaginatedStudentEnrollmentBriefList:
       type: object
       required:
@@ -10953,6 +13025,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubstituteAssignment'
+    PaginatedTeacherAssignmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherAssignment'
     PaginatedTermList:
       type: object
       required:
@@ -11400,6 +13495,47 @@ components:
         is_optional_elective:
           type: boolean
           description: True if this subject can be chosen as an optional/4th subject
+    PatchedDepartmentRequest:
+      type: object
+      description: Department master data serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Science, Mathematics, Bengali, Accounts
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 20
+        description:
+          type: string
+        head_of_department:
+          type: string
+          format: uuid
+          nullable: true
+    PatchedDesignationRequest:
+      type: object
+      description: Designation master data serializer.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: e.g. Principal, Senior Teacher, Assistant Teacher
+          maxLength: 100
+        title_bn:
+          type: string
+          description: e.g. অধ্যক্ষ, সিনিয়র শিক্ষক
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 30
+        rank_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: 'Hierarchy rank: lower number represents higher seniority'
+        role_category:
+          $ref: '#/components/schemas/RoleCategoryEnum'
     PatchedFamilyRequest:
       type: object
       description: Serializer for Family households.
@@ -11583,6 +13719,68 @@ components:
         settings: {}
         is_active:
           type: boolean
+    PatchedLeaveRequestRequest:
+      type: object
+      description: Leave application lifecycle serializer.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        leave_type:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+        emergency_phone:
+          type: string
+          maxLength: 20
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+    PatchedLeaveTypeRequest:
+      type: object
+      description: Institutional leave type configuration serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Casual Leave, Medical Leave
+          maxLength: 100
+        name_bn:
+          type: string
+          description: e.g. নৈমিত্তিক ছুটি, অসুস্থতাজনিত ছুটি
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          description: e.g. CL, ML, MAT, EL, SPL
+          maxLength: 20
+        yearly_quota:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Standard allocated annual days
+        is_paid:
+          type: boolean
+        allow_carry_forward:
+          type: boolean
+        max_carry_forward_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        gender_restriction:
+          $ref: '#/components/schemas/GenderRestrictionEnum'
     PatchedPeriodRequest:
       type: object
       properties:
@@ -11751,6 +13949,91 @@ components:
         end_time:
           type: string
           format: time
+    PatchedStaffCreateUpdateRequest:
+      type: object
+      description: Full serialization for staff profile onboarding and mutation.
+      properties:
+        employee_id:
+          type: string
+        full_name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        full_name_bn:
+          type: string
+          maxLength: 150
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        dob:
+          type: string
+          format: date
+          description: Date of birth
+        blood_group:
+          type: string
+          maxLength: 10
+        phone:
+          type: string
+          minLength: 1
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        joining_date:
+          type: string
+          format: date
+          description: Official joining date in this institution
+        confirmation_date:
+          type: string
+          format: date
+          nullable: true
+        department:
+          type: string
+          format: uuid
+          nullable: true
+        designation:
+          type: string
+          format: uuid
+          nullable: true
+        staff_type:
+          $ref: '#/components/schemas/StaffTypeEnum'
+        status:
+          $ref: '#/components/schemas/Status31cEnum'
+        is_mpo:
+          type: boolean
+          description: Designates whether salary is government-subsidized under Monthly
+            Pay Order
+        mpo_index_number:
+          type: string
+          description: Government MPO Index Number issued by DSHE / DTE / Madrasah
+            Board
+          maxLength: 50
+        tin_number:
+          type: string
+          description: Taxpayer Identification Number
+          maxLength: 30
+        emergency_contact_name:
+          type: string
+          maxLength: 150
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+        emergency_contact_relation:
+          type: string
+          maxLength: 50
     PatchedStudentCreateUpdateRequest:
       type: object
       properties:
@@ -11871,6 +14154,30 @@ components:
         reason:
           type: string
           maxLength: 255
+    PatchedTeacherAssignmentRequest:
+      type: object
+      description: Instructor class/subject mapping serializer.
+      properties:
+        teacher:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        periods_per_week:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_primary_teacher:
+          type: boolean
+          description: Designates the primary lead instructor for this subject in
+            the section
     PatchedTermRequest:
       type: object
       description: Serializer for Term.
@@ -12527,6 +14834,22 @@ components:
       - name
       - permission_codenames
       - updated_at
+    RoleCategoryEnum:
+      enum:
+      - teacher
+      - admin
+      - support
+      - driver
+      - security
+      - other
+      type: string
+      description: |-
+        * `teacher` - Teacher (শিক্ষক)
+        * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
+        * `support` - Support Staff (সহায়ক কর্মচারী)
+        * `driver` - Driver (চালক)
+        * `security` - Security (নিরাপত্তা কর্মী)
+        * `other` - Other (অন্যান্য)
     RoleRequest:
       type: object
       description: Serializer for Role.
@@ -12965,6 +15288,514 @@ components:
       - branch
       - end_time
       - start_time
+    StaffCreateUpdate:
+      type: object
+      description: Full serialization for staff profile onboarding and mutation.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        employee_id:
+          type: string
+        full_name_en:
+          type: string
+          maxLength: 150
+        full_name_bn:
+          type: string
+          maxLength: 150
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        dob:
+          type: string
+          format: date
+          description: Date of birth
+        blood_group:
+          type: string
+          maxLength: 10
+        phone:
+          type: string
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        joining_date:
+          type: string
+          format: date
+          description: Official joining date in this institution
+        confirmation_date:
+          type: string
+          format: date
+          nullable: true
+        department:
+          type: string
+          format: uuid
+          nullable: true
+        designation:
+          type: string
+          format: uuid
+          nullable: true
+        staff_type:
+          $ref: '#/components/schemas/StaffTypeEnum'
+        status:
+          $ref: '#/components/schemas/Status31cEnum'
+        is_mpo:
+          type: boolean
+          description: Designates whether salary is government-subsidized under Monthly
+            Pay Order
+        mpo_index_number:
+          type: string
+          description: Government MPO Index Number issued by DSHE / DTE / Madrasah
+            Board
+          maxLength: 50
+        tin_number:
+          type: string
+          description: Taxpayer Identification Number
+          maxLength: 30
+        emergency_contact_name:
+          type: string
+          maxLength: 150
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+        emergency_contact_relation:
+          type: string
+          maxLength: 50
+      required:
+      - dob
+      - full_name_en
+      - gender
+      - id
+      - joining_date
+      - phone
+    StaffCreateUpdateRequest:
+      type: object
+      description: Full serialization for staff profile onboarding and mutation.
+      properties:
+        employee_id:
+          type: string
+        full_name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        full_name_bn:
+          type: string
+          maxLength: 150
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        dob:
+          type: string
+          format: date
+          description: Date of birth
+        blood_group:
+          type: string
+          maxLength: 10
+        phone:
+          type: string
+          minLength: 1
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        joining_date:
+          type: string
+          format: date
+          description: Official joining date in this institution
+        confirmation_date:
+          type: string
+          format: date
+          nullable: true
+        department:
+          type: string
+          format: uuid
+          nullable: true
+        designation:
+          type: string
+          format: uuid
+          nullable: true
+        staff_type:
+          $ref: '#/components/schemas/StaffTypeEnum'
+        status:
+          $ref: '#/components/schemas/Status31cEnum'
+        is_mpo:
+          type: boolean
+          description: Designates whether salary is government-subsidized under Monthly
+            Pay Order
+        mpo_index_number:
+          type: string
+          description: Government MPO Index Number issued by DSHE / DTE / Madrasah
+            Board
+          maxLength: 50
+        tin_number:
+          type: string
+          description: Taxpayer Identification Number
+          maxLength: 30
+        emergency_contact_name:
+          type: string
+          maxLength: 150
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+        emergency_contact_relation:
+          type: string
+          maxLength: 50
+      required:
+      - dob
+      - full_name_en
+      - gender
+      - joining_date
+      - phone
+    StaffDetail:
+      type: object
+      description: Rich staff view with nested educations, documents, and cards.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        employee_id:
+          type: string
+        full_name_en:
+          type: string
+          maxLength: 150
+        full_name_bn:
+          type: string
+          maxLength: 150
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        dob:
+          type: string
+          format: date
+          description: Date of birth
+        blood_group:
+          type: string
+          maxLength: 10
+        phone:
+          type: string
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        joining_date:
+          type: string
+          format: date
+          description: Official joining date in this institution
+        confirmation_date:
+          type: string
+          format: date
+          nullable: true
+        department:
+          type: string
+          format: uuid
+          nullable: true
+        designation:
+          type: string
+          format: uuid
+          nullable: true
+        staff_type:
+          $ref: '#/components/schemas/StaffTypeEnum'
+        status:
+          $ref: '#/components/schemas/Status31cEnum'
+        is_mpo:
+          type: boolean
+          description: Designates whether salary is government-subsidized under Monthly
+            Pay Order
+        mpo_index_number:
+          type: string
+          description: Government MPO Index Number issued by DSHE / DTE / Madrasah
+            Board
+          maxLength: 50
+        tin_number:
+          type: string
+          description: Taxpayer Identification Number
+          maxLength: 30
+        emergency_contact_name:
+          type: string
+          maxLength: 150
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+        emergency_contact_relation:
+          type: string
+          maxLength: 50
+        department_name:
+          type: string
+          readOnly: true
+        designation_title:
+          type: string
+          readOnly: true
+        educations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffEducation'
+          readOnly: true
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffDocument'
+          readOnly: true
+        id_cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffIDCard'
+          readOnly: true
+      required:
+      - department_name
+      - designation_title
+      - dob
+      - documents
+      - educations
+      - full_name_en
+      - gender
+      - id
+      - id_cards
+      - joining_date
+      - phone
+    StaffDocument:
+      type: object
+      description: Staff archival document serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        document_type:
+          $ref: '#/components/schemas/StaffDocumentDocumentTypeEnum'
+        title:
+          type: string
+          maxLength: 150
+        file:
+          type: string
+          format: uri
+        verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - file
+      - id
+      - title
+    StaffDocumentDocumentTypeEnum:
+      enum:
+      - nid
+      - appointment_letter
+      - joining_letter
+      - mpo_order
+      - certificate
+      - police_clearance
+      - other
+      type: string
+      description: |-
+        * `nid` - National ID (NID)
+        * `appointment_letter` - Appointment Letter (নিয়োগপত্র)
+        * `joining_letter` - Joining Report (যোগদানপত্র)
+        * `mpo_order` - MPO Enlistment Order (এমপিও আদেশ)
+        * `certificate` - Educational Certificate
+        * `police_clearance` - Police Clearance
+        * `other` - Other Document
+    StaffEducation:
+      type: object
+      description: Staff degree qualification serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        degree_title:
+          type: string
+          description: e.g. B.Sc in Mathematics, B.Ed, M.A
+          maxLength: 100
+        institution_name:
+          type: string
+          maxLength: 150
+        board_or_university:
+          type: string
+          maxLength: 100
+        passing_year:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        result:
+          type: string
+          description: e.g. GPA 3.75, First Class, Division 1
+          maxLength: 50
+      required:
+      - board_or_university
+      - degree_title
+      - id
+      - institution_name
+      - passing_year
+      - result
+    StaffIDCard:
+      type: object
+      description: Staff identification badge serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        card_number:
+          type: string
+          maxLength: 50
+        issue_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        rfid_uid:
+          type: string
+          maxLength: 64
+        qr_payload:
+          type: string
+      required:
+      - card_number
+      - expiry_date
+      - id
+      - issue_date
+    StaffList:
+      type: object
+      description: Lightweight roster view of employee profiles.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        employee_id:
+          type: string
+          readOnly: true
+          description: Institution-scoped sequential ID, e.g. EMP-2026-00001
+        full_name_en:
+          type: string
+          maxLength: 150
+        full_name_bn:
+          type: string
+          maxLength: 150
+        department:
+          type: string
+          format: uuid
+          nullable: true
+        department_name:
+          type: string
+          readOnly: true
+        designation:
+          type: string
+          format: uuid
+          nullable: true
+        designation_title:
+          type: string
+          readOnly: true
+        staff_type:
+          $ref: '#/components/schemas/StaffTypeEnum'
+        phone:
+          type: string
+          description: Primary mobile number in normalized format (+8801XXXXXXXXX)
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        status:
+          $ref: '#/components/schemas/Status31cEnum'
+        is_mpo:
+          type: boolean
+          description: Designates whether salary is government-subsidized under Monthly
+            Pay Order
+        joining_date:
+          type: string
+          format: date
+          description: Official joining date in this institution
+        photo:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - department_name
+      - designation_title
+      - employee_id
+      - full_name_en
+      - id
+      - joining_date
+      - phone
+    StaffTypeEnum:
+      enum:
+      - teacher
+      - admin
+      - support
+      - driver
+      - security
+      - other
+      type: string
+      description: |-
+        * `teacher` - Teacher (শিক্ষক)
+        * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
+        * `support` - Support Staff (সহায়ক কর্মচারী)
+        * `driver` - Driver (চালক)
+        * `security` - Security (নিরাপত্তা কর্মী)
+        * `other` - Other (অন্যান্য)
+    Status31cEnum:
+      enum:
+      - active
+      - on_leave
+      - suspended
+      - resigned
+      - terminated
+      - retired
+      type: string
+      description: |-
+        * `active` - Active
+        * `on_leave` - On Leave
+        * `suspended` - Suspended
+        * `resigned` - Resigned
+        * `terminated` - Terminated
+        * `retired` - Retired
     StatusB32Enum:
       enum:
       - active
@@ -13337,7 +16168,7 @@ components:
           format: uuid
           readOnly: true
         document_type:
-          $ref: '#/components/schemas/DocumentTypeEnum'
+          $ref: '#/components/schemas/StudentDocumentDocumentTypeEnum'
         title:
           type: string
           maxLength: 255
@@ -13370,11 +16201,27 @@ components:
       - title
       - verified_at
       - verified_by
+    StudentDocumentDocumentTypeEnum:
+      enum:
+      - birth_certificate
+      - national_id
+      - previous_marksheet
+      - transfer_certificate
+      - medical_certificate
+      - other
+      type: string
+      description: |-
+        * `birth_certificate` - Birth Registration Certificate
+        * `national_id` - National ID (NID)
+        * `previous_marksheet` - Previous Marksheet
+        * `transfer_certificate` - Transfer Certificate (TC)
+        * `medical_certificate` - Medical Certificate
+        * `other` - Other
     StudentDocumentRequest:
       type: object
       properties:
         document_type:
-          $ref: '#/components/schemas/DocumentTypeEnum'
+          $ref: '#/components/schemas/StudentDocumentDocumentTypeEnum'
         title:
           type: string
           minLength: 1
@@ -13834,6 +16681,89 @@ components:
       - routine_slot
       - slot_date
       - substitute_teacher
+    TeacherAssignment:
+      type: object
+      description: Instructor class/subject mapping serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        teacher:
+          type: string
+          format: uuid
+        teacher_name:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          format: uuid
+        subject_name:
+          type: string
+          readOnly: true
+        section:
+          type: string
+          format: uuid
+        section_name:
+          type: string
+          readOnly: true
+        class_name:
+          type: string
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        periods_per_week:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_primary_teacher:
+          type: boolean
+          description: Designates the primary lead instructor for this subject in
+            the section
+      required:
+      - class_name
+      - id
+      - section
+      - section_name
+      - session
+      - session_name
+      - subject
+      - subject_name
+      - teacher
+      - teacher_name
+    TeacherAssignmentRequest:
+      type: object
+      description: Instructor class/subject mapping serializer.
+      properties:
+        teacher:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        periods_per_week:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_primary_teacher:
+          type: boolean
+          description: Designates the primary lead instructor for this subject in
+            the section
+      required:
+      - section
+      - session
+      - subject
+      - teacher
     Term:
       type: object
       description: Serializer for Term.
@@ -14457,6 +17387,39 @@ components:
         * `4` - Wednesday
         * `5` - Thursday
         * `6` - Friday
+    WorkloadSummary:
+      type: object
+      description: Computed instructor teaching metrics serializer.
+      properties:
+        teacher_id:
+          type: string
+          format: uuid
+        teacher_name:
+          type: string
+        employee_id:
+          type: string
+        total_assigned_periods:
+          type: integer
+        total_routine_slots_per_week:
+          type: integer
+        unique_subjects_count:
+          type: integer
+        unique_sections_count:
+          type: integer
+        assignments:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - assignments
+      - employee_id
+      - teacher_id
+      - teacher_name
+      - total_assigned_periods
+      - total_routine_slots_per_week
+      - unique_sections_count
+      - unique_subjects_count
   securitySchemes:
     jwtAuth:
       type: http

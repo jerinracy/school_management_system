@@ -50,6 +50,7 @@ LOCAL_APPS = [
     "apps.admissions.apps.AdmissionsConfig",
     "apps.students.apps.StudentsConfig",
     "apps.guardians.apps.GuardiansConfig",
+    "apps.staff.apps.StaffConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
