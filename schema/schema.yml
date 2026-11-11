@@ -9728,6 +9728,1746 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/fees/assignments/:
+    get:
+      operationId: fees_assignments_list
+      description: Personalized student fee overrides and exemptions.
+      parameters:
+      - in: query
+        name: fee_head
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_exempt
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentFeeAssignmentList'
+          description: ''
+    post:
+      operationId: fees_assignments_create
+      description: Personalized student fee overrides and exemptions.
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentFeeAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentFeeAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentFeeAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentFeeAssignment'
+          description: ''
+  /api/v1/fees/assignments/{id}/:
+    get:
+      operationId: fees_assignments_retrieve
+      description: Personalized student fee overrides and exemptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student fee assignment.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentFeeAssignment'
+          description: ''
+    put:
+      operationId: fees_assignments_update
+      description: Personalized student fee overrides and exemptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student fee assignment.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentFeeAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentFeeAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentFeeAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentFeeAssignment'
+          description: ''
+    patch:
+      operationId: fees_assignments_partial_update
+      description: Personalized student fee overrides and exemptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student fee assignment.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentFeeAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentFeeAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentFeeAssignmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentFeeAssignment'
+          description: ''
+    delete:
+      operationId: fees_assignments_destroy
+      description: Personalized student fee overrides and exemptions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student fee assignment.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/due-list/:
+    get:
+      operationId: fees_due_list_list
+      description: Query list of students with outstanding dues and defaulter metrics.
+      summary: List students with overdue or pending fees
+      parameters:
+      - in: query
+        name: class_level_id
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: min_due
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: section_id
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DueListItem'
+          description: ''
+  /api/v1/fees/fine-rules/:
+    get:
+      operationId: fees_fine_rules_list
+      description: Institutional late payment fine policies.
+      parameters:
+      - in: query
+        name: fine_type
+        schema:
+          type: string
+          enum:
+          - daily
+          - fixed
+          - slab
+        description: |-
+          * `fixed` - Fixed Amount
+          * `daily` - Daily Accrual
+          * `slab` - Tiered / Slab-Based
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFineRuleList'
+          description: ''
+    post:
+      operationId: fees_fine_rules_create
+      description: Institutional late payment fine policies.
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FineRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FineRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FineRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineRule'
+          description: ''
+  /api/v1/fees/fine-rules/{id}/:
+    get:
+      operationId: fees_fine_rules_retrieve
+      description: Institutional late payment fine policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fine rule.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineRule'
+          description: ''
+    put:
+      operationId: fees_fine_rules_update
+      description: Institutional late payment fine policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fine rule.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FineRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FineRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FineRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineRule'
+          description: ''
+    patch:
+      operationId: fees_fine_rules_partial_update
+      description: Institutional late payment fine policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fine rule.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFineRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFineRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFineRuleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineRule'
+          description: ''
+    delete:
+      operationId: fees_fine_rules_destroy
+      description: Institutional late payment fine policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fine rule.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/heads/:
+    get:
+      operationId: fees_heads_list
+      description: Institutional categories of fees (Tuition, Admission, Exam, Transport,
+        etc.).
+      summary: List all fee heads for the institution
+      parameters:
+      - in: query
+        name: fee_type
+        schema:
+          type: string
+          enum:
+          - admission
+          - exam
+          - hostel
+          - id_card
+          - lab
+          - late_fine
+          - library
+          - other
+          - session_charge
+          - sports
+          - transport
+          - tuition
+        description: |-
+          * `tuition` - Monthly Tuition Fee (বেতন)
+          * `admission` - Admission Fee (ভর্তি ফি)
+          * `exam` - Examination Fee (পরীক্ষার ফি)
+          * `session_charge` - Session Charge (সেশন চার্জ)
+          * `lab` - Laboratory Fee (ল্যাব ফি)
+          * `library` - Library Fee (লাইব্রেরি ফি)
+          * `transport` - Transport Fee (যাতায়াত ফি)
+          * `hostel` - Hostel Fee (হোস্টেল ফি)
+          * `sports` - Sports & Cultural (ক্রীড়া ও সাংস্কৃতিক)
+          * `id_card` - Student ID Card (পরিচয়পত্র)
+          * `late_fine` - Late Fine (বিলম্ব ফি)
+          * `other` - Other Fee (অন্যান্য)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: is_optional
+        schema:
+          type: boolean
+      - in: query
+        name: is_refundable
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: recurrence
+        schema:
+          type: string
+          enum:
+          - annually
+          - monthly
+          - one_time
+          - termly
+        description: |-
+          * `one_time` - One Time
+          * `monthly` - Monthly
+          * `termly` - Termly / Per Exam
+          * `annually` - Annually
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeeHeadList'
+          description: ''
+    post:
+      operationId: fees_heads_create
+      description: Institutional categories of fees (Tuition, Admission, Exam, Transport,
+        etc.).
+      summary: Create a new fee head
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeHeadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeHeadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeHeadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeHead'
+          description: ''
+  /api/v1/fees/heads/{id}/:
+    get:
+      operationId: fees_heads_retrieve
+      description: Institutional categories of fees (Tuition, Admission, Exam, Transport,
+        etc.).
+      summary: Retrieve fee head details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee head.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeHead'
+          description: ''
+    put:
+      operationId: fees_heads_update
+      description: Institutional categories of fees (Tuition, Admission, Exam, Transport,
+        etc.).
+      summary: Update a fee head
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee head.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeHeadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeHeadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeHeadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeHead'
+          description: ''
+    patch:
+      operationId: fees_heads_partial_update
+      description: Institutional categories of fees (Tuition, Admission, Exam, Transport,
+        etc.).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee head.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeHeadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeHeadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeHeadRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeHead'
+          description: ''
+    delete:
+      operationId: fees_heads_destroy
+      description: Institutional categories of fees (Tuition, Admission, Exam, Transport,
+        etc.).
+      summary: Soft delete a fee head
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee head.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/invoices/:
+    get:
+      operationId: fees_invoices_list
+      description: Comprehensive invoice lifecycle management and generation.
+      parameters:
+      - in: query
+        name: billing_month
+        schema:
+          type: integer
+      - in: query
+        name: billing_year
+        schema:
+          type: integer
+      - in: query
+        name: invoice_type
+        schema:
+          type: string
+          enum:
+          - admission
+          - custom
+          - monthly
+          - session
+          - termly
+        description: |-
+          * `monthly` - Monthly Tuition & Regular Fees
+          * `termly` - Termly / Examination
+          * `admission` - Admission & Initial Enrollment
+          * `session` - Annual Session Charge
+          * `custom` - Custom / Miscellaneous
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - draft
+          - issued
+          - overdue
+          - paid
+          - partially_paid
+          - waived
+        description: |-
+          * `draft` - Draft
+          * `issued` - Issued
+          * `partially_paid` - Partially Paid
+          * `paid` - Paid
+          * `overdue` - Overdue
+          * `cancelled` - Cancelled
+          * `waived` - Waived
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoiceList'
+          description: ''
+    post:
+      operationId: fees_invoices_create
+      description: Comprehensive invoice lifecycle management and generation.
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/v1/fees/invoices/{id}/:
+    get:
+      operationId: fees_invoices_retrieve
+      description: Comprehensive invoice lifecycle management and generation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
+    put:
+      operationId: fees_invoices_update
+      description: Comprehensive invoice lifecycle management and generation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+    patch:
+      operationId: fees_invoices_partial_update
+      description: Comprehensive invoice lifecycle management and generation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedInvoiceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedInvoiceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedInvoiceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+    delete:
+      operationId: fees_invoices_destroy
+      description: Comprehensive invoice lifecycle management and generation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/invoices/{id}/cancel/:
+    post:
+      operationId: fees_invoices_cancel_create
+      description: Comprehensive invoice lifecycle management and generation.
+      summary: Cancel an invoice with mandatory audit reason
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCancelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceCancelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceCancelRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/v1/fees/invoices/{id}/issue/:
+    post:
+      operationId: fees_invoices_issue_create
+      description: Comprehensive invoice lifecycle management and generation.
+      summary: Transition draft invoice to issued status
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/v1/fees/invoices/{id}/pdf/:
+    get:
+      operationId: fees_invoices_pdf_retrieve
+      description: Comprehensive invoice lifecycle management and generation.
+      summary: Download bilingual invoice / payment demand slip PDF
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this invoice.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/fees/invoices/bulk-generate/:
+    post:
+      operationId: fees_invoices_bulk_generate_create
+      description: Comprehensive invoice lifecycle management and generation.
+      summary: Execute bulk invoice generation for a class or section
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceBulkGenerateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceBulkGenerateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceBulkGenerateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceBulkGenerateResponse'
+          description: ''
+  /api/v1/fees/invoices/bulk-preview/:
+    post:
+      operationId: fees_invoices_bulk_preview_create
+      description: Comprehensive invoice lifecycle management and generation.
+      summary: Preview bulk invoice generation parameters & deduplication counts
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceBulkPreviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceBulkPreviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceBulkPreviewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceBulkPreviewResponse'
+          description: ''
+  /api/v1/fees/invoices/generate-single/:
+    post:
+      operationId: fees_invoices_generate_single_create
+      description: Comprehensive invoice lifecycle management and generation.
+      summary: Generate a single invoice for a student
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceSingleGenerateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceSingleGenerateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceSingleGenerateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
+  /api/v1/fees/structures/:
+    get:
+      operationId: fees_structures_list
+      description: Grade and session fee structures aggregating fee items.
+      summary: List class fee structure templates
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFeeStructureList'
+          description: ''
+    post:
+      operationId: fees_structures_create
+      description: Grade and session fee structures aggregating fee items.
+      summary: Create a new class fee structure
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeStructure'
+          description: ''
+  /api/v1/fees/structures/{id}/:
+    get:
+      operationId: fees_structures_retrieve
+      description: Grade and session fee structures aggregating fee items.
+      summary: Retrieve fee structure template with items
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee structure.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeStructure'
+          description: ''
+    put:
+      operationId: fees_structures_update
+      description: Grade and session fee structures aggregating fee items.
+      summary: Update a fee structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee structure.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeStructure'
+          description: ''
+    patch:
+      operationId: fees_structures_partial_update
+      description: Grade and session fee structures aggregating fee items.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee structure.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeStructureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeStructureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeStructureRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeStructure'
+          description: ''
+    delete:
+      operationId: fees_structures_destroy
+      description: Grade and session fee structures aggregating fee items.
+      summary: Soft delete a fee structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee structure.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/structures/{id}/items/:
+    post:
+      operationId: fees_structures_items_create
+      description: Grade and session fee structures aggregating fee items.
+      summary: Add a fee item to an existing fee structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee structure.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeStructureItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeStructureItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeStructureItemRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeStructureItem'
+          description: ''
+    delete:
+      operationId: fees_structures_items_destroy
+      description: Grade and session fee structures aggregating fee items.
+      summary: Remove a fee item from a fee structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fee structure.
+        required: true
+      - in: query
+        name: item_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/student-waivers/:
+    get:
+      operationId: fees_student_waivers_list
+      description: Student waiver allocations with approval workflow.
+      parameters:
+      - in: query
+        name: discount_type
+        schema:
+          type: string
+          enum:
+          - flat
+          - percentage
+        description: |-
+          * `percentage` - Percentage (%)
+          * `flat` - Flat Amount (BDT)
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - pending
+          - rejected
+        description: |-
+          * `pending` - Pending Approval
+          * `approved` - Approved
+          * `rejected` - Rejected
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentWaiverList'
+          description: ''
+    post:
+      operationId: fees_student_waivers_create
+      description: Student waiver allocations with approval workflow.
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentWaiverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentWaiverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentWaiverRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentWaiver'
+          description: ''
+  /api/v1/fees/student-waivers/{id}/:
+    get:
+      operationId: fees_student_waivers_retrieve
+      description: Student waiver allocations with approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student waiver.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentWaiver'
+          description: ''
+    put:
+      operationId: fees_student_waivers_update
+      description: Student waiver allocations with approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student waiver.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentWaiverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentWaiverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentWaiverRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentWaiver'
+          description: ''
+    patch:
+      operationId: fees_student_waivers_partial_update
+      description: Student waiver allocations with approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student waiver.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentWaiverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentWaiverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentWaiverRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentWaiver'
+          description: ''
+    delete:
+      operationId: fees_student_waivers_destroy
+      description: Student waiver allocations with approval workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student waiver.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/student-waivers/{id}/approve/:
+    post:
+      operationId: fees_student_waivers_approve_create
+      description: Student waiver allocations with approval workflow.
+      summary: Approve a pending student waiver
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student waiver.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentWaiver'
+          description: ''
+  /api/v1/fees/student-waivers/{id}/reject/:
+    post:
+      operationId: fees_student_waivers_reject_create
+      description: Student waiver allocations with approval workflow.
+      summary: Reject a student waiver with a reason
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student waiver.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaiverRejectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WaiverRejectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WaiverRejectRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentWaiver'
+          description: ''
+  /api/v1/fees/waiver-rules/:
+    get:
+      operationId: fees_waiver_rules_list
+      description: Institutional discount/scholarship rules.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - merit
+          - poor_fund
+          - quota
+          - sibling
+          - special
+          - staff_child
+        description: |-
+          * `sibling` - Sibling Concession (সহোদর সুবিধা)
+          * `merit` - Merit / Academic Scholarship (মেধাবৃত্তি)
+          * `poor_fund` - Poor Fund / Zakat / Financial Need (দরিদ্র তহবিল)
+          * `quota` - Freedom Fighter / Special Quota (মুক্তিযোদ্ধা/বিশেষ কোটা)
+          * `staff_child` - Staff / Teacher Child (শিক্ষক সন্তান সুবিধা)
+          * `special` - Discretionary / Special (বিশেষ বিবেচনা)
+      - in: query
+        name: discount_type
+        schema:
+          type: string
+          enum:
+          - flat
+          - percentage
+        description: |-
+          * `percentage` - Percentage (%)
+          * `flat` - Flat Amount (BDT)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWaiverRuleList'
+          description: ''
+    post:
+      operationId: fees_waiver_rules_create
+      description: Institutional discount/scholarship rules.
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaiverRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WaiverRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WaiverRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaiverRule'
+          description: ''
+  /api/v1/fees/waiver-rules/{id}/:
+    get:
+      operationId: fees_waiver_rules_retrieve
+      description: Institutional discount/scholarship rules.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this waiver rule.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaiverRule'
+          description: ''
+    put:
+      operationId: fees_waiver_rules_update
+      description: Institutional discount/scholarship rules.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this waiver rule.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaiverRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WaiverRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WaiverRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaiverRule'
+          description: ''
+    patch:
+      operationId: fees_waiver_rules_partial_update
+      description: Institutional discount/scholarship rules.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this waiver rule.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWaiverRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWaiverRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWaiverRuleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaiverRule'
+          description: ''
+    delete:
+      operationId: fees_waiver_rules_destroy
+      description: Institutional discount/scholarship rules.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this waiver rule.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/guardians/families/:
     get:
       operationId: guardians_families_list
@@ -17655,6 +19395,22 @@ components:
           default: true
       required:
       - file
+    CategoryEnum:
+      enum:
+      - sibling
+      - merit
+      - poor_fund
+      - quota
+      - staff_child
+      - special
+      type: string
+      description: |-
+        * `sibling` - Sibling Concession (সহোদর সুবিধা)
+        * `merit` - Merit / Academic Scholarship (মেধাবৃত্তি)
+        * `poor_fund` - Poor Fund / Zakat / Financial Need (দরিদ্র তহবিল)
+        * `quota` - Freedom Fighter / Special Quota (মুক্তিযোদ্ধা/বিশেষ কোটা)
+        * `staff_child` - Staff / Teacher Child (শিক্ষক সন্তান সুবিধা)
+        * `special` - Discretionary / Special (বিশেষ বিবেচনা)
     ClassLevel:
       type: object
       properties:
@@ -18629,6 +20385,50 @@ components:
         * `in` - Check In
         * `out` - Check Out
         * `auto` - Auto Determine
+    DiscountTypeEnum:
+      enum:
+      - percentage
+      - flat
+      type: string
+      description: |-
+        * `percentage` - Percentage (%)
+        * `flat` - Flat Amount (BDT)
+    DueListItem:
+      type: object
+      properties:
+        student_id:
+          type: string
+        student_name_en:
+          type: string
+        student_name_bn:
+          type: string
+        roll_no:
+          type: integer
+          nullable: true
+        class_name:
+          type: string
+        section_name:
+          type: string
+        unpaid_invoice_count:
+          type: integer
+        total_due_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        oldest_overdue_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - class_name
+      - oldest_overdue_date
+      - roll_no
+      - section_name
+      - student_id
+      - student_name_bn
+      - student_name_en
+      - total_due_amount
+      - unpaid_invoice_count
     Exam:
       type: object
       properties:
@@ -19366,6 +21166,381 @@ components:
           description: Common family residential address
         notes:
           type: string
+    FeeHead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          description: Unique short code per institution (e.g. TUITION, ADMISSION).
+          maxLength: 50
+        name_en:
+          type: string
+          description: Fee head name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          description: Fee head name in Bengali script.
+          maxLength: 255
+        fee_type:
+          $ref: '#/components/schemas/FeeTypeEnum'
+        recurrence:
+          $ref: '#/components/schemas/RecurrenceEnum'
+        is_optional:
+          type: boolean
+          description: If True, fee is opt-in for students (e.g. transport, club).
+        is_refundable:
+          type: boolean
+          description: If True, fee represents a refundable deposit.
+        is_active:
+          type: boolean
+        account_code:
+          type: string
+          description: Accounting general ledger code (Task 17 linkage).
+          maxLength: 50
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - institution
+      - name_bn
+      - name_en
+      - updated_at
+    FeeHeadRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: Unique short code per institution (e.g. TUITION, ADMISSION).
+          maxLength: 50
+        name_en:
+          type: string
+          minLength: 1
+          description: Fee head name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          minLength: 1
+          description: Fee head name in Bengali script.
+          maxLength: 255
+        fee_type:
+          $ref: '#/components/schemas/FeeTypeEnum'
+        recurrence:
+          $ref: '#/components/schemas/RecurrenceEnum'
+        is_optional:
+          type: boolean
+          description: If True, fee is opt-in for students (e.g. transport, club).
+        is_refundable:
+          type: boolean
+          description: If True, fee represents a refundable deposit.
+        is_active:
+          type: boolean
+        account_code:
+          type: string
+          description: Accounting general ledger code (Task 17 linkage).
+          maxLength: 50
+        description:
+          type: string
+      required:
+      - code
+      - name_bn
+      - name_en
+    FeeStructure:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        class_level:
+          type: string
+          format: uuid
+        class_level_name:
+          type: string
+          readOnly: true
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional academic group (Science, Commerce, Humanities).
+        name:
+          type: string
+          description: e.g. Class 9 Science 2026 Regular
+          maxLength: 255
+        is_active:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeStructureItem'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - class_level_name
+      - created_at
+      - id
+      - institution
+      - items
+      - name
+      - session
+      - session_name
+      - updated_at
+    FeeStructureItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        fee_structure:
+          type: string
+          format: uuid
+          readOnly: true
+        fee_head:
+          type: string
+          format: uuid
+        fee_head_name:
+          type: string
+          readOnly: true
+        fee_head_code:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Amount in BDT (৳).
+        due_day:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Day of month when payment is due (e.g. 10th).
+        applicable_months:
+          description: List of integer months (1-12) when applicable. Empty means
+            all months or non-monthly.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - fee_head
+      - fee_head_code
+      - fee_head_name
+      - fee_structure
+      - id
+      - updated_at
+    FeeStructureItemRequest:
+      type: object
+      properties:
+        fee_head:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Amount in BDT (৳).
+        due_day:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Day of month when payment is due (e.g. 10th).
+        applicable_months:
+          description: List of integer months (1-12) when applicable. Empty means
+            all months or non-monthly.
+      required:
+      - amount
+      - fee_head
+    FeeStructureRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional academic group (Science, Commerce, Humanities).
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Class 9 Science 2026 Regular
+          maxLength: 255
+        is_active:
+          type: boolean
+      required:
+      - class_level
+      - name
+      - session
+    FeeTypeEnum:
+      enum:
+      - tuition
+      - admission
+      - exam
+      - session_charge
+      - lab
+      - library
+      - transport
+      - hostel
+      - sports
+      - id_card
+      - late_fine
+      - other
+      type: string
+      description: |-
+        * `tuition` - Monthly Tuition Fee (বেতন)
+        * `admission` - Admission Fee (ভর্তি ফি)
+        * `exam` - Examination Fee (পরীক্ষার ফি)
+        * `session_charge` - Session Charge (সেশন চার্জ)
+        * `lab` - Laboratory Fee (ল্যাব ফি)
+        * `library` - Library Fee (লাইব্রেরি ফি)
+        * `transport` - Transport Fee (যাতায়াত ফি)
+        * `hostel` - Hostel Fee (হোস্টেল ফি)
+        * `sports` - Sports & Cultural (ক্রীড়া ও সাংস্কৃতিক)
+        * `id_card` - Student ID Card (পরিচয়পত্র)
+        * `late_fine` - Late Fine (বিলম্ব ফি)
+        * `other` - Other Fee (অন্যান্য)
+    FineRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. Standard Late Fine (5 Days Grace)
+          maxLength: 255
+        fine_type:
+          $ref: '#/components/schemas/FineTypeEnum'
+        grace_period_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Days past due date before fine starts accruing.
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Fixed late fine or daily accrual rate in BDT.
+        max_fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Maximum ceiling for accrued fines in BDT.
+        slab_config:
+          description: 'Tiered slabs list: [{''min_days'': 1, ''max_days'': 10, ''amount'':
+            50.00}, ...]'
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - name
+      - updated_at
+    FineRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Standard Late Fine (5 Days Grace)
+          maxLength: 255
+        fine_type:
+          $ref: '#/components/schemas/FineTypeEnum'
+        grace_period_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Days past due date before fine starts accruing.
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Fixed late fine or daily accrual rate in BDT.
+        max_fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Maximum ceiling for accrued fines in BDT.
+        slab_config:
+          description: 'Tiered slabs list: [{''min_days'': 1, ''max_days'': 10, ''amount'':
+            50.00}, ...]'
+        is_active:
+          type: boolean
+      required:
+      - name
+    FineTypeEnum:
+      enum:
+      - fixed
+      - daily
+      - slab
+      type: string
+      description: |-
+        * `fixed` - Fixed Amount
+        * `daily` - Daily Accrual
+        * `slab` - Tiered / Slab-Based
     GenderEnum:
       enum:
       - male
@@ -20051,6 +22226,556 @@ components:
         * `college` - Degree College
         * `madrasa` - Madrasa (Dakhil/Alim)
         * `kindergarten` - Kindergarten
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        invoice_number:
+          type: string
+          readOnly: true
+          description: 'Human-friendly number: INV-2026-000001'
+        student:
+          type: string
+          format: uuid
+        student_code:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        invoice_type:
+          $ref: '#/components/schemas/InvoiceTypeEnum'
+        title:
+          type: string
+          description: e.g. Tuition Fee - March 2026
+          maxLength: 255
+        billing_month:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+          description: 1 to 12 for monthly invoices.
+        billing_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        subtotal_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        waiver_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_payable:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        paid_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        due_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusC0bEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        paid_date:
+          type: string
+          format: date
+          nullable: true
+        pdf_receipt:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        cancellation_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - due_amount
+      - due_date
+      - fine_amount
+      - id
+      - institution
+      - invoice_number
+      - issue_date
+      - paid_amount
+      - pdf_receipt
+      - session
+      - session_name
+      - student
+      - student_code
+      - student_name
+      - subtotal_amount
+      - total_payable
+      - updated_at
+      - waiver_amount
+    InvoiceBulkGenerateRequest:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        class_level_id:
+          type: string
+          format: uuid
+        section_id:
+          type: string
+          format: uuid
+          nullable: true
+        billing_month:
+          type: integer
+          maximum: 12
+          minimum: 1
+          nullable: true
+        billing_year:
+          type: integer
+          default: 2026
+        invoice_type:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceTypeEnum'
+          default: monthly
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        as_issued:
+          type: boolean
+          default: true
+      required:
+      - class_level_id
+      - session_id
+    InvoiceBulkGenerateResponse:
+      type: object
+      properties:
+        class_level_id:
+          type: string
+        total_active_students:
+          type: integer
+        created_count:
+          type: integer
+        skipped_duplicate_count:
+          type: integer
+        total_billed_bdt:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        created_invoice_ids:
+          type: array
+          items:
+            type: string
+      required:
+      - class_level_id
+      - created_count
+      - created_invoice_ids
+      - skipped_duplicate_count
+      - total_active_students
+      - total_billed_bdt
+    InvoiceBulkPreviewRequest:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        class_level_id:
+          type: string
+          format: uuid
+        section_id:
+          type: string
+          format: uuid
+          nullable: true
+        billing_month:
+          type: integer
+          maximum: 12
+          minimum: 1
+          nullable: true
+        billing_year:
+          type: integer
+          default: 2026
+        invoice_type:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceTypeEnum'
+          default: monthly
+      required:
+      - class_level_id
+      - session_id
+    InvoiceBulkPreviewResponse:
+      type: object
+      properties:
+        class_level_id:
+          type: string
+        class_level_name:
+          type: string
+        section_id:
+          type: string
+          nullable: true
+        billing_month:
+          type: integer
+          nullable: true
+        billing_year:
+          type: integer
+        total_active_students:
+          type: integer
+        already_invoiced_count:
+          type: integer
+        new_invoices_to_create:
+          type: integer
+        has_fee_structure:
+          type: boolean
+        estimated_total_bdt:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - already_invoiced_count
+      - billing_month
+      - billing_year
+      - class_level_id
+      - class_level_name
+      - estimated_total_bdt
+      - has_fee_structure
+      - new_invoices_to_create
+      - section_id
+      - total_active_students
+    InvoiceCancelRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 3
+      required:
+      - reason
+    InvoiceDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        invoice_number:
+          type: string
+          readOnly: true
+          description: 'Human-friendly number: INV-2026-000001'
+        student:
+          type: string
+          format: uuid
+        student_code:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        invoice_type:
+          $ref: '#/components/schemas/InvoiceTypeEnum'
+        title:
+          type: string
+          description: e.g. Tuition Fee - March 2026
+          maxLength: 255
+        billing_month:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+          description: 1 to 12 for monthly invoices.
+        billing_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        subtotal_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        waiver_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_payable:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        paid_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        due_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusC0bEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        paid_date:
+          type: string
+          format: date
+          nullable: true
+        pdf_receipt:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        cancellation_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLine'
+          readOnly: true
+      required:
+      - created_at
+      - due_amount
+      - due_date
+      - fine_amount
+      - id
+      - institution
+      - invoice_number
+      - issue_date
+      - lines
+      - paid_amount
+      - pdf_receipt
+      - session
+      - session_name
+      - student
+      - student_code
+      - student_name
+      - subtotal_amount
+      - total_payable
+      - updated_at
+      - waiver_amount
+    InvoiceLine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        fee_head:
+          type: string
+          format: uuid
+        fee_head_code:
+          type: string
+          readOnly: true
+        fee_head_name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          maxLength: 255
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        waiver_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payable_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        paid_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - description
+      - fee_head
+      - fee_head_code
+      - fee_head_name
+      - id
+      - payable_amount
+    InvoiceRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+        invoice_type:
+          $ref: '#/components/schemas/InvoiceTypeEnum'
+        title:
+          type: string
+          description: e.g. Tuition Fee - March 2026
+          maxLength: 255
+        billing_month:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+          description: 1 to 12 for monthly invoices.
+        billing_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusC0bEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        paid_date:
+          type: string
+          format: date
+          nullable: true
+        cancellation_reason:
+          type: string
+      required:
+      - due_date
+      - issue_date
+      - session
+      - student
+    InvoiceSingleGenerateRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        invoice_type:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceTypeEnum'
+          default: monthly
+        billing_month:
+          type: integer
+          maximum: 12
+          minimum: 1
+          nullable: true
+        billing_year:
+          type: integer
+          default: 2026
+        fee_structure_id:
+          type: string
+          format: uuid
+          nullable: true
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        title:
+          type: string
+          default: ''
+        as_issued:
+          type: boolean
+          default: true
+      required:
+      - session_id
+      - student_id
+    InvoiceTypeEnum:
+      enum:
+      - monthly
+      - termly
+      - admission
+      - session
+      - custom
+      type: string
+      description: |-
+        * `monthly` - Monthly Tuition & Regular Fees
+        * `termly` - Termly / Examination
+        * `admission` - Admission & Initial Enrollment
+        * `session` - Annual Session Charge
+        * `custom` - Custom / Miscellaneous
     LanguagePreferenceEnum:
       enum:
       - bn
@@ -21812,6 +24537,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Family'
+    PaginatedFeeHeadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeHead'
+    PaginatedFeeStructureList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeStructure'
+    PaginatedFineRuleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FineRule'
     PaginatedGraceMarkRuleList:
       type: object
       required:
@@ -21927,6 +24721,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Holiday'
+    PaginatedInvoiceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
     PaginatedLeaveBalanceList:
       type: object
       required:
@@ -22525,6 +25342,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentExamEligibility'
+    PaginatedStudentFeeAssignmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentFeeAssignment'
     PaginatedStudentListList:
       type: object
       required:
@@ -22571,6 +25411,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentOptionalSubject'
+    PaginatedStudentWaiverList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentWaiver'
     PaginatedSubjectList:
       type: object
       required:
@@ -22824,6 +25687,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserSession'
+    PaginatedWaiverRuleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WaiverRule'
     PasswordChangeRequest:
       type: object
       description: Serializer for changing password.
@@ -23654,6 +26540,94 @@ components:
           description: Common family residential address
         notes:
           type: string
+    PatchedFeeHeadRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: Unique short code per institution (e.g. TUITION, ADMISSION).
+          maxLength: 50
+        name_en:
+          type: string
+          minLength: 1
+          description: Fee head name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          minLength: 1
+          description: Fee head name in Bengali script.
+          maxLength: 255
+        fee_type:
+          $ref: '#/components/schemas/FeeTypeEnum'
+        recurrence:
+          $ref: '#/components/schemas/RecurrenceEnum'
+        is_optional:
+          type: boolean
+          description: If True, fee is opt-in for students (e.g. transport, club).
+        is_refundable:
+          type: boolean
+          description: If True, fee represents a refundable deposit.
+        is_active:
+          type: boolean
+        account_code:
+          type: string
+          description: Accounting general ledger code (Task 17 linkage).
+          maxLength: 50
+        description:
+          type: string
+    PatchedFeeStructureRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional academic group (Science, Commerce, Humanities).
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Class 9 Science 2026 Regular
+          maxLength: 255
+        is_active:
+          type: boolean
+    PatchedFineRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Standard Late Fine (5 Days Grace)
+          maxLength: 255
+        fine_type:
+          $ref: '#/components/schemas/FineTypeEnum'
+        grace_period_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Days past due date before fine starts accruing.
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Fixed late fine or daily accrual rate in BDT.
+        max_fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Maximum ceiling for accrued fines in BDT.
+        slab_config:
+          description: 'Tiered slabs list: [{''min_days'': 1, ''max_days'': 10, ''amount'':
+            50.00}, ...]'
+        is_active:
+          type: boolean
     PatchedGraceMarkRuleRequest:
       type: object
       properties:
@@ -23868,6 +26842,49 @@ components:
         settings: {}
         is_active:
           type: boolean
+    PatchedInvoiceRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+        invoice_type:
+          $ref: '#/components/schemas/InvoiceTypeEnum'
+        title:
+          type: string
+          description: e.g. Tuition Fee - March 2026
+          maxLength: 255
+        billing_month:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+          description: 1 to 12 for monthly invoices.
+        billing_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusC0bEnum'
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        paid_date:
+          type: string
+          format: date
+          nullable: true
+        cancellation_reason:
+          type: string
     PatchedLeaveRequestRequest:
       type: object
       description: Leave application lifecycle serializer.
@@ -24429,6 +27446,31 @@ components:
         emergency_contact_phone:
           type: string
           maxLength: 20
+    PatchedStudentFeeAssignmentRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        fee_head:
+          type: string
+          format: uuid
+        custom_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Custom assigned rate in BDT, overriding standard structure.
+        is_exempt:
+          type: boolean
+          description: If True, student is 100% exempt from this fee head.
+        notes:
+          type: string
+          maxLength: 255
     PatchedStudentOptionalSubjectRequest:
       type: object
       properties:
@@ -24444,6 +27486,50 @@ components:
         subject:
           type: string
           format: uuid
+    PatchedStudentWaiverRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        waiver_rule:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          description: e.g. Merit Scholarship (Term 1)
+          maxLength: 255
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        max_discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        applicable_fee_heads:
+          type: array
+          items:
+            type: string
+            format: uuid
+        rejection_reason:
+          type: string
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
     PatchedSubjectRequest:
       type: object
       properties:
@@ -24633,6 +27719,40 @@ components:
           type: string
           format: binary
           nullable: true
+    PatchedWaiverRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Sibling Concession 50%
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Percentage (e.g. 50.00) or flat BDT amount (e.g. 500.00).
+        max_discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Optional ceiling limit in BDT for percentage waivers.
+        applicable_fee_heads:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Fee heads this waiver applies to. If empty, applies to Tuition
+            only by default.
+        is_active:
+          type: boolean
+        description:
+          type: string
     PaymentMethodEnum:
       enum:
       - bkash
@@ -25608,6 +28728,18 @@ components:
       required:
       - exam_subject
       - student
+    RecurrenceEnum:
+      enum:
+      - one_time
+      - monthly
+      - termly
+      - annually
+      type: string
+      description: |-
+        * `one_time` - One Time
+        * `monthly` - Monthly
+        * `termly` - Termly / Per Exam
+        * `annually` - Annually
     RelationDefaultEnum:
       enum:
       - father
@@ -26980,6 +30112,16 @@ components:
         * `resigned` - Resigned
         * `terminated` - Terminated
         * `retired` - Retired
+    Status970Enum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending Approval
+        * `approved` - Approved
+        * `rejected` - Rejected
     Status977Enum:
       enum:
       - pending
@@ -27026,6 +30168,24 @@ components:
         * `graduated` - Graduated
         * `alumni` - Alumni
         * `suspended` - Suspended
+    StatusC0bEnum:
+      enum:
+      - draft
+      - issued
+      - partially_paid
+      - paid
+      - overdue
+      - cancelled
+      - waived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `issued` - Issued
+        * `partially_paid` - Partially Paid
+        * `paid` - Paid
+        * `overdue` - Overdue
+        * `cancelled` - Cancelled
+        * `waived` - Waived
     StatusC0dEnum:
       enum:
       - present
@@ -27624,6 +30784,94 @@ components:
       - student_id
       - student_name_bn
       - student_name_en
+    StudentFeeAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_code:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        fee_head:
+          type: string
+          format: uuid
+        fee_head_name:
+          type: string
+          readOnly: true
+        custom_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Custom assigned rate in BDT, overriding standard structure.
+        is_exempt:
+          type: boolean
+          description: If True, student is 100% exempt from this fee head.
+        notes:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fee_head
+      - fee_head_name
+      - id
+      - institution
+      - student
+      - student_code
+      - student_name
+      - updated_at
+    StudentFeeAssignmentRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        fee_head:
+          type: string
+          format: uuid
+        custom_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Custom assigned rate in BDT, overriding standard structure.
+        is_exempt:
+          type: boolean
+          description: If True, student is 100% exempt from this fee head.
+        notes:
+          type: string
+          maxLength: 255
+      required:
+      - fee_head
+      - student
     StudentGuardian:
       type: object
       description: Serializer for Student-Guardian relationship links.
@@ -27846,6 +31094,153 @@ components:
       - session
       - student
       - subject
+    StudentWaiver:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_code:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        waiver_rule:
+          type: string
+          format: uuid
+          nullable: true
+        waiver_rule_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          description: e.g. Merit Scholarship (Term 1)
+          maxLength: 255
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        max_discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        applicable_fee_heads:
+          type: array
+          items:
+            type: string
+            format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status970Enum'
+          readOnly: true
+        approved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        approved_by_name:
+          type: string
+          readOnly: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rejection_reason:
+          type: string
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approved_at
+      - approved_by
+      - approved_by_name
+      - created_at
+      - discount_value
+      - id
+      - institution
+      - status
+      - student
+      - student_code
+      - student_name
+      - updated_at
+      - waiver_rule_name
+    StudentWaiverRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        waiver_rule:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          description: e.g. Merit Scholarship (Term 1)
+          maxLength: 255
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        max_discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        applicable_fee_heads:
+          type: array
+          items:
+            type: string
+            format: uuid
+        rejection_reason:
+          type: string
+        valid_from:
+          type: string
+          format: date
+          nullable: true
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - discount_value
+      - student
     Subject:
       type: object
       properties:
@@ -29053,6 +32448,105 @@ components:
         * `qr` - QR Code (কিউআর কোড)
         * `pin` - PIN / Password (পিন কোড)
         * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+    WaiverRejectRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          default: ''
+    WaiverRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. Sibling Concession 50%
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Percentage (e.g. 50.00) or flat BDT amount (e.g. 500.00).
+        max_discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Optional ceiling limit in BDT for percentage waivers.
+        applicable_fee_heads:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Fee heads this waiver applies to. If empty, applies to Tuition
+            only by default.
+        is_active:
+          type: boolean
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - discount_value
+      - id
+      - institution
+      - name
+      - updated_at
+    WaiverRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. Sibling Concession 50%
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Percentage (e.g. 50.00) or flat BDT amount (e.g. 500.00).
+        max_discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Optional ceiling limit in BDT for percentage waivers.
+        applicable_fee_heads:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Fee heads this waiver applies to. If empty, applies to Tuition
+            only by default.
+        is_active:
+          type: boolean
+        description:
+          type: string
+      required:
+      - discount_value
+      - name
     WeakStudentsResponse:
       type: object
       properties:

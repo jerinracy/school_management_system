@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 14**: Fee Structure & Invoice Generation (`apps/fees`).
+  - Core Models:
+    - `FeeHead`: Institutional fee categories (Tuition `মাসিক বেতন`, Admission `ভর্তি ফি`, Exam `পরীক্ষার ফি`, Session Charge `সেশন চার্জ`, Lab, Library, Transport, Hostel, Sports, Late Fine) with recurrence (`one_time`, `monthly`, `termly`, `annually`), opt-in/mandatory flags, and accounting general ledger codes.
+    - `FeeStructure`: Grade/class-level fee templates bound to an `AcademicSession`, `ClassLevel`, and optional academic `Group`.
+    - `FeeStructureItem`: Line items linking `FeeHead` to `FeeStructure` with decimal amounts in BDT (৳), due days, and applicable month arrays.
+    - `StudentFeeAssignment`: Student-specific fee overrides, customized rates, or exemptions (e.g. opting in for bus transport).
+    - `WaiverRule`: Institutional scholarship policies (`sibling`, `merit`, `poor_fund`, `freedom_fighter_quota`, `staff_child`) supporting percentage or flat BDT discounts, maximum caps, and target fee heads.
+    - `StudentWaiver`: Allocated student waivers with two-stage approval workflow (`pending` $\to$ `approved` / `rejected`), approved-by audit tracking, and date-bounded validity.
+    - `FineRule`: Late payment fine configurations (`fixed`, `daily_accrual`, `slab`) with configurable grace period days and maximum fine caps.
+    - `Invoice`: Central billing document tracking sequential human-friendly invoice numbers (`INV-2026-000001` gap-free per institution), student, enrollment, session, billing month/year, subtotal, waiver, fine, total payable, paid amount, due balance, and status (`draft`, `issued`, `partially_paid`, `paid`, `overdue`, `cancelled`, `waived`).
+    - `InvoiceLine`: Individual line items recording original amount, applied waiver, fine, payable amount, and paid amount per fee head.
+    - `InvoiceSequence`: Atomic gap-free sequential counter per institution and year.
+  - Service Layer (`apps/fees/services/`):
+    - `invoice_number_service.py`: Concurrency-safe, transaction-atomic sequential invoice number generator (`INV-{year}-{seq:06d}`).
+    - `waiver_service.py`: Deterministic student waiver resolution applying approved, valid waivers strictly to designated fee heads with percentage/flat arithmetic and caps.
+    - `fine_service.py`: Overdue fine evaluator calculating late fees for invoices past `due_date + grace_period_days` according to institutional `FineRule`.
+    - `invoice_service.py`: High-performance bulk and single invoice generator with preview capabilities, deduplication (preventing double-billing for the same fee heads and billing month), waiver deduction, and cancellation mechanics.
+    - `invoice_pdf_service.py`: Flowable ReportLab PDF generator utilizing embedded TrueType `Kalpurush.ttf` to produce standard Bangladeshi 3-part bank deposit/demand slips in A4 format.
+  - Background Async Tasks (`apps/fees/tasks.py`):
+    - `generate_bulk_invoices_task`: Celery worker task for large-scale class or school-wide monthly/term invoice creation.
+    - `calculate_overdue_fines_task`: Scheduled/periodic task evaluating unpaid issued invoices and accruing late fines.
+  - REST API ViewSets & Routes (`apps/fees/views.py` & `apps/fees/urls.py`):
+    - `/api/v1/fees/heads/`: Full CRUD and filtering for fee heads.
+    - `/api/v1/fees/structures/`: Fee structure templates and item management.
+    - `/api/v1/fees/assignments/`: Student fee overrides and exemptions.
+    - `/api/v1/fees/waiver-rules/`: Institutional waiver policy management.
+    - `/api/v1/fees/student-waivers/`: Student waiver application, approval (`approve`), and rejection (`reject`).
+    - `/api/v1/fees/fine-rules/`: Late fee policy definitions.
+    - `/api/v1/fees/invoices/`: Query invoices with filters (`student`, `class_level`, `section`, `status`, `month`, `year`); actions for `issue`, `cancel`, `pdf`, `bulk_preview`, and `bulk_generate`.
+    - `/api/v1/fees/due-list/`: Dedicated defaulter/dues lookup for cashier/accountant and student/guardian self-service.
 - **Task 13**: Report Card Generation & Tabulation Sheet (`apps/results`).
   - Core Models:
     - `TabulationSheet`: Class/section broadsheet metadata tracking generated formats (`excel`, `pdf`), file links, total students, and generation status.

@@ -266,3 +266,29 @@
   - Provides institutional administrators and examination committees with complete broadsheet oversight.
   - Generates authentic, board-compliant report cards with professional Bengali typography.
   - Prevents premature result leakage before official administrative sign-off.
+
+---
+
+## ADR-016: Multi-Tier Fee Structures, Concurrency-Safe Invoice Sequencing, Waivers & Late Fine Mechanics
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**:
+  - Bangladeshi school fee management requires granular recurring fee heads (`Tuition`, `Admission`, `Session Charge`, `Exam`, `Laboratory`, `Library`, `Transport`, `Hostel`), class/session fee templates, individualized exemptions or custom rates, multi-category waivers (sibling, merit, poor fund, quota, teacher child), and late fines.
+  - Invoicing requires concurrency safety (avoiding duplicate sequential numbers e.g. `INV-2026-000001`), deduplication against accidental re-billing in the same month, and printable 3-part bank deposit slips (School Copy, Bank Copy, Student Copy).
+- **Decision**:
+  - **Relational Domain Architecture (`apps/fees`)**:
+    - `FeeHead` defines categories with recurrence rules (`one_time`, `monthly`, `termly`, `annually`), opt-in flags, and accounting general ledger codes.
+    - `FeeStructure` and `FeeStructureItem` establish standardized rate schedules per class and session, while `StudentFeeAssignment` accommodates individual opt-ins (e.g. transport) and rate customizations.
+    - `WaiverRule` and `StudentWaiver` enforce a strict two-stage approval workflow (`pending` $\to$ `approved` / `rejected`) preventing unapproved concessions from impacting issued invoices.
+    - `FineRule` supports fixed, daily accrual, and slab-based late payment penalties with configurable grace periods.
+    - `Invoice` and `InvoiceLine` model itemized billing with positive monetary constraints (`CheckConstraint(amount >= 0)`) and auto-balanced totals.
+  - **Concurrency-Safe Sequencing (`InvoiceSequence`)**:
+    - `get_next_invoice_number` uses row-level locking (`select_for_update()`) on institutional sequence records within atomic transactions to eliminate gaps and race conditions during bulk generation.
+  - **Deduplication & Bulk Billing (`invoice_service.py`)**:
+    - Bulk generation evaluates existing non-cancelled invoices for `(student, session, billing_year, billing_month)` to ensure safe, idempotent batch runs.
+  - **Authentic Bengali PDF Output (`invoice_pdf_service.py`)**:
+    - Uses ReportLab with TrueType `Kalpurush.ttf` to render bilingual demand and payment receipt slips.
+- **Consequences**:
+  - Provides institutional cashiers and accountants with complete, automated monthly billing.
+  - Guarantees financial auditability and monetary integrity.
+  - Ready for online payment collection and gateway settlement in Task 15.
