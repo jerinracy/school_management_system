@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 10**: Attendance Engine & Configurable Rules (`apps/attendance`).
+  - Core Models:
+    - `AttendancePolicy`: Granular, versioned attendance rule configuration supporting shift/branch/class scoping, flexible start/end times, on-time grace minutes, late/half-day thresholds, early leave threshold, minimum work duration for staff, multi-punch modes (`first_last`, `every_pair`, `single`), and configurable Friday/Saturday weekend defaults.
+    - `PolicyAssignment`: Binds policies to specific branches, shifts, or class levels with priority ordering.
+    - `AttendanceEvent`: Normalized, deduplicated check-in/out event records linked to biometric hardware punches or mobile check-ins.
+    - `DailyAttendance`: Idempotent daily roll record per student/staff member storing evaluated status (`present`, `late`, `half_day`, `absent`, `holiday`, `weekend`, `leave`), first-in/last-out timestamps, total minutes, late minutes, early leave minutes, and manual teacher/principal overrides.
+    - `PeriodAttendance`: Subject- and period-level classroom roll call for secondary/higher-secondary sections, linked to `RoutineSlot` and recorded by the subject teacher.
+    - `AttendanceCorrection`: Formal change workflow allowing teachers/staff to submit correction requests with audit reason, reviewed and approved/rejected by school administrators.
+    - `MobileCheckin`: High-precision GPS mobile check-in logging coordinates, accuracy, geofence validation result, distance from campus, and optional verification selfie.
+  - Service Layer & Rule Engine (`apps/attendance/services`):
+    - `rule_engine.py`: Pure, deterministic evaluation engine `evaluate_daily_status()` with zero DB side effects; evaluates arrival and departure against policy thresholds, enforces staff minimum duration, and respects institutional holidays, configured weekends, and approved staff leave.
+    - `geofence_service.py`: Server-side Haversine distance calculator and geofence boundary validator (`validate_geofence()`).
+    - `punch_processor.py`: Automated background ingestion pipeline `process_raw_punches()` converting unprocessed Task 09 `RawPunch` records into `AttendanceEvent`s with in-batch and database 60-second duplicate punch suppression, triggering automatic daily attendance recalculation.
+    - `attendance_service.py`: Policy resolver (`resolve_effective_policy()`), daily attendance recalculator (`update_daily_attendance_for_person()`, `recompute_daily_attendance()`), automated end-of-day absentee marker (`mark_daily_absentees_for_date()`), manual bulk attendance intake, and correction decision workflow.
+  - Background Tasks (`apps/attendance/tasks.py`):
+    - `process_unprocessed_raw_punches_task`: Celery worker task processing batches of unprocessed hardware punches.
+    - `mark_daily_absentees_task`: Scheduled EOD Celery task marking absentees, holidays, and weekends for unrecorded students and staff.
+  - REST API ViewSets (`apps/attendance/views.py`):
+    - `AttendancePolicyViewSet`: CRUD endpoints with `/simulate/` testing sandbox action for dry-run policy evaluation.
+    - `DailyAttendanceViewSet`: Daily roll viewing, date/status filtering, `/bulk_manual/` teacher intake, and `/recompute/` admin trigger.
+    - `PeriodAttendanceViewSet`: Period-by-period roll-call viewing and `/bulk_submit/` teacher intake.
+    - `AttendanceCorrectionViewSet`: Correction request submission and administrative `/decide/` approval/rejection action.
+    - `AttendanceEventViewSet`: Read-only audit stream of normalized biometric and mobile events.
+    - `MobileCheckinViewSet`: GPS-validated intake endpoint for mobile staff check-in.
 - **Task 09**: Biometric & Attendance Device Management (`apps/devices`).
   - Core Models:
     - `Device`: Hardware terminal registry supporting fingerprint, facial recognition, iris, palm vein, RFID/NFC smart cards, QR, and virtual simulators across vendors (ZKTeco, Hikvision, Suprema, eSSL, Custom). Unique serial number constraint per institution, API token and HMAC secret support.

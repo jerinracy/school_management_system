@@ -4290,6 +4290,1222 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/attendance/assignments/:
+    get:
+      operationId: attendance_assignments_list
+      description: Scoped binding of attendance policies to branches, shifts, and
+        classes.
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: shift
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum:
+          - all
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+          * `all` - All
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPolicyAssignmentList'
+          description: ''
+    post:
+      operationId: attendance_assignments_create
+      description: Scoped binding of attendance policies to branches, shifts, and
+        classes.
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PolicyAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PolicyAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssignment'
+          description: ''
+  /api/v1/attendance/assignments/{id}/:
+    get:
+      operationId: attendance_assignments_retrieve
+      description: Scoped binding of attendance policies to branches, shifts, and
+        classes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this policy assignment.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssignment'
+          description: ''
+    put:
+      operationId: attendance_assignments_update
+      description: Scoped binding of attendance policies to branches, shifts, and
+        classes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this policy assignment.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PolicyAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PolicyAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssignment'
+          description: ''
+    patch:
+      operationId: attendance_assignments_partial_update
+      description: Scoped binding of attendance policies to branches, shifts, and
+        classes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this policy assignment.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPolicyAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPolicyAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPolicyAssignmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssignment'
+          description: ''
+    delete:
+      operationId: attendance_assignments_destroy
+      description: Scoped binding of attendance policies to branches, shifts, and
+        classes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this policy assignment.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/attendance/corrections/:
+    get:
+      operationId: attendance_corrections_list
+      description: Attendance rectification requests and manager approval chain.
+      parameters:
+      - in: query
+        name: approval_status
+        schema:
+          type: string
+          enum:
+          - approved
+          - pending
+          - rejected
+        description: |-
+          * `pending` - Pending Approval
+          * `approved` - Approved
+          * `rejected` - Rejected
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceCorrectionList'
+          description: ''
+    post:
+      operationId: attendance_corrections_create
+      description: Attendance rectification requests and manager approval chain.
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrection'
+          description: ''
+  /api/v1/attendance/corrections/{id}/:
+    get:
+      operationId: attendance_corrections_retrieve
+      description: Attendance rectification requests and manager approval chain.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this attendance correction.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrection'
+          description: ''
+    put:
+      operationId: attendance_corrections_update
+      description: Attendance rectification requests and manager approval chain.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this attendance correction.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrection'
+          description: ''
+    patch:
+      operationId: attendance_corrections_partial_update
+      description: Attendance rectification requests and manager approval chain.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this attendance correction.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceCorrectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceCorrectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceCorrectionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrection'
+          description: ''
+    delete:
+      operationId: attendance_corrections_destroy
+      description: Attendance rectification requests and manager approval chain.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this attendance correction.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/attendance/corrections/{id}/decide/:
+    post:
+      operationId: attendance_corrections_decide_create
+      description: Approve or reject attendance correction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this attendance correction.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceCorrectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCorrection'
+          description: ''
+  /api/v1/attendance/daily/:
+    get:
+      operationId: attendance_daily_list
+      description: Daily aggregated attendance records for students and staff.
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: is_overridden
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - absent
+          - half_day
+          - holiday
+          - late
+          - leave
+          - present
+          - weekend
+        description: |-
+          * `present` - Present (উপস্থিত)
+          * `late` - Late (বিলম্বিত)
+          * `absent` - Absent (অনুপস্থিত)
+          * `half_day` - Half Day (অর্ধদিবস)
+          * `leave` - On Leave (ছুটি)
+          * `holiday` - Holiday (ছুটির দিন)
+          * `weekend` - Weekend (সাপ্তাহিক ছুটি)
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDailyAttendanceList'
+          description: ''
+  /api/v1/attendance/daily/{id}/:
+    get:
+      operationId: attendance_daily_retrieve
+      description: Daily aggregated attendance records for students and staff.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Daily Attendance.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAttendance'
+          description: ''
+  /api/v1/attendance/daily/bulk-manual/:
+    post:
+      operationId: attendance_daily_bulk_manual_create
+      description: Manual bulk roll call submission by section or department.
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAttendance'
+          description: ''
+  /api/v1/attendance/daily/recompute/:
+    post:
+      operationId: attendance_daily_recompute_create
+      description: Idempotently recompute daily attendance across a date range.
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAttendance'
+          description: ''
+  /api/v1/attendance/daily/staff-summary/:
+    get:
+      operationId: attendance_daily_staff_summary_retrieve
+      description: Aggregated staff attendance metrics for HR and payroll.
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAttendance'
+          description: ''
+  /api/v1/attendance/events/:
+    get:
+      operationId: attendance_events_list
+      description: Read-only audit stream of normalized attendance check-in/out events.
+      parameters:
+      - in: query
+        name: direction
+        schema:
+          type: string
+          enum:
+          - auto
+          - in
+          - out
+        description: |-
+          * `in` - Check In
+          * `out` - Check Out
+          * `auto` - Auto Determine
+      - in: query
+        name: method
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: source
+        schema:
+          type: string
+          enum:
+          - biometric
+          - manual
+          - mobile
+          - system
+        description: |-
+          * `biometric` - Biometric Terminal
+          * `mobile` - Mobile GPS App
+          * `manual` - Manual Entry
+          * `system` - System Processed
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceEventList'
+          description: ''
+  /api/v1/attendance/events/{id}/:
+    get:
+      operationId: attendance_events_retrieve
+      description: Read-only audit stream of normalized attendance check-in/out events.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this attendance event.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceEvent'
+          description: ''
+  /api/v1/attendance/mobile-checkin/:
+    get:
+      operationId: attendance_mobile_checkin_list
+      description: Mobile app GPS-validated check-in intake.
+      parameters:
+      - in: query
+        name: is_within_geofence
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMobileCheckinList'
+          description: ''
+  /api/v1/attendance/mobile-checkin/{id}/:
+    get:
+      operationId: attendance_mobile_checkin_retrieve
+      description: Mobile app GPS-validated check-in intake.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this mobile checkin.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileCheckin'
+          description: ''
+  /api/v1/attendance/mobile-checkin/checkin/:
+    post:
+      operationId: attendance_mobile_checkin_checkin_create
+      description: Validate GPS coordinates and register mobile check-in event.
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileCheckin'
+          description: ''
+  /api/v1/attendance/periods/:
+    get:
+      operationId: attendance_periods_list
+      description: Subject and period-level classroom roll call.
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - absent
+          - excused
+          - late
+          - present
+        description: |-
+          * `present` - Present
+          * `late` - Late
+          * `absent` - Absent
+          * `excused` - Excused
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPeriodAttendanceList'
+          description: ''
+    post:
+      operationId: attendance_periods_create
+      description: Subject and period-level classroom roll call.
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeriodAttendance'
+          description: ''
+  /api/v1/attendance/periods/{id}/:
+    get:
+      operationId: attendance_periods_retrieve
+      description: Subject and period-level classroom roll call.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Period Attendance.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeriodAttendance'
+          description: ''
+    put:
+      operationId: attendance_periods_update
+      description: Subject and period-level classroom roll call.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Period Attendance.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeriodAttendance'
+          description: ''
+    patch:
+      operationId: attendance_periods_partial_update
+      description: Subject and period-level classroom roll call.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Period Attendance.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPeriodAttendanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPeriodAttendanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPeriodAttendanceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeriodAttendance'
+          description: ''
+    delete:
+      operationId: attendance_periods_destroy
+      description: Subject and period-level classroom roll call.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Period Attendance.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/attendance/periods/bulk-submit/:
+    post:
+      operationId: attendance_periods_bulk_submit_create
+      description: Bulk submission of subject period attendance by teacher.
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PeriodAttendanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeriodAttendance'
+          description: ''
+  /api/v1/attendance/policies/:
+    get:
+      operationId: attendance_policies_list
+      description: Manage institutional attendance policies and simulate outcomes.
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: shift
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum:
+          - all
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+          * `all` - All
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendancePolicyList'
+          description: ''
+    post:
+      operationId: attendance_policies_create
+      description: Manage institutional attendance policies and simulate outcomes.
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendancePolicy'
+          description: ''
+  /api/v1/attendance/policies/{id}/:
+    get:
+      operationId: attendance_policies_retrieve
+      description: Manage institutional attendance policies and simulate outcomes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Attendance Policy.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendancePolicy'
+          description: ''
+    put:
+      operationId: attendance_policies_update
+      description: Manage institutional attendance policies and simulate outcomes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Attendance Policy.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendancePolicy'
+          description: ''
+    patch:
+      operationId: attendance_policies_partial_update
+      description: Manage institutional attendance policies and simulate outcomes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Attendance Policy.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendancePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendancePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendancePolicyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendancePolicy'
+          description: ''
+    delete:
+      operationId: attendance_policies_destroy
+      description: Manage institutional attendance policies and simulate outcomes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Attendance Policy.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/attendance/policies/{id}/simulate/:
+    post:
+      operationId: attendance_policies_simulate_create
+      description: Dry-run policy evaluation on sample punch timestamps.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Attendance Policy.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendancePolicyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendancePolicy'
+          description: ''
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
@@ -11695,6 +12911,460 @@ components:
           default: ''
       required:
       - new_status
+    ApprovalStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending Approval
+        * `approved` - Approved
+        * `rejected` - Rejected
+    AttendanceCorrection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        daily_attendance:
+          type: string
+          format: uuid
+        target_date:
+          type: string
+          format: date
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        staff_name:
+          type: string
+          readOnly: true
+        requested_by:
+          type: string
+          format: uuid
+          readOnly: true
+        requested_by_name:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          description: Justification for attendance correction
+        status_before:
+          type: string
+          readOnly: true
+        status_after:
+          $ref: '#/components/schemas/StatusAfterEnum'
+        time_in_before:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        time_in_after:
+          type: string
+          format: date-time
+          nullable: true
+        time_out_before:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        time_out_after:
+          type: string
+          format: date-time
+          nullable: true
+        approval_status:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalStatusEnum'
+          readOnly: true
+        approved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        approved_by_name:
+          type: string
+          readOnly: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rejection_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approval_status
+      - approved_at
+      - approved_by
+      - approved_by_name
+      - created_at
+      - daily_attendance
+      - id
+      - institution
+      - reason
+      - requested_by
+      - requested_by_name
+      - staff_name
+      - status_after
+      - status_before
+      - student_name
+      - target_date
+      - time_in_before
+      - time_out_before
+      - updated_at
+    AttendanceCorrectionRequest:
+      type: object
+      properties:
+        daily_attendance:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          description: Justification for attendance correction
+        status_after:
+          $ref: '#/components/schemas/StatusAfterEnum'
+        time_in_after:
+          type: string
+          format: date-time
+          nullable: true
+        time_out_after:
+          type: string
+          format: date-time
+          nullable: true
+        rejection_reason:
+          type: string
+      required:
+      - daily_attendance
+      - reason
+      - status_after
+    AttendanceEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        user_type:
+          allOf:
+          - $ref: '#/components/schemas/UserType841Enum'
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/DirectionEnum'
+          readOnly: true
+        method:
+          type: string
+          readOnly: true
+        device:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        device_name:
+          type: string
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        is_processed:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - device
+      - device_name
+      - direction
+      - id
+      - institution
+      - is_processed
+      - method
+      - source
+      - staff
+      - staff_name
+      - student
+      - student_name
+      - timestamp
+      - user_type
+    AttendancePolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. 'Morning Shift Students', 'Teachers General'
+          maxLength: 150
+        user_type:
+          $ref: '#/components/schemas/UserTypeAb4Enum'
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        branch_name:
+          type: string
+          readOnly: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        shift_name:
+          type: string
+          readOnly: true
+        class_level:
+          type: string
+          format: uuid
+          nullable: true
+        class_name:
+          type: string
+          readOnly: true
+        start_time:
+          type: string
+          format: time
+          description: Official shift or school day start time
+        end_time:
+          type: string
+          format: time
+          description: Official shift or school day departure time
+        grace_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival within grace period is counted as on-time (e.g. 15
+            mins -> up to 08:15)
+        late_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival beyond grace up to this threshold is marked Late (e.g.
+            45 mins -> up to 08:45)
+        half_day_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival beyond late threshold up to this minute is marked Half
+            Day
+        early_leave_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Departure earlier than this threshold before end_time flags
+            early leave
+        min_work_duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Minimum total work duration for staff to count as full day
+            (e.g. 360 mins = 6 hours)
+        multi_punch_mode:
+          $ref: '#/components/schemas/MultiPunchModeEnum'
+        duplicate_window_seconds:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Window to suppress accidental double punches on terminal
+        allowed_methods:
+          description: Recognized authentication methods, e.g. ['fingerprint', 'face',
+            'rfid']
+        weekend_days:
+          description: 'Weekday integers: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat,
+            6=Sun'
+        geofence_latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          description: Campus GPS Latitude for mobile check-in
+        geofence_longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          description: Campus GPS Longitude for mobile check-in
+        geofence_radius_meters:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Allowable radius in meters around campus coordinates
+        version:
+          type: integer
+          readOnly: true
+        effective_from:
+          type: string
+          format: date
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch_name
+      - class_name
+      - created_at
+      - id
+      - institution
+      - name
+      - shift_name
+      - updated_at
+      - version
+    AttendancePolicyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. 'Morning Shift Students', 'Teachers General'
+          maxLength: 150
+        user_type:
+          $ref: '#/components/schemas/UserTypeAb4Enum'
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+          nullable: true
+        start_time:
+          type: string
+          format: time
+          description: Official shift or school day start time
+        end_time:
+          type: string
+          format: time
+          description: Official shift or school day departure time
+        grace_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival within grace period is counted as on-time (e.g. 15
+            mins -> up to 08:15)
+        late_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival beyond grace up to this threshold is marked Late (e.g.
+            45 mins -> up to 08:45)
+        half_day_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival beyond late threshold up to this minute is marked Half
+            Day
+        early_leave_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Departure earlier than this threshold before end_time flags
+            early leave
+        min_work_duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Minimum total work duration for staff to count as full day
+            (e.g. 360 mins = 6 hours)
+        multi_punch_mode:
+          $ref: '#/components/schemas/MultiPunchModeEnum'
+        duplicate_window_seconds:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Window to suppress accidental double punches on terminal
+        allowed_methods:
+          description: Recognized authentication methods, e.g. ['fingerprint', 'face',
+            'rfid']
+        weekend_days:
+          description: 'Weekday integers: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat,
+            6=Sun'
+        geofence_latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          description: Campus GPS Latitude for mobile check-in
+        geofence_longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          description: Campus GPS Longitude for mobile check-in
+        geofence_radius_meters:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Allowable radius in meters around campus coordinates
+        effective_from:
+          type: string
+          format: date
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - name
     AuthorizedPickup:
       type: object
       description: Serializer for authorized pickup persons.
@@ -12364,6 +14034,123 @@ components:
       required:
       - source_session_id
       - target_session_id
+    DailyAttendance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+          readOnly: true
+        user_type:
+          allOf:
+          - $ref: '#/components/schemas/UserType841Enum'
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        student_roll:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        staff_employee_id:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusC0dEnum'
+          readOnly: true
+        first_in:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        last_out:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        total_minutes:
+          type: integer
+          readOnly: true
+        minutes_late:
+          type: integer
+          readOnly: true
+        minutes_early_leave:
+          type: integer
+          readOnly: true
+        policy:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        policy_name:
+          type: string
+          readOnly: true
+        policy_version:
+          type: integer
+          readOnly: true
+        is_overridden:
+          type: boolean
+          readOnly: true
+        override_reason:
+          type: string
+          readOnly: true
+        remarks:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date
+      - first_in
+      - id
+      - institution
+      - is_overridden
+      - last_out
+      - minutes_early_leave
+      - minutes_late
+      - override_reason
+      - policy
+      - policy_name
+      - policy_version
+      - remarks
+      - staff
+      - staff_employee_id
+      - staff_name
+      - status
+      - student
+      - student_name
+      - student_roll
+      - total_minutes
+      - updated_at
+      - user_type
     Department:
       type: object
       description: Department master data serializer.
@@ -12860,6 +14647,16 @@ components:
       required:
       - device
       - device_user_id
+    DirectionEnum:
+      enum:
+      - in
+      - out
+      - auto
+      type: string
+      description: |-
+        * `in` - Check In
+        * `out` - Check Out
+        * `auto` - Auto Determine
     Family:
       type: object
       description: Serializer for Family households.
@@ -14074,6 +15871,87 @@ components:
         * `merit` - Selected (Merit)
         * `waiting` - Waiting List
         * `quota` - Selected (Quota)
+    MobileCheckin:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        user_name:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        accuracy_meters:
+          type: number
+          format: double
+          readOnly: true
+        is_within_geofence:
+          type: boolean
+          readOnly: true
+        geofence_distance_meters:
+          type: number
+          format: double
+          readOnly: true
+        selfie_image:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        device_info:
+          type: string
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        attendance_event:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - accuracy_meters
+      - attendance_event
+      - created_at
+      - device_info
+      - geofence_distance_meters
+      - id
+      - institution
+      - is_within_geofence
+      - latitude
+      - longitude
+      - selfie_image
+      - staff
+      - timestamp
+      - user
+      - user_name
     MpoStatusEnum:
       enum:
       - non_mpo
@@ -14084,6 +15962,16 @@ components:
         * `non_mpo` - Non-MPO
         * `mpo` - MPO
         * `partial_mpo` - Partial MPO
+    MultiPunchModeEnum:
+      enum:
+      - single
+      - entry_exit
+      - period_wise
+      type: string
+      description: |-
+        * `single` - Single Punch (Mark Present)
+        * `entry_exit` - First In & Last Out Duration
+        * `period_wise` - Period-Wise Classroom
     MyChildren:
       type: object
       description: Aggregated child detail view for logged-in guardians.
@@ -14369,6 +16257,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApplicationPayment'
+    PaginatedAttendanceCorrectionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceCorrection'
+    PaginatedAttendanceEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceEvent'
+    PaginatedAttendancePolicyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendancePolicy'
     PaginatedAuthorizedPickupList:
       type: object
       required:
@@ -14507,6 +16464,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ClassSubject'
+    PaginatedDailyAttendanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyAttendance'
     PaginatedDepartmentList:
       type: object
       required:
@@ -14852,6 +16832,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MeritList'
+    PaginatedMobileCheckinList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MobileCheckin'
     PaginatedMyChildrenList:
       type: object
       required:
@@ -14875,6 +16878,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MyChildren'
+    PaginatedPeriodAttendanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PeriodAttendance'
     PaginatedPeriodList:
       type: object
       required:
@@ -14898,6 +16924,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Period'
+    PaginatedPolicyAssignmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyAssignment'
     PaginatedPromotionBatchList:
       type: object
       required:
@@ -15562,6 +17611,127 @@ components:
           $ref: '#/components/schemas/StatusDf7Enum'
         notes:
           type: string
+    PatchedAttendanceCorrectionRequest:
+      type: object
+      properties:
+        daily_attendance:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          description: Justification for attendance correction
+        status_after:
+          $ref: '#/components/schemas/StatusAfterEnum'
+        time_in_after:
+          type: string
+          format: date-time
+          nullable: true
+        time_out_after:
+          type: string
+          format: date-time
+          nullable: true
+        rejection_reason:
+          type: string
+    PatchedAttendancePolicyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. 'Morning Shift Students', 'Teachers General'
+          maxLength: 150
+        user_type:
+          $ref: '#/components/schemas/UserTypeAb4Enum'
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+          nullable: true
+        start_time:
+          type: string
+          format: time
+          description: Official shift or school day start time
+        end_time:
+          type: string
+          format: time
+          description: Official shift or school day departure time
+        grace_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival within grace period is counted as on-time (e.g. 15
+            mins -> up to 08:15)
+        late_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival beyond grace up to this threshold is marked Late (e.g.
+            45 mins -> up to 08:45)
+        half_day_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Arrival beyond late threshold up to this minute is marked Half
+            Day
+        early_leave_threshold_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Departure earlier than this threshold before end_time flags
+            early leave
+        min_work_duration_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Minimum total work duration for staff to count as full day
+            (e.g. 360 mins = 6 hours)
+        multi_punch_mode:
+          $ref: '#/components/schemas/MultiPunchModeEnum'
+        duplicate_window_seconds:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Window to suppress accidental double punches on terminal
+        allowed_methods:
+          description: Recognized authentication methods, e.g. ['fingerprint', 'face',
+            'rfid']
+        weekend_days:
+          description: 'Weekday integers: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat,
+            6=Sun'
+        geofence_latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          description: Campus GPS Latitude for mobile check-in
+        geofence_longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+          description: Campus GPS Longitude for mobile check-in
+        geofence_radius_meters:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Allowable radius in meters around campus coordinates
+        effective_from:
+          type: string
+          format: date
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
     PatchedAuthorizedPickupRequest:
       type: object
       description: Serializer for authorized pickup persons.
@@ -16085,6 +18255,34 @@ components:
           minimum: 0
         gender_restriction:
           $ref: '#/components/schemas/GenderRestrictionEnum'
+    PatchedPeriodAttendanceRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        section:
+          type: string
+          format: uuid
+        routine_slot:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        student:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PeriodAttendanceStatusEnum'
+        remarks:
+          type: string
+          maxLength: 255
     PatchedPeriodRequest:
       type: object
       properties:
@@ -16110,6 +18308,35 @@ components:
         is_break:
           type: boolean
           description: True if this is a tiffin/prayer break
+    PatchedPolicyAssignmentRequest:
+      type: object
+      properties:
+        policy:
+          type: string
+          format: uuid
+        user_type:
+          $ref: '#/components/schemas/UserTypeAb4Enum'
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+          nullable: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Evaluation priority (higher number takes precedence)
     PatchedQuotaRuleRequest:
       type: object
       properties:
@@ -16618,6 +18845,122 @@ components:
       - shift_name
       - start_time
       - updated_at
+    PeriodAttendance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+        section:
+          type: string
+          format: uuid
+        section_name:
+          type: string
+          readOnly: true
+        routine_slot:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        subject_name:
+          type: string
+          readOnly: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        teacher_name:
+          type: string
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PeriodAttendanceStatusEnum'
+        remarks:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date
+      - id
+      - institution
+      - routine_slot
+      - section
+      - section_name
+      - student
+      - student_name
+      - subject
+      - subject_name
+      - teacher_name
+      - updated_at
+    PeriodAttendanceRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        section:
+          type: string
+          format: uuid
+        routine_slot:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        student:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PeriodAttendanceStatusEnum'
+        remarks:
+          type: string
+          maxLength: 255
+      required:
+      - date
+      - routine_slot
+      - section
+      - student
+      - subject
+    PeriodAttendanceStatusEnum:
+      enum:
+      - present
+      - late
+      - absent
+      - excused
+      type: string
+      description: |-
+        * `present` - Present
+        * `late` - Late
+        * `absent` - Absent
+        * `excused` - Excused
     PeriodRequest:
       type: object
       properties:
@@ -16659,6 +19002,95 @@ components:
         * `web` - Web Dashboard
         * `android` - Android App
         * `ios` - iOS App
+    PolicyAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        policy:
+          type: string
+          format: uuid
+        policy_name:
+          type: string
+          readOnly: true
+        user_type:
+          $ref: '#/components/schemas/UserTypeAb4Enum'
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        branch_name:
+          type: string
+          readOnly: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        shift_name:
+          type: string
+          readOnly: true
+        class_level:
+          type: string
+          format: uuid
+          nullable: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Evaluation priority (higher number takes precedence)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch_name
+      - created_at
+      - id
+      - institution
+      - policy
+      - policy_name
+      - shift_name
+    PolicyAssignmentRequest:
+      type: object
+      properties:
+        policy:
+          type: string
+          format: uuid
+        user_type:
+          $ref: '#/components/schemas/UserTypeAb4Enum'
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+          nullable: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        priority:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Evaluation priority (higher number takes precedence)
+      required:
+      - policy
     PreviousSchool:
       type: object
       properties:
@@ -17715,6 +20147,18 @@ components:
       - branch
       - end_time
       - start_time
+    SourceEnum:
+      enum:
+      - biometric
+      - mobile
+      - manual
+      - system
+      type: string
+      description: |-
+        * `biometric` - Biometric Terminal
+        * `mobile` - Mobile GPS App
+        * `manual` - Manual Entry
+        * `system` - System Processed
     StaffCreateUpdate:
       type: object
       description: Full serialization for staff profile onboarding and mutation.
@@ -18223,6 +20667,24 @@ components:
         * `resigned` - Resigned
         * `terminated` - Terminated
         * `retired` - Retired
+    StatusAfterEnum:
+      enum:
+      - present
+      - late
+      - absent
+      - half_day
+      - leave
+      - holiday
+      - weekend
+      type: string
+      description: |-
+        * `present` - Present (উপস্থিত)
+        * `late` - Late (বিলম্বিত)
+        * `absent` - Absent (অনুপস্থিত)
+        * `half_day` - Half Day (অর্ধদিবস)
+        * `leave` - On Leave (ছুটি)
+        * `holiday` - Holiday (ছুটির দিন)
+        * `weekend` - Weekend (সাপ্তাহিক ছুটি)
     StatusB32Enum:
       enum:
       - active
@@ -18239,6 +20701,24 @@ components:
         * `graduated` - Graduated
         * `alumni` - Alumni
         * `suspended` - Suspended
+    StatusC0dEnum:
+      enum:
+      - present
+      - late
+      - absent
+      - half_day
+      - leave
+      - holiday
+      - weekend
+      type: string
+      description: |-
+        * `present` - Present (উপস্থিত)
+        * `late` - Late (বিলম্বিত)
+        * `absent` - Absent (অনুপস্থিত)
+        * `half_day` - Half Day (অর্ধদিবস)
+        * `leave` - On Leave (ছুটি)
+        * `holiday` - Holiday (ছুটির দিন)
+        * `weekend` - Weekend (সাপ্তাহিক ছুটি)
     StatusDf7Enum:
       enum:
       - draft
@@ -19802,6 +22282,16 @@ components:
         * `guardian` - Guardian
         * `driver` - Driver
         * `security` - Security
+    UserTypeAb4Enum:
+      enum:
+      - student
+      - staff
+      - all
+      type: string
+      description: |-
+        * `student` - Student
+        * `staff` - Staff
+        * `all` - All
     VerifyPickupOTPActionRequest:
       type: object
       description: Payload to verify OTP for authorized pickup.

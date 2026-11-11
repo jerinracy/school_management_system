@@ -165,6 +165,24 @@ class Branch(TenantOwnedModel):
     code = models.CharField(max_length=50, help_text="Short unique branch code (e.g. MAIN, DHAN)")
     address = models.TextField(blank=True)
     is_main = models.BooleanField(default=False)
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Campus GPS Latitude for mobile geofenced check-in",
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Campus GPS Longitude for mobile geofenced check-in",
+    )
+    geofence_radius_meters = models.PositiveIntegerField(
+        default=100,
+        help_text="Geofence check-in perimeter radius in meters",
+    )
 
     class Meta:
         ordering = ["code"]

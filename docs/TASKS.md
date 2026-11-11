@@ -17,7 +17,7 @@ Legend:
 | **Task 07** | Guardian Portal & Student-Guardian Relationship | DONE | Task 03, Task 06 | 2026-11-11 |
 | **Task 08** | Staff & HR Management (Teachers, Employees, Designations) | DONE | Task 02, Task 03 | 2026-11-11 |
 | **Task 09** | Biometric Device Management & Raw Punch Intake | DONE | Task 01, Task 08 | 2026-11-11 |
-| **Task 10** | Attendance Engine (Daily Processing, Shifts, Leaves) | TODO | Task 06, Task 08, Task 09 | - |
+| **Task 10** | Attendance Engine (Daily Processing, Shifts, Leaves) | DONE | Task 06, Task 08, Task 09 | 2026-11-11 |
 | **Task 11** | Exam Setup & Mark Entry | TODO | Task 04 | - |
 | **Task 12** | Grading Engine (GPA 5.0, BD National Curriculum) | TODO | Task 11 | - |
 | **Task 13** | Report Card Generation & Tabulation Sheet | TODO | Task 12 | - |

@@ -52,6 +52,7 @@ LOCAL_APPS = [
     "apps.guardians.apps.GuardiansConfig",
     "apps.staff.apps.StaffConfig",
     "apps.devices.apps.DevicesConfig",
+    "apps.attendance.apps.AttendanceConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

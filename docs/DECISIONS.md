@@ -176,3 +176,19 @@
   - **Native ADMS Protocol Support**: Standard ZKTeco endpoints are served directly at the root (`/iclock/cdata`, `/iclock/getrequest`, `/iclock/devicecmd`), allowing out-of-the-box hardware terminal configuration without reverse proxy rewrites.
 - **Consequences**:
   - Full compliance with child biometric privacy standards, complete hardware vendor neutrality, resilient intake capable of handling hardware buffer bursts, and an auditable queue for terminal administration.
+
+---
+
+## ADR-012: Attendance Rule Engine, Multi-Punch Normalization & Geofenced Mobile Check-in
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: Bangladeshi schools operate under heterogeneous attendance policies: primary shifts vs secondary morning/day shifts, strict grace minutes (e.g. 15 min), late vs half-day thresholds, early departure monitoring, teacher subject-wise roll calls, and mobile field check-ins for transport/support staff. Furthermore, hardware punch streams from Task 09 can produce rapid multi-taps within seconds, and end-of-day absentee reconciliation must reliably respect institutional holidays, Friday/Saturday weekends, and approved staff leave.
+- **Decision**:
+  - **Pure Deterministic Rule Engine**: The core business logic (`evaluate_daily_status()`) is implemented as a pure Python function without database side effects. Given a sequence of events and a policy, it deterministically computes status (`present`, `late`, `half_day`, `absent`, `holiday`, `weekend`, `leave`), arrival delay, early leave, and total working minutes.
+  - **Multi-Punch Deduplication & Batch Window**: `PunchProcessor` deduplicates punches within a 60-second window across both current in-flight batch buffers and persisted `AttendanceEvent` records before triggering daily recalculations.
+  - **Hierarchical Policy Resolution**: `resolve_effective_policy()` determines the applicable policy by searching in priority order: Class Level > Shift > Branch > Default Institution Policy.
+  - **Server-Side Haversine Geofencing**: Mobile check-ins calculate the great-circle distance between staff GPS coordinates and the branch campus anchor. Check-ins outside the configured radius are logged with distance and verification metadata, but denied automatic check-in event generation.
+  - **Asynchronous EOD Absentee Processing**: Celery tasks decouple long-running end-of-day roll evaluation (`mark_daily_absentees_task`) from web request lifecycles.
+  - **Formal Correction Workflow**: Discrepancies in attendance records require a structured `AttendanceCorrection` request with change audit tracking and administrative approval/rejection.
+- **Consequences**:
+  - Predictable, unit-testable attendance status resolution; immune to duplicate punch storms; robust multi-shift institutional flexibility; and full auditability of manual interventions.
