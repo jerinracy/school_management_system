@@ -192,3 +192,24 @@
   - **Formal Correction Workflow**: Discrepancies in attendance records require a structured `AttendanceCorrection` request with change audit tracking and administrative approval/rejection.
 - **Consequences**:
   - Predictable, unit-testable attendance status resolution; immune to duplicate punch storms; robust multi-shift institutional flexibility; and full auditability of manual interventions.
+
+---
+
+## ADR-013: Examination Lifecycle, Component Mark Schema, Algorithmic Seating & TrueType Admit Cards
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**:
+  - Bangladeshi secondary and higher-secondary examinations require structured mark distribution across distinct components (Creative Question / Written, Multiple Choice Question, and Practical).
+  - Passing rules vary: some subjects require passing each component independently, others enforce an overall aggregate threshold, and some separate theory from practical.
+  - Exam administration demands automated seating arrangements (including cross-class interleaving to curb malpractices), TrueType bilingual Bangla admit cards with student particulars and routine schedules, rigorous teacher mark-entry authorization, lock/unlock mechanics, and offline bulk mark entry via Excel spreadsheets.
+- **Decision**:
+  - **Component-Level Mark Schema**: `ExamSubject` explicitly defines maximum and passing marks for CQ, MCQ, and Practical, along with the `pass_policy` (`all_components`, `overall_aggregate`, `theory_practical_separate`).
+  - **Teacher Authorization & Lock Mechanism**: Mark entry is restricted to assigned subject teachers or institutional administrators. Once marked as `is_locked`, entries cannot be modified without formal unlock authorization by head teachers / administrators.
+  - **Audit Trail via MarkEntryLog**: Every creation and modification of student scores creates an immutable `MarkEntryLog` capturing previous scores, new scores, the submitting user, IP address, and change rationale.
+  - **Cross-Class Interleaved Seating**: The seating algorithm partitions students by class/section and alternates seats across benches in examination venues, optimizing space while minimizing adjacent peers from the same class.
+  - **TrueType Bangla PDF Generation**: Admit cards are generated via ReportLab using embedded TrueType `Kalpurush.ttf`, rendering Bengali typography (student name, institution header, rules, and exam routine table) cleanly without missing glyphs.
+  - **Excel Bulk Mark Entry**: In-memory Excel workbook generation and parsing via `openpyxl` allows teachers to download prepopulated student roll sheets, enter marks offline, and upload them with per-row validation and error feedback.
+- **Consequences**:
+  - Complete alignment with Bangladesh National Curriculum examinations.
+  - High resilience against unauthorized mark alterations, backed by non-repudiation audit trails.
+  - Streamlined exam day administration with automated admit cards and fraud-resistant seat plans.

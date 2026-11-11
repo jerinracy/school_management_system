@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 11**: Exam Setup & Mark Entry (`apps/exams`).
+  - Core Models:
+    - `ExamType`: Institutional exam categories (Term, Class Test, Model Test, Final, Send-Up, Board Mock) with weightage for final grade compilation.
+    - `Exam`: Term-bound examination cycle with registration deadlines, date windows, multi-class assignment, and strict status progression (`draft`, `scheduled`, `in_progress`, `marks_entry`, `tabulating`, `published`, `archived`).
+    - `ExamSubject`: Subject-level exam specifications with maximum/pass mark definitions for CQ (creative/written), MCQ, and practical components, pass policy (`all_components`, `overall_aggregate`, `theory_practical_separate`), full paper marks, and combined 1st/2nd paper grouping.
+    - `ExamRoutine`: Schedule slots per exam subject with date, start/end time, room/venue assignment, invigilators, and instructions.
+    - `ExamEligibilityPolicy`: Rules-based student eligibility criteria (minimum attendance percentage, clearance of fee dues).
+    - `StudentExamEligibility`: Evaluated eligibility records per student with clearance flags, override capabilities, and automated admit card issuance.
+    - `AdmitCard`: Unique barcoded/numbered examination hall pass linked to eligible students, including download timestamps.
+    - `SeatPlan`: Physical seating allocations linking student, room, bench number, and seat position with support for cross-class interleaving.
+    - `MarkEntry`: Fine-grained student mark records storing creative, mcq, and practical score components, total calculated marks, absent/withheld flags, and lock state.
+    - `MarkEntryLog`: Full audit trail recording all mark entry and modification events, old/new score snapshots, user, IP, and reason.
+    - `GraceMarkRule`: Institutional policy for borderline grade/pass grace mark allocation.
+    - `ReScrutinyRequest`: Formal student/guardian re-scrutiny workflow tracking requested subjects, payment status, review outcome, and mark revisions.
+  - Service Layer (`apps/exams/services`):
+    - `eligibility_service.py`: Automated student eligibility evaluator computing attendance percentage against `DailyAttendance` records, verifying fee clearance hooks, and issuing admit cards.
+    - `seat_plan_service.py`: Algorithmic seat plan generator supporting sequential seating and cross-class/cross-section interleaving to prevent cheating.
+    - `admit_card_service.py`: TrueType Bangla PDF generator using ReportLab and `Kalpurush.ttf` producing hall passes with exam routine schedule, student details, and signature blocks.
+    - `mark_entry_service.py`: Mark entry engine with component-level score validation, teacher assignment permission verification, single/bulk entry saves, lock/unlock workflow, audit trail logging, and openpyxl-powered Excel template export/import.
+  - REST API ViewSets (`apps/exams/views.py`):
+    - `ExamTypeViewSet` & `ExamViewSet`: Lifecycle management, routine generation, seat planning, and admit card generation.
+    - `ExamSubjectViewSet`: Mark entry progress tracking, teacher authorization check, bulk mark saving, locking, and unlocking.
+    - `ExamRoutineViewSet`, `SeatPlanViewSet`, `AdmitCardViewSet`: CRUD and PDF download endpoints.
+    - `MarkEntryViewSet`: Entry querying, Excel template export, and spreadsheet import.
+    - `ReScrutinyRequestViewSet` & `GraceMarkRuleViewSet`: Administrative re-scrutiny and grace mark review.
 - **Task 10**: Attendance Engine & Configurable Rules (`apps/attendance`).
   - Core Models:
     - `AttendancePolicy`: Granular, versioned attendance rule configuration supporting shift/branch/class scoping, flexible start/end times, on-time grace minutes, late/half-day thresholds, early leave threshold, minimum work duration for staff, multi-punch modes (`first_last`, `every_pair`, `single`), and configurable Friday/Saturday weekend defaults.

@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/v1/staff/", include("apps.staff.urls", namespace="v1_staff")),
     path("api/v1/devices/", include("apps.devices.urls", namespace="v1_devices")),
     path("api/v1/attendance/", include("apps.attendance.urls", namespace="v1_attendance")),
+    path("api/v1/exams/", include("apps.exams.urls", namespace="v1_exams")),
     # Direct root-level routes for physical ZKTeco ADMS hardware terminals
     path("iclock/", include("apps.devices.urls_adms")),
     # OpenAPI Schema

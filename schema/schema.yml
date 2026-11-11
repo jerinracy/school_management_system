@@ -7669,6 +7669,2065 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/exams/admit-cards/:
+    get:
+      operationId: exams_admit_cards_list
+      description: Admit card inspection and PDF generation.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_issued
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdmitCardList'
+          description: ''
+  /api/v1/exams/admit-cards/{id}/:
+    get:
+      operationId: exams_admit_cards_retrieve
+      description: Admit card inspection and PDF generation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Admit Card.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdmitCard'
+          description: ''
+  /api/v1/exams/admit-cards/{id}/download_pdf/:
+    get:
+      operationId: exams_admit_cards_download_pdf_retrieve
+      description: Download high-resolution Bangla Admit Card PDF.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Admit Card.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdmitCard'
+          description: ''
+  /api/v1/exams/eligibilities/:
+    get:
+      operationId: exams_eligibilities_list
+      description: Read-only and clearance update endpoints for student exam qualifications.
+      parameters:
+      - in: query
+        name: clearance_status
+        schema:
+          type: string
+          enum:
+          - cleared_by_principal
+          - disqualified
+          - eligible
+          - non_collegiate
+        description: |-
+          * `eligible` - Regular Eligible
+          * `non_collegiate` - Non-Collegiate (Attendance 60-74%)
+          * `disqualified` - Disqualified (Attendance <60% or Dues)
+          * `cleared_by_principal` - Cleared by Special Permission
+      - in: query
+        name: dues_cleared
+        schema:
+          type: boolean
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentExamEligibilityList'
+          description: ''
+  /api/v1/exams/eligibilities/{id}/:
+    get:
+      operationId: exams_eligibilities_retrieve
+      description: Read-only and clearance update endpoints for student exam qualifications.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Student Exam Eligibility.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentExamEligibility'
+          description: ''
+  /api/v1/exams/exams/:
+    get:
+      operationId: exams_exams_list
+      description: 'Examination lifecycle management: scheduling, eligibility, seat
+        planning, progress.'
+      parameters:
+      - in: query
+        name: exam_type
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - draft
+          - in_progress
+          - locked
+          - marking
+          - published
+          - scheduled
+        description: |-
+          * `draft` - Draft
+          * `scheduled` - Scheduled
+          * `in_progress` - In Progress
+          * `marking` - Marking
+          * `locked` - Locked
+          * `published` - Published
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExamList'
+          description: ''
+    post:
+      operationId: exams_exams_create
+      description: 'Examination lifecycle management: scheduling, eligibility, seat
+        planning, progress.'
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/exams/{id}/:
+    get:
+      operationId: exams_exams_retrieve
+      description: 'Examination lifecycle management: scheduling, eligibility, seat
+        planning, progress.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+    put:
+      operationId: exams_exams_update
+      description: 'Examination lifecycle management: scheduling, eligibility, seat
+        planning, progress.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+    patch:
+      operationId: exams_exams_partial_update
+      description: 'Examination lifecycle management: scheduling, eligibility, seat
+        planning, progress.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExamRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+    delete:
+      operationId: exams_exams_destroy
+      description: 'Examination lifecycle management: scheduling, eligibility, seat
+        planning, progress.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/exams/{id}/generate_admit_cards/:
+    post:
+      operationId: exams_exams_generate_admit_cards_create
+      description: Issue Admit Cards for all eligible students.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/exams/{id}/generate_eligibility/:
+    post:
+      operationId: exams_exams_generate_eligibility_create
+      description: Calculate student attendance percentages and evaluate exam eligibility.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/exams/{id}/generate_seat_plans/:
+    post:
+      operationId: exams_exams_generate_seat_plans_create
+      description: Generate room and bench seat allocations for students.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/exams/{id}/progress/:
+    get:
+      operationId: exams_exams_progress_retrieve
+      description: Track mark entry progress across subjects in this exam.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Examination.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/grace-rules/:
+    get:
+      operationId: exams_grace_rules_list
+      description: Institutional rules for awarding grace marks.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGraceMarkRuleList'
+          description: ''
+    post:
+      operationId: exams_grace_rules_create
+      description: Institutional rules for awarding grace marks.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraceMarkRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GraceMarkRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GraceMarkRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraceMarkRule'
+          description: ''
+  /api/v1/exams/grace-rules/{id}/:
+    get:
+      operationId: exams_grace_rules_retrieve
+      description: Institutional rules for awarding grace marks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grace Mark Rule.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraceMarkRule'
+          description: ''
+    put:
+      operationId: exams_grace_rules_update
+      description: Institutional rules for awarding grace marks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grace Mark Rule.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GraceMarkRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GraceMarkRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GraceMarkRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraceMarkRule'
+          description: ''
+    patch:
+      operationId: exams_grace_rules_partial_update
+      description: Institutional rules for awarding grace marks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grace Mark Rule.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGraceMarkRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGraceMarkRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGraceMarkRuleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraceMarkRule'
+          description: ''
+    delete:
+      operationId: exams_grace_rules_destroy
+      description: Institutional rules for awarding grace marks.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grace Mark Rule.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/mark-entries/:
+    get:
+      operationId: exams_mark_entries_list
+      description: Examination mark entry, bulk grid intake, locking, and Excel sync.
+      parameters:
+      - in: query
+        name: exam_subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_absent
+        schema:
+          type: boolean
+      - in: query
+        name: is_locked
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMarkEntryList'
+          description: ''
+    post:
+      operationId: exams_mark_entries_create
+      description: Examination mark entry, bulk grid intake, locking, and Excel sync.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/mark-entries/{id}/:
+    get:
+      operationId: exams_mark_entries_retrieve
+      description: Examination mark entry, bulk grid intake, locking, and Excel sync.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Mark Entry.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+    put:
+      operationId: exams_mark_entries_update
+      description: Examination mark entry, bulk grid intake, locking, and Excel sync.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Mark Entry.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+    patch:
+      operationId: exams_mark_entries_partial_update
+      description: Examination mark entry, bulk grid intake, locking, and Excel sync.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Mark Entry.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMarkEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMarkEntryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+    delete:
+      operationId: exams_mark_entries_destroy
+      description: Examination mark entry, bulk grid intake, locking, and Excel sync.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Mark Entry.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/mark-entries/bulk_save/:
+    post:
+      operationId: exams_mark_entries_bulk_save_create
+      description: Batch intake of student marks from UI table.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/mark-entries/export_template/:
+    get:
+      operationId: exams_mark_entries_export_template_retrieve
+      description: Download pre-filled Excel roll sheet for offline mark entry.
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/mark-entries/import_excel/:
+    post:
+      operationId: exams_mark_entries_import_excel_create
+      description: Upload and process filled marks Excel spreadsheet.
+      tags:
+      - exams
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/mark-entries/lock/:
+    post:
+      operationId: exams_mark_entries_lock_create
+      description: Lock an ExamSubject to freeze teacher submissions.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/mark-entries/unlock/:
+    post:
+      operationId: exams_mark_entries_unlock_create
+      description: Administratively unlock an ExamSubject with audit justification.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/policies/:
+    get:
+      operationId: exams_policies_list
+      description: Attendance and fees eligibility threshold policies.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExamEligibilityPolicyList'
+          description: ''
+    post:
+      operationId: exams_policies_create
+      description: Attendance and fees eligibility threshold policies.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamEligibilityPolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamEligibilityPolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamEligibilityPolicyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamEligibilityPolicy'
+          description: ''
+  /api/v1/exams/policies/{id}/:
+    get:
+      operationId: exams_policies_retrieve
+      description: Attendance and fees eligibility threshold policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Eligibility Policy.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamEligibilityPolicy'
+          description: ''
+    put:
+      operationId: exams_policies_update
+      description: Attendance and fees eligibility threshold policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Eligibility Policy.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamEligibilityPolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamEligibilityPolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamEligibilityPolicyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamEligibilityPolicy'
+          description: ''
+    patch:
+      operationId: exams_policies_partial_update
+      description: Attendance and fees eligibility threshold policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Eligibility Policy.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExamEligibilityPolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExamEligibilityPolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExamEligibilityPolicyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamEligibilityPolicy'
+          description: ''
+    delete:
+      operationId: exams_policies_destroy
+      description: Attendance and fees eligibility threshold policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Eligibility Policy.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/rescrutiny/:
+    get:
+      operationId: exams_rescrutiny_list
+      description: Student and guardian mark re-evaluation requests.
+      parameters:
+      - in: query
+        name: exam_subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: fee_paid
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - pending
+          - rejected
+          - reviewed
+        description: |-
+          * `pending` - Pending Review
+          * `reviewed` - Reviewed (No Change)
+          * `approved` - Approved (Marks Changed)
+          * `rejected` - Rejected
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReScrutinyRequestList'
+          description: ''
+    post:
+      operationId: exams_rescrutiny_create
+      description: Student and guardian mark re-evaluation requests.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReScrutinyRequest'
+          description: ''
+  /api/v1/exams/rescrutiny/{id}/:
+    get:
+      operationId: exams_rescrutiny_retrieve
+      description: Student and guardian mark re-evaluation requests.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Re-Scrutiny Request.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReScrutinyRequest'
+          description: ''
+    put:
+      operationId: exams_rescrutiny_update
+      description: Student and guardian mark re-evaluation requests.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Re-Scrutiny Request.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReScrutinyRequest'
+          description: ''
+    patch:
+      operationId: exams_rescrutiny_partial_update
+      description: Student and guardian mark re-evaluation requests.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Re-Scrutiny Request.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReScrutinyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReScrutinyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReScrutinyRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReScrutinyRequest'
+          description: ''
+    delete:
+      operationId: exams_rescrutiny_destroy
+      description: Student and guardian mark re-evaluation requests.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Re-Scrutiny Request.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/rescrutiny/{id}/review/:
+    post:
+      operationId: exams_rescrutiny_review_create
+      description: Administrative decision on mark re-scrutiny.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Re-Scrutiny Request.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReScrutinyRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReScrutinyRequest'
+          description: ''
+  /api/v1/exams/routines/:
+    get:
+      operationId: exams_routines_list
+      description: Exam schedule and timetable.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: exam_subject
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExamRoutineList'
+          description: ''
+    post:
+      operationId: exams_routines_create
+      description: Exam schedule and timetable.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRoutineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRoutineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRoutineRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamRoutine'
+          description: ''
+  /api/v1/exams/routines/{id}/:
+    get:
+      operationId: exams_routines_retrieve
+      description: Exam schedule and timetable.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Routine.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamRoutine'
+          description: ''
+    put:
+      operationId: exams_routines_update
+      description: Exam schedule and timetable.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Routine.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamRoutineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamRoutineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamRoutineRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamRoutine'
+          description: ''
+    patch:
+      operationId: exams_routines_partial_update
+      description: Exam schedule and timetable.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Routine.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExamRoutineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExamRoutineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExamRoutineRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamRoutine'
+          description: ''
+    delete:
+      operationId: exams_routines_destroy
+      description: Exam schedule and timetable.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Routine.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/seat-plans/:
+    get:
+      operationId: exams_seat_plans_list
+      description: Seating arrangement inspection.
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam_subject
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: room_number
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSeatPlanList'
+          description: ''
+  /api/v1/exams/seat-plans/{id}/:
+    get:
+      operationId: exams_seat_plans_retrieve
+      description: Seating arrangement inspection.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Seat Plan.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatPlan'
+          description: ''
+  /api/v1/exams/subjects/:
+    get:
+      operationId: exams_subjects_list
+      description: CRUD for exam-specific subject configurations, pass marks, and
+        assigned evaluators.
+      parameters:
+      - in: query
+        name: assigned_teacher
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_marks_locked
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExamSubjectList'
+          description: ''
+    post:
+      operationId: exams_subjects_create
+      description: CRUD for exam-specific subject configurations, pass marks, and
+        assigned evaluators.
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamSubjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamSubjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamSubjectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamSubject'
+          description: ''
+  /api/v1/exams/subjects/{id}/:
+    get:
+      operationId: exams_subjects_retrieve
+      description: CRUD for exam-specific subject configurations, pass marks, and
+        assigned evaluators.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Subject.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamSubject'
+          description: ''
+    put:
+      operationId: exams_subjects_update
+      description: CRUD for exam-specific subject configurations, pass marks, and
+        assigned evaluators.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Subject.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamSubjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamSubjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamSubjectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamSubject'
+          description: ''
+    patch:
+      operationId: exams_subjects_partial_update
+      description: CRUD for exam-specific subject configurations, pass marks, and
+        assigned evaluators.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Subject.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExamSubjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExamSubjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExamSubjectRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamSubject'
+          description: ''
+    delete:
+      operationId: exams_subjects_destroy
+      description: CRUD for exam-specific subject configurations, pass marks, and
+        assigned evaluators.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Subject.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exams/types/:
+    get:
+      operationId: exams_types_list
+      description: CRUD for institutional exam types (Half-Yearly, Final, Model Test).
+      parameters:
+      - in: query
+        name: is_board_exam
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExamTypeList'
+          description: ''
+    post:
+      operationId: exams_types_create
+      description: CRUD for institutional exam types (Half-Yearly, Final, Model Test).
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamType'
+          description: ''
+  /api/v1/exams/types/{id}/:
+    get:
+      operationId: exams_types_retrieve
+      description: CRUD for institutional exam types (Half-Yearly, Final, Model Test).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Type.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamType'
+          description: ''
+    put:
+      operationId: exams_types_update
+      description: CRUD for institutional exam types (Half-Yearly, Final, Model Test).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Type.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamType'
+          description: ''
+    patch:
+      operationId: exams_types_partial_update
+      description: CRUD for institutional exam types (Half-Yearly, Final, Model Test).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Type.
+        required: true
+      tags:
+      - exams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExamTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExamTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExamTypeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamType'
+          description: ''
+    delete:
+      operationId: exams_types_destroy
+      description: CRUD for institutional exam types (Half-Yearly, Final, Model Test).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Type.
+        required: true
+      tags:
+      - exams
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/guardians/families/:
     get:
       operationId: guardians_families_list
@@ -12453,6 +14512,53 @@ components:
       - application
       - marks_obtained
       - test
+    AdmitCard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_name:
+          type: string
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          readOnly: true
+        student_name_en:
+          type: string
+          readOnly: true
+        student_name_bn:
+          type: string
+          readOnly: true
+        card_number:
+          type: string
+          maxLength: 60
+        issue_date:
+          type: string
+          format: date
+        is_issued:
+          type: boolean
+        generated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - card_number
+      - exam
+      - exam_name
+      - generated_at
+      - id
+      - student
+      - student_id
+      - student_name_bn
+      - student_name_en
     Application:
       type: object
       properties:
@@ -13990,6 +16096,18 @@ components:
       - group
       - session
       - subject
+    ClearanceStatusEnum:
+      enum:
+      - eligible
+      - non_collegiate
+      - disqualified
+      - cleared_by_principal
+      type: string
+      description: |-
+        * `eligible` - Regular Eligible
+        * `non_collegiate` - Non-Collegiate (Attendance 60-74%)
+        * `disqualified` - Disqualified (Attendance <60% or Dues)
+        * `cleared_by_principal` - Cleared by Special Permission
     CommandTypeEnum:
       enum:
       - enroll_user
@@ -14657,6 +16775,552 @@ components:
         * `in` - Check In
         * `out` - Check Out
         * `auto` - Auto Determine
+    Exam:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam_type:
+          type: string
+          format: uuid
+        exam_type_name:
+          type: string
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: Full exam title (e.g. Annual Examination 2026)
+          maxLength: 150
+        term:
+          type: string
+          description: Term or Semester name
+          maxLength: 50
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        weightage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Percentage weightage contributing to final annual evaluation
+            (0-100%)
+        status:
+          $ref: '#/components/schemas/ExamStatusEnum'
+        target_classes:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Class levels participating in this exam
+        publish_date:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+        exam_subjects_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - exam_subjects_count
+      - exam_type
+      - exam_type_name
+      - id
+      - name
+      - session
+      - session_name
+      - start_date
+      - updated_at
+    ExamEligibilityPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+          nullable: true
+          description: If null, represents institution-wide default exam eligibility
+            policy
+        min_attendance_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Standard attendance percentage for regular eligibility (default
+            75%)
+        non_collegiate_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Minimum attendance percentage for non-collegiate consideration
+            (default 60%)
+        allow_non_collegiate:
+          type: boolean
+          description: Allow students with 60-74% attendance with penalty fee or principal
+            approval
+        require_fee_clearance:
+          type: boolean
+          description: Require clearance of tuition/exam fees before issuing admit
+            cards
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - updated_at
+    ExamEligibilityPolicyRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+          nullable: true
+          description: If null, represents institution-wide default exam eligibility
+            policy
+        min_attendance_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Standard attendance percentage for regular eligibility (default
+            75%)
+        non_collegiate_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Minimum attendance percentage for non-collegiate consideration
+            (default 60%)
+        allow_non_collegiate:
+          type: boolean
+          description: Allow students with 60-74% attendance with penalty fee or principal
+            approval
+        require_fee_clearance:
+          type: boolean
+          description: Require clearance of tuition/exam fees before issuing admit
+            cards
+    ExamRequest:
+      type: object
+      properties:
+        exam_type:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          description: Full exam title (e.g. Annual Examination 2026)
+          maxLength: 150
+        term:
+          type: string
+          description: Term or Semester name
+          maxLength: 50
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        weightage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Percentage weightage contributing to final annual evaluation
+            (0-100%)
+        status:
+          $ref: '#/components/schemas/ExamStatusEnum'
+        target_classes:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Class levels participating in this exam
+        publish_date:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - end_date
+      - exam_type
+      - name
+      - session
+      - start_date
+    ExamRoutine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_subject:
+          type: string
+          format: uuid
+        subject_name_en:
+          type: string
+          readOnly: true
+        class_level_name:
+          type: string
+          readOnly: true
+        exam_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        room_number:
+          type: string
+          maxLength: 50
+        instructions:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level_name
+      - created_at
+      - end_time
+      - exam
+      - exam_date
+      - exam_subject
+      - id
+      - start_time
+      - subject_name_en
+      - updated_at
+    ExamRoutineRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        exam_subject:
+          type: string
+          format: uuid
+        exam_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        room_number:
+          type: string
+          maxLength: 50
+        instructions:
+          type: string
+      required:
+      - end_time
+      - exam
+      - exam_date
+      - exam_subject
+      - start_time
+    ExamStatusEnum:
+      enum:
+      - draft
+      - scheduled
+      - in_progress
+      - marking
+      - locked
+      - published
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `scheduled` - Scheduled
+        * `in_progress` - In Progress
+        * `marking` - Marking
+        * `locked` - Locked
+        * `published` - Published
+    ExamSubject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        class_level_name:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          format: uuid
+        subject_name_en:
+          type: string
+          readOnly: true
+        subject_code:
+          type: string
+          readOnly: true
+        exam_date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        room:
+          type: string
+          maxLength: 100
+        full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        creative_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Creative / Written (CQ) max marks
+        creative_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        mcq_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Multiple Choice (MCQ) max marks
+        mcq_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        practical_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Practical exam max marks (if applicable)
+        practical_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        is_combined_paper:
+          type: boolean
+          description: True if this subject is evaluated jointly with another paper
+        combined_with:
+          type: string
+          format: uuid
+          nullable: true
+          description: Paired subject paper for combined pass determination
+        assigned_teacher:
+          type: string
+          format: uuid
+          nullable: true
+          description: Staff/Teacher authorized to enter and review marks
+        assigned_teacher_name:
+          type: string
+          readOnly: true
+        is_marks_locked:
+          type: boolean
+          readOnly: true
+          description: Locked once entry closes; requires admin authorization to unlock
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_teacher_name
+      - class_level
+      - class_level_name
+      - created_at
+      - exam
+      - id
+      - is_marks_locked
+      - subject
+      - subject_code
+      - subject_name_en
+      - updated_at
+    ExamSubjectRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        exam_date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        room:
+          type: string
+          maxLength: 100
+        full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        creative_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Creative / Written (CQ) max marks
+        creative_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        mcq_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Multiple Choice (MCQ) max marks
+        mcq_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        practical_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Practical exam max marks (if applicable)
+        practical_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        is_combined_paper:
+          type: boolean
+          description: True if this subject is evaluated jointly with another paper
+        combined_with:
+          type: string
+          format: uuid
+          nullable: true
+          description: Paired subject paper for combined pass determination
+        assigned_teacher:
+          type: string
+          format: uuid
+          nullable: true
+          description: Staff/Teacher authorized to enter and review marks
+      required:
+      - class_level
+      - exam
+      - subject
+    ExamType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Exam type name (e.g. Half-Yearly, Annual)
+          maxLength: 100
+        code:
+          type: string
+          description: Unique code per institution (e.g. HY, ANNUAL)
+          maxLength: 50
+        is_board_exam:
+          type: boolean
+          description: Whether this simulates or maps to a national board exam (SSC/HSC/JSC)
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    ExamTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Exam type name (e.g. Half-Yearly, Annual)
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          description: Unique code per institution (e.g. HY, ANNUAL)
+          maxLength: 50
+        is_board_exam:
+          type: boolean
+          description: Whether this simulates or maps to a national board exam (SSC/HSC/JSC)
+        description:
+          type: string
+      required:
+      - code
+      - name
     Family:
       type: object
       description: Serializer for Family households.
@@ -14728,6 +17392,62 @@ components:
         * `all` - All Staff
         * `male` - Male Only
         * `female` - Female Only
+    GraceMarkRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+          description: If null, applies across all subjects for this exam
+        max_grace_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Maximum allowable grace mark addition (e.g. 2 to 5 marks)
+        condition_desc:
+          type: string
+          maxLength: 255
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - exam
+      - id
+    GraceMarkRuleRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+          description: If null, applies across all subjects for this exam
+        max_grace_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Maximum allowable grace mark addition (e.g. 2 to 5 marks)
+        condition_desc:
+          type: string
+          maxLength: 255
+        is_active:
+          type: boolean
+      required:
+      - exam
     Group:
       type: object
       properties:
@@ -15669,6 +18389,120 @@ components:
       required:
       - circular_id
       - total_to_select
+    MarkEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam_subject:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          readOnly: true
+        student_name_en:
+          type: string
+          readOnly: true
+        creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        total_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        is_absent:
+          type: boolean
+          description: Flagged when student was absent during examination
+        is_locked:
+          type: boolean
+          readOnly: true
+          description: Locked to prevent further modifications without administrative
+            unlock
+        entered_by:
+          type: string
+          format: uuid
+          nullable: true
+        entered_by_username:
+          type: string
+          readOnly: true
+        locked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - entered_by_username
+      - exam_subject
+      - id
+      - is_locked
+      - locked_at
+      - student
+      - student_id
+      - student_name_en
+      - total_marks
+      - updated_at
+    MarkEntryRequest:
+      type: object
+      properties:
+        exam_subject:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        is_absent:
+          type: boolean
+          description: Flagged when student was absent during examination
+        entered_by:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - exam_subject
+      - student
     MediumEnum:
       enum:
       - bangla
@@ -16188,6 +19022,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdmissionTestResult'
+    PaginatedAdmitCardList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdmitCard'
     PaginatedApplicationDocumentList:
       type: object
       required:
@@ -16625,6 +19482,121 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceUserMap'
+    PaginatedExamEligibilityPolicyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamEligibilityPolicy'
+    PaginatedExamList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exam'
+    PaginatedExamRoutineList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamRoutine'
+    PaginatedExamSubjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamSubject'
+    PaginatedExamTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamType'
     PaginatedFamilyList:
       type: object
       required:
@@ -16648,6 +19620,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Family'
+    PaginatedGraceMarkRuleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GraceMarkRule'
     PaginatedGroupList:
       type: object
       required:
@@ -16809,6 +19804,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LotteryDraw'
+    PaginatedMarkEntryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarkEntry'
     PaginatedMeritListList:
       type: object
       required:
@@ -17016,6 +20034,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RawPunch'
+    PaginatedReScrutinyRequestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReScrutinyRequest'
     PaginatedRoleList:
       type: object
       required:
@@ -17085,6 +20126,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RoutineSlot'
+    PaginatedSeatPlanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeatPlan'
     PaginatedSectionList:
       type: object
       required:
@@ -17177,6 +20241,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentEnrollmentBrief'
+    PaginatedStudentExamEligibilityList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentExamEligibility'
     PaginatedStudentListList:
       type: object
       required:
@@ -18010,6 +21097,195 @@ components:
         rfid_card:
           type: string
           maxLength: 50
+    PatchedExamEligibilityPolicyRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+          nullable: true
+          description: If null, represents institution-wide default exam eligibility
+            policy
+        min_attendance_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Standard attendance percentage for regular eligibility (default
+            75%)
+        non_collegiate_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Minimum attendance percentage for non-collegiate consideration
+            (default 60%)
+        allow_non_collegiate:
+          type: boolean
+          description: Allow students with 60-74% attendance with penalty fee or principal
+            approval
+        require_fee_clearance:
+          type: boolean
+          description: Require clearance of tuition/exam fees before issuing admit
+            cards
+    PatchedExamRequest:
+      type: object
+      properties:
+        exam_type:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          description: Full exam title (e.g. Annual Examination 2026)
+          maxLength: 150
+        term:
+          type: string
+          description: Term or Semester name
+          maxLength: 50
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        weightage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Percentage weightage contributing to final annual evaluation
+            (0-100%)
+        status:
+          $ref: '#/components/schemas/ExamStatusEnum'
+        target_classes:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Class levels participating in this exam
+        publish_date:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+    PatchedExamRoutineRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        exam_subject:
+          type: string
+          format: uuid
+        exam_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        room_number:
+          type: string
+          maxLength: 50
+        instructions:
+          type: string
+    PatchedExamSubjectRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        exam_date:
+          type: string
+          format: date
+          nullable: true
+        start_time:
+          type: string
+          format: time
+          nullable: true
+        end_time:
+          type: string
+          format: time
+          nullable: true
+        room:
+          type: string
+          maxLength: 100
+        full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        creative_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Creative / Written (CQ) max marks
+        creative_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        mcq_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Multiple Choice (MCQ) max marks
+        mcq_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        practical_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          description: Practical exam max marks (if applicable)
+        practical_pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        is_combined_paper:
+          type: boolean
+          description: True if this subject is evaluated jointly with another paper
+        combined_with:
+          type: string
+          format: uuid
+          nullable: true
+          description: Paired subject paper for combined pass determination
+        assigned_teacher:
+          type: string
+          format: uuid
+          nullable: true
+          description: Staff/Teacher authorized to enter and review marks
+    PatchedExamTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Exam type name (e.g. Half-Yearly, Annual)
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          description: Unique code per institution (e.g. HY, ANNUAL)
+          maxLength: 50
+        is_board_exam:
+          type: boolean
+          description: Whether this simulates or maps to a national board exam (SSC/HSC/JSC)
+        description:
+          type: string
     PatchedFamilyRequest:
       type: object
       description: Serializer for Family households.
@@ -18025,6 +21301,27 @@ components:
           description: Common family residential address
         notes:
           type: string
+    PatchedGraceMarkRuleRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+          description: If null, applies across all subjects for this exam
+        max_grace_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Maximum allowable grace mark addition (e.g. 2 to 5 marks)
+        condition_desc:
+          type: string
+          maxLength: 255
+        is_active:
+          type: boolean
     PatchedGroupRequest:
       type: object
       properties:
@@ -18255,6 +21552,37 @@ components:
           minimum: 0
         gender_restriction:
           $ref: '#/components/schemas/GenderRestrictionEnum'
+    PatchedMarkEntryRequest:
+      type: object
+      properties:
+        exam_subject:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        is_absent:
+          type: boolean
+          description: Flagged when student was absent during examination
+        entered_by:
+          type: string
+          format: uuid
+          nullable: true
     PatchedPeriodAttendanceRequest:
       type: object
       properties:
@@ -18364,6 +21692,59 @@ components:
           type: integer
           maximum: 32767
           minimum: 0
+    PatchedReScrutinyRequestRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        exam_subject:
+          type: string
+          format: uuid
+        requested_by:
+          type: string
+          format: uuid
+          nullable: true
+        previous_creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        previous_mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        previous_practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status977Enum'
+        fee_paid:
+          type: boolean
+        reviewer_notes:
+          type: string
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
     PatchedRoleRequest:
       type: object
       description: Serializer for Role.
@@ -19587,6 +22968,140 @@ components:
         * `processed` - Processed into Attendance
         * `duplicate` - Duplicate In Window
         * `unmapped` - Unmapped User (Review Queue)
+    ReScrutinyRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        exam_subject:
+          type: string
+          format: uuid
+        subject_name:
+          type: string
+          readOnly: true
+        requested_by:
+          type: string
+          format: uuid
+          nullable: true
+        previous_creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        previous_mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        previous_practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status977Enum'
+        fee_paid:
+          type: boolean
+        reviewer_notes:
+          type: string
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - exam_subject
+      - id
+      - student
+      - student_id
+      - student_name
+      - subject_name
+    ReScrutinyRequestRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        exam_subject:
+          type: string
+          format: uuid
+        requested_by:
+          type: string
+          format: uuid
+          nullable: true
+        previous_creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        previous_mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        previous_practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        revised_practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status977Enum'
+        fee_paid:
+          type: boolean
+        reviewer_notes:
+          type: string
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - exam_subject
+      - student
     RelationDefaultEnum:
       enum:
       - father
@@ -19978,6 +23493,73 @@ components:
       - period_id
       - section_id
       - weekday
+    SeatPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_subject:
+          type: string
+          format: uuid
+          nullable: true
+        room_number:
+          type: string
+          maxLength: 50
+        bench_label:
+          type: string
+          description: Bench identifier e.g. R1-B1
+          maxLength: 50
+        seat_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        student:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        roll_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        class_level:
+          type: string
+          format: uuid
+        class_name:
+          type: string
+          readOnly: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        section_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bench_label
+      - class_level
+      - class_name
+      - created_at
+      - exam
+      - id
+      - room_number
+      - section_name
+      - student
+      - student_id
+      - student_name
     Section:
       type: object
       properties:
@@ -20667,6 +24249,18 @@ components:
         * `resigned` - Resigned
         * `terminated` - Terminated
         * `retired` - Retired
+    Status977Enum:
+      enum:
+      - pending
+      - reviewed
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending Review
+        * `reviewed` - Reviewed (No Change)
+        * `approved` - Approved (Marks Changed)
+        * `rejected` - Rejected
     StatusAfterEnum:
       enum:
       - present
@@ -21255,6 +24849,50 @@ components:
         * `transferred` - Transferred
         * `dropped` - Dropped Out
         * `graduated` - Graduated
+    StudentExamEligibility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          readOnly: true
+        student_name_en:
+          type: string
+          readOnly: true
+        student_name_bn:
+          type: string
+          readOnly: true
+        attendance_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        dues_cleared:
+          type: boolean
+        clearance_status:
+          $ref: '#/components/schemas/ClearanceStatusEnum'
+        clearance_notes:
+          type: string
+        evaluated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - evaluated_at
+      - exam
+      - id
+      - student
+      - student_id
+      - student_name_bn
+      - student_name_en
     StudentGuardian:
       type: object
       description: Serializer for Student-Guardian relationship links.
