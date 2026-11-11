@@ -148,6 +148,15 @@ class Institution(BaseModel):
     def __str__(self) -> str:
         return f"{self.name_en} ({self.eiin or 'No EIIN'})"
 
+    @property
+    def name(self) -> str:
+        return self.name_en
+
+    @property
+    def address(self) -> str:
+        parts = [self.address_line, self.upazila, self.district, self.division]
+        return ", ".join([p for p in parts if p])
+
 
 class Branch(TenantOwnedModel):
     """Campuses/branches belonging to an institution."""

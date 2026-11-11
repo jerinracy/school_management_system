@@ -6087,6 +6087,902 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/students/:
+    get:
+      operationId: students_list
+      description: Endpoints for student lifecycle management.
+      summary: List students
+      parameters:
+      - in: query
+        name: blood_group
+        schema:
+          type: string
+          enum:
+          - A+
+          - A-
+          - AB+
+          - AB-
+          - B+
+          - B-
+          - O+
+          - O-
+          - unknown
+        description: |-
+          * `A+` - A+
+          * `A-` - A-
+          * `B+` - B+
+          * `B-` - B-
+          * `AB+` - AB+
+          * `AB-` - AB-
+          * `O+` - O+
+          * `O-` - O-
+          * `unknown` - Unknown
+      - in: query
+        name: gender
+        schema:
+          type: string
+          enum:
+          - female
+          - male
+          - other
+        description: |-
+          * `male` - Male
+          * `female` - Female
+          * `other` - Other
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: religion
+        schema:
+          type: string
+          enum:
+          - buddhism
+          - christianity
+          - hinduism
+          - islam
+          - other
+        description: |-
+          * `islam` - Islam
+          * `hinduism` - Hinduism
+          * `buddhism` - Buddhism
+          * `christianity` - Christianity
+          * `other` - Other
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - alumni
+          - dropped
+          - graduated
+          - suspended
+          - transferred
+        description: |-
+          * `active` - Active
+          * `transferred` - Transferred
+          * `dropped` - Dropped Out
+          * `graduated` - Graduated
+          * `alumni` - Alumni
+          * `suspended` - Suspended
+      tags:
+      - Students
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentListList'
+          description: ''
+    post:
+      operationId: students_create
+      description: Endpoints for student lifecycle management.
+      summary: Create a new student
+      tags:
+      - Students
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentCreateUpdate'
+          description: ''
+  /api/v1/students/{id}/:
+    get:
+      operationId: students_retrieve
+      description: Endpoints for student lifecycle management.
+      summary: Retrieve student details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+    put:
+      operationId: students_update
+      description: Endpoints for student lifecycle management.
+      summary: Update student profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentCreateUpdate'
+          description: ''
+    patch:
+      operationId: students_partial_update
+      description: Endpoints for student lifecycle management.
+      summary: Partially update student profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentCreateUpdate'
+          description: ''
+    delete:
+      operationId: students_destroy
+      description: Endpoints for student lifecycle management.
+      summary: Soft-delete student
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/students/{id}/id-card/:
+    get:
+      operationId: students_id_card_retrieve
+      description: Endpoints for student lifecycle management.
+      summary: Generate or download Student ID Card
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+    post:
+      operationId: students_id_card_create
+      description: Endpoints for student lifecycle management.
+      summary: Generate or download Student ID Card
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentDetailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+  /api/v1/students/admit-from-application/:
+    post:
+      operationId: students_admit_from_application_create
+      description: Endpoints for student lifecycle management.
+      summary: Admit applicant from admission module
+      tags:
+      - Students
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentDetailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+  /api/v1/students/bulk-import/:
+    post:
+      operationId: students_bulk_import_create
+      description: Endpoints for student lifecycle management.
+      summary: Bulk import students from Excel
+      tags:
+      - Students
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkImportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+  /api/v1/students/enrollments/:
+    get:
+      operationId: students_enrollments_list
+      description: Student enrollment records.
+      summary: List student enrollments
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - demoted
+          - dropped
+          - graduated
+          - promoted
+          - repeated
+          - transferred
+        description: |-
+          * `active` - Active
+          * `promoted` - Promoted
+          * `demoted` - Demoted
+          * `repeated` - Repeated
+          * `transferred` - Transferred
+          * `dropped` - Dropped Out
+          * `graduated` - Graduated
+      tags:
+      - Students - Enrollments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentEnrollmentBriefList'
+          description: ''
+  /api/v1/students/enrollments/{id}/:
+    get:
+      operationId: students_enrollments_retrieve
+      description: Student enrollment records.
+      summary: Retrieve enrollment details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student enrollment.
+        required: true
+      tags:
+      - Students - Enrollments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentEnrollmentBrief'
+          description: ''
+  /api/v1/students/enrollments/auto-assign-rolls/:
+    post:
+      operationId: students_enrollments_auto_assign_rolls_create
+      description: Student enrollment records.
+      summary: Auto re-sequence rolls in a section
+      tags:
+      - Students - Enrollments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentBriefRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentBriefRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentBriefRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentEnrollmentBrief'
+          description: ''
+  /api/v1/students/export/:
+    get:
+      operationId: students_export_retrieve
+      description: Endpoints for student lifecycle management.
+      summary: Export students to Excel
+      tags:
+      - Students
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+  /api/v1/students/promotions/:
+    get:
+      operationId: students_promotions_list
+      description: Academic promotion batches.
+      summary: List promotion batches
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Students - Promotions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPromotionBatchList'
+          description: ''
+  /api/v1/students/promotions/{id}/:
+    get:
+      operationId: students_promotions_retrieve
+      description: Academic promotion batches.
+      summary: Retrieve promotion batch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this promotion batch.
+        required: true
+      tags:
+      - Students - Promotions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionBatch'
+          description: ''
+  /api/v1/students/promotions/{id}/apply/:
+    post:
+      operationId: students_promotions_apply_create
+      description: Academic promotion batches.
+      summary: Apply a previewed promotion batch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this promotion batch.
+        required: true
+      tags:
+      - Students - Promotions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionBatch'
+          description: ''
+  /api/v1/students/promotions/{id}/rollback/:
+    post:
+      operationId: students_promotions_rollback_create
+      description: Academic promotion batches.
+      summary: Rollback an applied promotion batch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this promotion batch.
+        required: true
+      tags:
+      - Students - Promotions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionBatch'
+          description: ''
+  /api/v1/students/promotions/preview/:
+    post:
+      operationId: students_promotions_preview_create
+      description: Academic promotion batches.
+      summary: Preview a promotion batch
+      tags:
+      - Students - Promotions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PromotionBatchRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionBatch'
+          description: ''
+  /api/v1/students/testimonials/:
+    get:
+      operationId: students_testimonials_list
+      description: Testimonial / Character Certificate management.
+      summary: List testimonials
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Students - Testimonials
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTestimonialList'
+          description: ''
+  /api/v1/students/testimonials/{id}/:
+    get:
+      operationId: students_testimonials_retrieve
+      description: Testimonial / Character Certificate management.
+      summary: Retrieve testimonial
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this testimonial.
+        required: true
+      tags:
+      - Students - Testimonials
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimonial'
+          description: ''
+  /api/v1/students/testimonials/{id}/download-pdf/:
+    get:
+      operationId: students_testimonials_download_pdf_retrieve
+      description: Testimonial / Character Certificate management.
+      summary: Download Testimonial PDF
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this testimonial.
+        required: true
+      tags:
+      - Students - Testimonials
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimonial'
+          description: ''
+  /api/v1/students/testimonials/issue/:
+    post:
+      operationId: students_testimonials_issue_create
+      description: Testimonial / Character Certificate management.
+      summary: Issue Testimonial
+      tags:
+      - Students - Testimonials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestimonialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TestimonialRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TestimonialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Testimonial'
+          description: ''
+  /api/v1/students/transfer-certificates/:
+    get:
+      operationId: students_transfer_certificates_list
+      description: Transfer certificate issuance and retrieval.
+      summary: List transfer certificates
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Students - Transfer Certificates
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransferCertificateList'
+          description: ''
+  /api/v1/students/transfer-certificates/{id}/:
+    get:
+      operationId: students_transfer_certificates_retrieve
+      description: Transfer certificate issuance and retrieval.
+      summary: Retrieve transfer certificate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transfer certificate.
+        required: true
+      tags:
+      - Students - Transfer Certificates
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferCertificate'
+          description: ''
+  /api/v1/students/transfer-certificates/{id}/download-pdf/:
+    get:
+      operationId: students_transfer_certificates_download_pdf_retrieve
+      description: Transfer certificate issuance and retrieval.
+      summary: Download TC PDF
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transfer certificate.
+        required: true
+      tags:
+      - Students - Transfer Certificates
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferCertificate'
+          description: ''
+  /api/v1/students/transfer-certificates/issue/:
+    post:
+      operationId: students_transfer_certificates_issue_create
+      description: Transfer certificate issuance and retrieval.
+      summary: Issue Transfer Certificate
+      tags:
+      - Students - Transfer Certificates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferCertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransferCertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransferCertificateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferCertificate'
+          description: ''
 components:
   schemas:
     AcademicSession:
@@ -6171,6 +7067,18 @@ components:
         * `planned` - Planned
         * `active` - Active
         * `closed` - Closed
+    ActionEnum:
+      enum:
+      - promote
+      - repeat
+      - demote
+      - withdraw
+      type: string
+      description: |-
+        * `promote` - Promote to Next Class
+        * `repeat` - Repeat Current Class
+        * `demote` - Demote
+        * `withdraw` - Withdraw
     AdmissionCircular:
       type: object
       properties:
@@ -6535,7 +7443,7 @@ components:
         religion:
           $ref: '#/components/schemas/ReligionEnum'
         blood_group:
-          $ref: '#/components/schemas/BloodGroupEnum'
+          $ref: '#/components/schemas/BloodGroupB32Enum'
         photo:
           type: string
           format: uri
@@ -6658,7 +7566,7 @@ components:
         religion:
           $ref: '#/components/schemas/ReligionEnum'
         blood_group:
-          $ref: '#/components/schemas/BloodGroupEnum'
+          $ref: '#/components/schemas/BloodGroupB32Enum'
         photo:
           type: string
           format: binary
@@ -6871,7 +7779,7 @@ components:
         religion:
           $ref: '#/components/schemas/ReligionEnum'
         blood_group:
-          $ref: '#/components/schemas/BloodGroupEnum'
+          $ref: '#/components/schemas/BloodGroupB32Enum'
         photo:
           type: string
           format: binary
@@ -6952,7 +7860,29 @@ components:
           default: ''
       required:
       - new_status
-    BloodGroupEnum:
+    BloodGroup9d3Enum:
+      enum:
+      - A+
+      - A-
+      - B+
+      - B-
+      - AB+
+      - AB-
+      - O+
+      - O-
+      - unknown
+      type: string
+      description: |-
+        * `A+` - A+
+        * `A-` - A-
+        * `B+` - B+
+        * `B-` - B-
+        * `AB+` - AB+
+        * `AB-` - AB-
+        * `O+` - O+
+        * `O-` - O-
+        * `unknown` - Unknown
+    BloodGroupB32Enum:
       enum:
       - A+
       - A-
@@ -7092,6 +8022,17 @@ components:
       - names
       - session_id
       - shift_id
+    BulkImportRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+        dry_run:
+          type: boolean
+          default: true
+      required:
+      - file
     ClassLevel:
       type: object
       properties:
@@ -7318,6 +8259,22 @@ components:
       required:
       - source_session_id
       - target_session_id
+    DocumentTypeEnum:
+      enum:
+      - birth_certificate
+      - national_id
+      - previous_marksheet
+      - transfer_certificate
+      - medical_certificate
+      - other
+      type: string
+      description: |-
+        * `birth_certificate` - Birth Registration Certificate
+        * `national_id` - National ID (NID)
+        * `previous_marksheet` - Previous Marksheet
+        * `transfer_certificate` - Transfer Certificate (TC)
+        * `medical_certificate` - Medical Certificate
+        * `other` - Other
     GenderEnum:
       enum:
       - male
@@ -8290,6 +9247,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Period'
+    PaginatedPromotionBatchList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PromotionBatch'
     PaginatedQuotaRuleList:
       type: object
       required:
@@ -8428,6 +9408,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Shift'
+    PaginatedStudentEnrollmentBriefList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentEnrollmentBrief'
+    PaginatedStudentListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentList'
     PaginatedSubjectList:
       type: object
       required:
@@ -8497,6 +9523,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Term'
+    PaginatedTestimonialList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Testimonial'
+    PaginatedTransferCertificateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferCertificate'
     PaginatedUserList:
       type: object
       required:
@@ -8725,7 +9797,7 @@ components:
         religion:
           $ref: '#/components/schemas/ReligionEnum'
         blood_group:
-          $ref: '#/components/schemas/BloodGroupEnum'
+          $ref: '#/components/schemas/BloodGroupB32Enum'
         photo:
           type: string
           format: binary
@@ -9137,6 +10209,73 @@ components:
         end_time:
           type: string
           format: time
+    PatchedStudentCreateUpdateRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          minLength: 1
+          description: Institution-configurable unique student roll/identifier (e.g.
+            2026100001).
+          maxLength: 32
+        name_en:
+          type: string
+          minLength: 1
+          description: Full name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          minLength: 1
+          description: Full name in Bangla script.
+          maxLength: 255
+        dob:
+          type: string
+          format: date
+          description: Date of birth.
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        blood_group:
+          $ref: '#/components/schemas/BloodGroup9d3Enum'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        birth_reg_no:
+          type: string
+          nullable: true
+          description: 17-digit Bangladeshi Birth Registration Number.
+          maxLength: 17
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusB32Enum'
+        admission_date:
+          type: string
+          format: date
+        is_orphan:
+          type: boolean
+        has_disability:
+          type: boolean
+        disability_details:
+          type: string
+          maxLength: 255
+        quota_category:
+          type: string
+          minLength: 1
+          description: Quota category (e.g. freedom_fighter, sibling)
+          maxLength: 50
+        has_stipend:
+          type: boolean
+        emergency_contact_name:
+          type: string
+          maxLength: 255
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
     PatchedSubjectRequest:
       type: object
       properties:
@@ -9371,6 +10510,281 @@ components:
         * `web` - Web Dashboard
         * `android` - Android App
         * `ios` - iOS App
+    PreviousSchool:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        school_name:
+          type: string
+          maxLength: 255
+        board:
+          type: string
+          maxLength: 100
+        last_class_passed:
+          type: string
+          maxLength: 100
+        tc_number:
+          type: string
+          maxLength: 100
+        tc_date:
+          type: string
+          format: date
+          nullable: true
+        gpa_obtained:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+      required:
+      - id
+      - school_name
+    PreviousSchoolRequest:
+      type: object
+      properties:
+        school_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        board:
+          type: string
+          maxLength: 100
+        last_class_passed:
+          type: string
+          maxLength: 100
+        tc_number:
+          type: string
+          maxLength: 100
+        tc_date:
+          type: string
+          format: date
+          nullable: true
+        gpa_obtained:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+      required:
+      - school_name
+    PromotionBatch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        from_session:
+          type: string
+          format: uuid
+        from_session_name:
+          type: string
+          readOnly: true
+        to_session:
+          type: string
+          format: uuid
+        to_session_name:
+          type: string
+          readOnly: true
+        from_class:
+          type: string
+          format: uuid
+        from_class_name:
+          type: string
+          readOnly: true
+        to_class:
+          type: string
+          format: uuid
+        to_class_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PromotionBatchStatusEnum'
+        total_students:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        promoted_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        retained_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        applied_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PromotionItem'
+          readOnly: true
+      required:
+      - created_at
+      - from_class
+      - from_class_name
+      - from_session
+      - from_session_name
+      - id
+      - items
+      - to_class
+      - to_class_name
+      - to_session
+      - to_session_name
+    PromotionBatchRequest:
+      type: object
+      properties:
+        from_session:
+          type: string
+          format: uuid
+        to_session:
+          type: string
+          format: uuid
+        from_class:
+          type: string
+          format: uuid
+        to_class:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PromotionBatchStatusEnum'
+        total_students:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        promoted_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        retained_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        applied_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - from_class
+      - from_session
+      - to_class
+      - to_session
+    PromotionBatchStatusEnum:
+      enum:
+      - draft
+      - previewed
+      - applied
+      - rolled_back
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `previewed` - Previewed
+        * `applied` - Applied
+        * `rolled_back` - Rolled Back
+    PromotionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_id_str:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        from_enrollment:
+          type: string
+          format: uuid
+        target_class:
+          type: string
+          format: uuid
+        target_class_name:
+          type: string
+          readOnly: true
+        target_section:
+          type: string
+          format: uuid
+        target_section_name:
+          type: string
+          readOnly: true
+        target_roll_no:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+        remarks:
+          type: string
+      required:
+      - from_enrollment
+      - id
+      - student
+      - student_id_str
+      - student_name
+      - target_class
+      - target_class_name
+      - target_roll_no
+      - target_section
+      - target_section_name
+    PromotionItemRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        from_enrollment:
+          type: string
+          format: uuid
+        target_class:
+          type: string
+          format: uuid
+        target_section:
+          type: string
+          format: uuid
+        target_roll_no:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          nullable: true
+        remarks:
+          type: string
+      required:
+      - from_enrollment
+      - student
+      - target_class
+      - target_roll_no
+      - target_section
     PurposeEnum:
       enum:
       - login
@@ -9985,6 +11399,22 @@ components:
       - branch
       - end_time
       - start_time
+    StatusB32Enum:
+      enum:
+      - active
+      - transferred
+      - dropped
+      - graduated
+      - alumni
+      - suspended
+      type: string
+      description: |-
+        * `active` - Active
+        * `transferred` - Transferred
+        * `dropped` - Dropped Out
+        * `graduated` - Graduated
+        * `alumni` - Alumni
+        * `suspended` - Suspended
     StatusDf7Enum:
       enum:
       - draft
@@ -10007,6 +11437,612 @@ components:
         * `waitlisted` - Waitlisted
         * `rejected` - Rejected
         * `withdrawn` - Withdrawn
+    StudentCreateUpdate:
+      type: object
+      properties:
+        student_id:
+          type: string
+          description: Institution-configurable unique student roll/identifier (e.g.
+            2026100001).
+          maxLength: 32
+        name_en:
+          type: string
+          description: Full name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          description: Full name in Bangla script.
+          maxLength: 255
+        dob:
+          type: string
+          format: date
+          description: Date of birth.
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        blood_group:
+          $ref: '#/components/schemas/BloodGroup9d3Enum'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        birth_reg_no:
+          type: string
+          nullable: true
+          description: 17-digit Bangladeshi Birth Registration Number.
+          maxLength: 17
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusB32Enum'
+        admission_date:
+          type: string
+          format: date
+        is_orphan:
+          type: boolean
+        has_disability:
+          type: boolean
+        disability_details:
+          type: string
+          maxLength: 255
+        quota_category:
+          type: string
+          description: Quota category (e.g. freedom_fighter, sibling)
+          maxLength: 50
+        has_stipend:
+          type: boolean
+        emergency_contact_name:
+          type: string
+          maxLength: 255
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+      required:
+      - admission_date
+      - dob
+      - gender
+      - name_bn
+      - name_en
+      - student_id
+    StudentCreateUpdateRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          minLength: 1
+          description: Institution-configurable unique student roll/identifier (e.g.
+            2026100001).
+          maxLength: 32
+        name_en:
+          type: string
+          minLength: 1
+          description: Full name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          minLength: 1
+          description: Full name in Bangla script.
+          maxLength: 255
+        dob:
+          type: string
+          format: date
+          description: Date of birth.
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        blood_group:
+          $ref: '#/components/schemas/BloodGroup9d3Enum'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        birth_reg_no:
+          type: string
+          nullable: true
+          description: 17-digit Bangladeshi Birth Registration Number.
+          maxLength: 17
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusB32Enum'
+        admission_date:
+          type: string
+          format: date
+        is_orphan:
+          type: boolean
+        has_disability:
+          type: boolean
+        disability_details:
+          type: string
+          maxLength: 255
+        quota_category:
+          type: string
+          minLength: 1
+          description: Quota category (e.g. freedom_fighter, sibling)
+          maxLength: 50
+        has_stipend:
+          type: boolean
+        emergency_contact_name:
+          type: string
+          maxLength: 255
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+      required:
+      - admission_date
+      - dob
+      - gender
+      - name_bn
+      - name_en
+      - student_id
+    StudentDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student_id:
+          type: string
+          description: Institution-configurable unique student roll/identifier (e.g.
+            2026100001).
+          maxLength: 32
+        name_en:
+          type: string
+          description: Full name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          description: Full name in Bangla script.
+          maxLength: 255
+        dob:
+          type: string
+          format: date
+          description: Date of birth.
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        blood_group:
+          $ref: '#/components/schemas/BloodGroup9d3Enum'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        birth_reg_no:
+          type: string
+          nullable: true
+          description: 17-digit Bangladeshi Birth Registration Number.
+          maxLength: 17
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusB32Enum'
+        admission_date:
+          type: string
+          format: date
+        is_orphan:
+          type: boolean
+        has_disability:
+          type: boolean
+        disability_details:
+          type: string
+          maxLength: 255
+        quota_category:
+          type: string
+          description: Quota category (e.g. freedom_fighter, sibling)
+          maxLength: 50
+        has_stipend:
+          type: boolean
+        emergency_contact_name:
+          type: string
+          maxLength: 255
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+        enrollments:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentEnrollmentBrief'
+          readOnly: true
+        previous_school:
+          allOf:
+          - $ref: '#/components/schemas/PreviousSchool'
+          readOnly: true
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentDocument'
+          readOnly: true
+        id_cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentIDCard'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - admission_date
+      - created_at
+      - dob
+      - documents
+      - enrollments
+      - gender
+      - id
+      - id_cards
+      - name_bn
+      - name_en
+      - previous_school
+      - student_id
+      - updated_at
+    StudentDetailRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          minLength: 1
+          description: Institution-configurable unique student roll/identifier (e.g.
+            2026100001).
+          maxLength: 32
+        name_en:
+          type: string
+          minLength: 1
+          description: Full name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          minLength: 1
+          description: Full name in Bangla script.
+          maxLength: 255
+        dob:
+          type: string
+          format: date
+          description: Date of birth.
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        blood_group:
+          $ref: '#/components/schemas/BloodGroup9d3Enum'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        birth_reg_no:
+          type: string
+          nullable: true
+          description: 17-digit Bangladeshi Birth Registration Number.
+          maxLength: 17
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusB32Enum'
+        admission_date:
+          type: string
+          format: date
+        is_orphan:
+          type: boolean
+        has_disability:
+          type: boolean
+        disability_details:
+          type: string
+          maxLength: 255
+        quota_category:
+          type: string
+          minLength: 1
+          description: Quota category (e.g. freedom_fighter, sibling)
+          maxLength: 50
+        has_stipend:
+          type: boolean
+        emergency_contact_name:
+          type: string
+          maxLength: 255
+        emergency_contact_phone:
+          type: string
+          maxLength: 20
+      required:
+      - admission_date
+      - dob
+      - gender
+      - name_bn
+      - name_en
+      - student_id
+    StudentDocument:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        title:
+          type: string
+          maxLength: 255
+        file:
+          type: string
+          format: uri
+        is_verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        verified_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - document_type
+      - file
+      - id
+      - is_verified
+      - title
+      - verified_at
+      - verified_by
+    StudentDocumentRequest:
+      type: object
+      properties:
+        document_type:
+          $ref: '#/components/schemas/DocumentTypeEnum'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        file:
+          type: string
+          format: binary
+      required:
+      - document_type
+      - file
+      - title
+    StudentEnrollmentBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        class_level:
+          type: string
+          format: uuid
+        class_name:
+          type: string
+          readOnly: true
+        section:
+          type: string
+          format: uuid
+        section_name:
+          type: string
+          readOnly: true
+        group:
+          type: string
+          format: uuid
+          nullable: true
+        group_name:
+          type: string
+          readOnly: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        shift_name:
+          type: string
+          readOnly: true
+        roll_no:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Class section roll number.
+        enrollment_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/StudentEnrollmentBriefStatusEnum'
+      required:
+      - class_level
+      - class_name
+      - enrollment_date
+      - group_name
+      - id
+      - roll_no
+      - section
+      - section_name
+      - session
+      - session_name
+      - shift_name
+    StudentEnrollmentBriefRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+        group:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        roll_no:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Class section roll number.
+        enrollment_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/StudentEnrollmentBriefStatusEnum'
+      required:
+      - class_level
+      - enrollment_date
+      - roll_no
+      - section
+      - session
+    StudentEnrollmentBriefStatusEnum:
+      enum:
+      - active
+      - promoted
+      - demoted
+      - repeated
+      - transferred
+      - dropped
+      - graduated
+      type: string
+      description: |-
+        * `active` - Active
+        * `promoted` - Promoted
+        * `demoted` - Demoted
+        * `repeated` - Repeated
+        * `transferred` - Transferred
+        * `dropped` - Dropped Out
+        * `graduated` - Graduated
+    StudentIDCard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        card_no:
+          type: string
+          maxLength: 64
+        qr_payload:
+          type: string
+        rfid_uid:
+          type: string
+          nullable: true
+          maxLength: 64
+        issue_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        printed_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - card_no
+      - expiry_date
+      - id
+      - issue_date
+    StudentIDCardRequest:
+      type: object
+      properties:
+        card_no:
+          type: string
+          minLength: 1
+          maxLength: 64
+        qr_payload:
+          type: string
+        rfid_uid:
+          type: string
+          nullable: true
+          maxLength: 64
+        issue_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        printed_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - card_no
+      - expiry_date
+      - issue_date
+    StudentList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student_id:
+          type: string
+          description: Institution-configurable unique student roll/identifier (e.g.
+            2026100001).
+          maxLength: 32
+        name_en:
+          type: string
+          description: Full name in English.
+          maxLength: 255
+        name_bn:
+          type: string
+          description: Full name in Bangla script.
+          maxLength: 255
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        blood_group:
+          $ref: '#/components/schemas/BloodGroup9d3Enum'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        status:
+          $ref: '#/components/schemas/StatusB32Enum'
+        admission_date:
+          type: string
+          format: date
+        active_enrollment:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+      required:
+      - active_enrollment
+      - admission_date
+      - gender
+      - id
+      - name_bn
+      - name_en
+      - student_id
     Subject:
       type: object
       properties:
@@ -10265,6 +12301,104 @@ components:
       - name
       - session
       - start_date
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_id_str:
+          type: string
+          readOnly: true
+        student_name_en:
+          type: string
+          readOnly: true
+        enrollment:
+          type: string
+          format: uuid
+        certificate_no:
+          type: string
+          readOnly: true
+        issue_date:
+          type: string
+          format: date
+        exam_name:
+          type: string
+          maxLength: 100
+        passing_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        character:
+          type: string
+          maxLength: 100
+        pdf_file:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - certificate_no
+      - created_at
+      - enrollment
+      - exam_name
+      - gpa
+      - id
+      - issue_date
+      - passing_year
+      - pdf_file
+      - student
+      - student_id_str
+      - student_name_en
+    TestimonialRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+        issue_date:
+          type: string
+          format: date
+        exam_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        passing_year:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        character:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - enrollment
+      - exam_name
+      - gpa
+      - issue_date
+      - passing_year
+      - student
     TokenRefresh:
       type: object
       properties:
@@ -10284,6 +12418,88 @@ components:
           minLength: 1
       required:
       - refresh
+    TransferCertificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_id_str:
+          type: string
+          readOnly: true
+        student_name_en:
+          type: string
+          readOnly: true
+        student_name_bn:
+          type: string
+          readOnly: true
+        enrollment:
+          type: string
+          format: uuid
+        tc_number:
+          type: string
+          readOnly: true
+        issue_date:
+          type: string
+          format: date
+        reason:
+          type: string
+        conduct_remarks:
+          type: string
+          maxLength: 255
+        dues_cleared:
+          type: boolean
+        pdf_file:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - enrollment
+      - id
+      - issue_date
+      - pdf_file
+      - reason
+      - student
+      - student_id_str
+      - student_name_bn
+      - student_name_en
+      - tc_number
+    TransferCertificateRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+        issue_date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+        conduct_remarks:
+          type: string
+          minLength: 1
+          maxLength: 255
+        dues_cleared:
+          type: boolean
+      required:
+      - enrollment
+      - issue_date
+      - reason
+      - student
     User:
       type: object
       description: Serializer for User details.

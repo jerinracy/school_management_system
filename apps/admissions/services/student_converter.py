@@ -14,16 +14,34 @@ from apps.admissions.models import Application, ApplicationStatus
 
 def convert_admitted_application_to_student(
     application_id: UUID | str,
+    section_id: UUID | str | None = None,
+    roll_no: int | None = None,
 ) -> dict[str, Any]:
-    """Stub conversion from an ADMITTED application to a Student profile.
+    """Conversion from an ADMITTED application to a Student profile.
 
-    Will be connected to apps.students.services.admit_from_application in Task 06.
+    If section_id and roll_no are provided, executes full student enrollment.
+    Otherwise returns structured intake payload ready for administrative section assignment.
     """
-    application = Application.objects.get(id=application_id)
+    application = Application.objects.select_related("circular").get(id=application_id)
     if application.status != ApplicationStatus.ADMITTED:
         raise ValidationError(
             f"Cannot convert application to student; status must be ADMITTED (currently {application.status})."
         )
+
+    if section_id and roll_no:
+        from apps.students.services.intake import admit_from_application
+
+        student, enrollment = admit_from_application(
+            application_id=application_id,
+            section_id=section_id,
+            roll_no=roll_no,
+        )
+        return {
+            "status": "enrolled",
+            "message": f"Successfully enrolled student {student.student_id}.",
+            "student_id": student.student_id,
+            "roll_no": enrollment.roll_no,
+        }
 
     # Return structured payload ready for Task 06 Student intake
     return {

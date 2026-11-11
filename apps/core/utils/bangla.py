@@ -29,3 +29,8 @@ def bangla_to_english_digits(value: str) -> str:
     if not value or not isinstance(value, str):
         return ""
     return value.translate(BN_TO_EN_TRANS)
+
+
+# Convenient alias
+to_bangla_digits = english_to_bangla_digits
+to_english_digits = bangla_to_english_digits

@@ -115,3 +115,18 @@
   - Once an application reaches `admitted` status, `convert_admitted_application_to_student` transitions the applicant to Task 06 intake without data loss.
 - **Consequences**:
   - Eliminates duplicate entries and fraudulent registrations while fulfilling Ministry of Education regulatory requirements for transparent lottery draws and merit list rankings.
+
+---
+
+## ADR-008: Student Identity Generation, Roll Assignment & Bangla PDF Engine
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: Bangladeshi schools require unique student identification numbers, session-and-section scoped sequential roll numbers (1..N), atomic class promotion with rollback capabilities, and official printable certificates in Bengali (ছাড়পত্র and প্রশংসাপত্র) adhering to Ministry of Education guidelines.
+- **Decision**:
+  - **Student ID**: Generated sequentially per institution using pattern `{YEAR}{CLASS_ORDER:02d}{SEQUENCE:04d}` (e.g. `2026100001`), guaranteed unique via DB constraint `unique_student_id_per_institution`.
+  - **Roll Numbers**: Scoped to `(institution, session, section, roll_no)` with unique DB constraint. Automated roll re-sequencing uses temporary high offsets (+100,000) during permutation to prevent intermediate collision violations.
+  - **Promotion Engine**: Multi-step pipeline: `preview_promotion` generates staged `PromotionBatch` and `PromotionItem` records; `apply_promotion` executes atomic closing of previous enrollments and instantiation of next-session enrollments; `rollback_promotion` cleanly deletes created target enrollments and reactivates source records.
+  - **Bangla PDF Generation**: Implemented via ReportLab using TrueType Unicode font registration. The `Kalpurush.ttf` font is bundled directly under `apps/core/fonts/` with system fallback paths (`/usr/share/fonts/...`). Standardized templates for Transfer Certificates, Testimonials, and Student ID Cards render cleanly without ligature distortion.
+  - **Field-level Privacy**: Serializer representations dynamically mask 17-digit birth registration numbers and emergency contact phones for non-administrative users.
+- **Consequences**:
+  - Prevents data corruption during promotion and roll-numbering, guarantees compliance with Bangladeshi school administration norms, and produces crisp, official PDF documents out of the box.

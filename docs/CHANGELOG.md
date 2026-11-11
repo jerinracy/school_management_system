@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 06**: Student Management (Profile, Enrollment, Documents, ID Cards, Promotion, Bulk Import, Bangla PDF) (`apps/students`, `apps/core/pdf`).
+  - Core Models:
+    - `Student`: Multi-tenant master student record with configurable `student_id`, bilingual names (`name_bn`, `name_en`), DOB, gender, blood group, religion, 17-digit birth registration number, photo, present/permanent address, status (`active`, `transferred`, `dropped`, `graduated`, `alumni`, `suspended`), admission date, and special categories (orphan, freedom-fighter quota, disability, stipend).
+    - `StudentEnrollment`: Session-specific enrollment linking `Student` to `AcademicSession`, `ClassLevel`, `Section`, `Group`, `Shift`, with unique roll number (`roll_no`) per section/session and enrollment status tracking.
+    - `StudentDocument`: Archival document storage with verification workflow.
+    - `PreviousSchool`: Previous academic history, board, TC number, and GPA.
+    - `StudentIDCard`: Digital/physical ID cards with unique card numbers, JSON QR verification payloads, and RFID/NFC UID mapping.
+    - `PromotionBatch` & `PromotionItem`: Academic session progression engine supporting preview, automatic/manual review, atomic commit, and reversible rollback.
+    - `TransferCertificate` & `Testimonial`: Official Bangladeshi school clearance and passing certificate records with gap-free sequence numbering (`TC-YYYY-XXXXX`, `TST-YYYY-XXXXX`).
+    - `DropoutRecord` & `AlumniProfile`: Dedicated tracking for student attrition and graduated student network.
+  - Business Rules & Services:
+    - `intake.py`: `admit_from_application` completing the Task 05 bridge to transform admitted applicants into active students and enrollments.
+    - `roll_assigner.py`: Configurable automated roll numbering (alphabetical by English/Bangla name, student ID order) with temporary roll offsets preventing unique constraint collisions.
+    - `promotion.py`: End-to-end bulk promotion pipeline (`preview_promotion` → `apply_promotion` → `rollback_promotion`) with roll collision prevention and atomic rollback.
+    - `transfer.py`: TC issuance workflow transitioning student status to `transferred`, closing active enrollment, and generating official PDF.
+    - `bulk_import.py`: Excel spreadsheet parser (`openpyxl`) supporting dry-run validation with row-by-row error reporting and atomic multi-row creation.
+    - `id_card_service.py`: Automated student ID card issue and renewal, active card replacement, and badge PDF rendering.
+  - Bangla PDF Engine (`apps/core/pdf/`):
+    - ReportLab integration registering TrueType Unicode Bengali fonts (`Kalpurush` bundled in `apps/core/fonts/Kalpurush.ttf` with system fallbacks).
+    - Templates for Transfer Certificate (ছাড়পত্র), Testimonial (প্রশংসাপত্র), and Student ID Card (আইডি কার্ড).
+  - REST API: Endpoints under `/api/v1/students/` for student CRUD, search by Bangla/English name, student ID, and birth reg no, Excel bulk import (`/bulk-import/`), Excel export (`/export/`), student admission intake (`/admit-from-application/`), section roll re-sequencing (`/enrollments/auto-assign-rolls/`), promotion preview/apply/rollback (`/promotions/`), TC issue and PDF download (`/transfer-certificates/`), and Testimonial issue and PDF download (`/testimonials/`).
+  - Security: Field-level masking hiding sensitive birth registration numbers and emergency contact phones for unauthorized viewers, role-based permissions (`HasModulePermission("students.view")`, `HasModulePermission("students.manage")`).
+  - Architectural Decision Record: ADR-008 (Student Identity Generation, Roll Assignment & Bangla PDF Engine).
 - **Task 05**: Admission (Online Application, Test, Merit, Lottery) (`apps/admissions`).
   - Models: `AdmissionCircular` (intake session, class, quota, fee, start/end dates, eligibility criteria), `QuotaRule` (General, Freedom Fighter, Catchment, Special Needs/Disability, Staff Child, Sibling), `Application` (application number `ADM-YYYY-XXXXX`, applicant details, 17-digit birth registration number, guardian contact, status machine), `ApplicationDocument` (photo, birth certificate, marksheet, transfer certificate), `ApplicationPayment` (fee payment transaction, bKash/Nagad/manual, verification), `AdmissionTest` (venue, date, max marks, pass marks), `AdmissionTestResult` (marks obtained, rank, pass/fail), `LotteryDraw` (seeded deterministic PRNG, reproducible candidate order), `MeritList` (merit list generation, approval), `MeritListEntry` (merit rank, waiting rank, quota allocation).
   - Business Rules & Services:
