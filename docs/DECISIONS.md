@@ -213,3 +213,26 @@
   - Complete alignment with Bangladesh National Curriculum examinations.
   - High resilience against unauthorized mark alterations, backed by non-repudiation audit trails.
   - Streamlined exam day administration with automated admit cards and fraud-resistant seat plans.
+
+---
+
+## ADR-014: Deterministic GPA 5.0 Grading Engine, 4th Subject Bonus, Combined Paper Grading & Merit Hierarchy
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**:
+  - The Bangladesh National Curriculum (administered by Secondary and Higher Secondary Education Boards, NCTB) enforces specific mathematical rules for secondary (SSC/JSC) and higher-secondary (HSC) grading:
+    1. Standard 7-tier scale: A+ (5.0, 80-100%), A (4.0, 70-79%), A- (3.5, 60-69%), B (3.0, 50-59%), C (2.0, 40-49%), D (1.0, 33-39%), F (0.0, 0-32%).
+    2. Mandatory failure rule: Failing any mandatory subject (Grade Point 0.00 / Grade F) results in an overall exam Grade Point of 0.00 and Letter Grade 'F', regardless of high scores in other subjects.
+    3. Fourth (optional/elective) subject bonus: Grade points earned above 2.00 (i.e. $\max(0, \text{GP} - 2.00)$, yielding up to 3.00 bonus points) are added to the numerator of the GPA formula, divided by the count of mandatory subjects, capped at 5.00. Failing a 4th subject does NOT fail the student or reduce their GPA.
+    4. Combined papers: Paired subjects (e.g. Bangla 1st + 2nd, English 1st + 2nd) are evaluated over an aggregate of 200 marks, with pass marks (typically 66/200) determined either jointly or per component.
+    5. Deterministic tie-breaking for merit ranks: Passing candidates always rank above failing candidates, followed by final GPA descending, total aggregate marks descending, and enrollment roll number ascending.
+    6. Multi-term weighted CGPA: Annual session results aggregate multiple examinations with configurable weightages (e.g. Term 1 30%, Term 2 30%, Annual 40%).
+- **Decision**:
+  - **Decoupled Pure Grading Engine**: Implement `apps/results/services/grading_engine.py` as a pure, side-effect-free mathematical calculation layer with zero database dependencies. All formulas, tier resolutions, bonus calculations, and sorting rules are fully unit-tested with table-driven golden test suites.
+  - **Transactional Tabulation Service**: Orchestrate database reads, atomic batch evaluation, and rank persistence via `apps/results/services/result_processor.py` (`tabulate_exam_results` and `tabulate_cumulative_results`).
+  - **Background Async Celery Tasks**: Heavy tabulation runs for thousands of students are dispatched asynchronously (`calculate_exam_results_task`, `calculate_cumulative_results_task`) with synchronous fallbacks for instant API responses.
+  - **Full Documentation**: Canonical specification published in `docs/GRADING.md`.
+- **Consequences**:
+  - 100% compliant with Bangladeshi national examination and board grading standards.
+  - High computational performance and rock-solid determinism in merit rank assignment.
+  - Complete decoupling enables straightforward testing and future extensions (such as semester systems or university 4.0 scales).

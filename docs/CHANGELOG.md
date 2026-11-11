@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 12**: Grading Engine (GPA 5.0, BD National Curriculum) (`apps/results`).
+  - Core Models:
+    - `GradingScale` & `GradeTier`: Configurable institutional grading system (defaulted to Bangladesh Secondary/Higher Secondary GPA 5.0 scale: A+, A, A-, B, C, D, F) with mark percentages, grade points, letter grades, and remarks.
+    - `StudentOptionalSubject`: Designates elective/optional 4th subjects for students in Class 9-12 (e.g. Higher Math, Biology, Agriculture, Computer Studies) for bonus grade point compilation.
+    - `SubjectResult`: Evaluated marks, percentage, grade point, letter grade, and pass/fail outcome for an individual subject in an exam.
+    - `CombinedSubjectResult`: Aggregate evaluation for paired 100+100 mark papers (e.g., Bangla 1st + 2nd, English 1st + 2nd) evaluated across 200 aggregate marks with shared pass threshold.
+    - `ExamResult`: Comprehensive aggregate examination summary storing total marks, full marks, percentage, mandatory GPA (without 4th subject), 4th subject bonus points ($\max(0, \text{GPA} - 2.00)$), final capped GPA (5.00 max), letter grade, class merit rank, and section merit rank.
+    - `TermWeightageRule`: Multi-term percentage distribution across exams (e.g., Term 1: 30%, Term 2: 30%, Final: 40%) for calculating final annual session CGPA.
+    - `CumulativeResult`: Annual composite session standing and promotion recommendations based on weighted CGPA across all terms.
+  - Service Layer & Grading Engine (`apps/results/services`):
+    - `grading_scale_service.py`: Automated standard seeder for Bangladesh National Curriculum GPA 5.0 tiers and grade resolver.
+    - `grading_engine.py`: Pure table-driven calculation engine supporting component pass policies (`all_components`, `overall_aggregate`, `theory_practical_separate`), 200-mark combined paper evaluations, 4th subject bonus computation, mandatory failure rule (fail in any mandatory subject = total fail GPA 0.00 / F), deterministic tie-breaking merit ranking, and annual weighted CGPA compilation.
+    - `result_processor.py`: Database transaction-atomic orchestration service for complete exam tabulation (`tabulate_exam_results`) and cumulative annual standings (`tabulate_cumulative_results`).
+  - Background Tasks (`apps/results/tasks.py`):
+    - `calculate_exam_results_task`: Celery async worker task for heavy exam-wide mark tabulation and rank computation.
+    - `calculate_cumulative_results_task`: Celery async worker task for multi-term weighted annual tabulation.
+  - REST API ViewSets (`apps/results/views.py`):
+    - `/api/v1/results/grading-scales/`: Grading scale management with `seed_bd_defaults` action.
+    - `/api/v1/results/optional-subjects/`: Student optional 4th subject mappings.
+    - `/api/v1/results/subject-results/`: Queryable subject-level performance and grades.
+    - `/api/v1/results/exam-results/`: Exam-level student results, ranking, statistics (`summary`), and tabulation trigger (`calculate`).
+    - `/api/v1/results/term-weightages/`: Institutional term weightage configuration.
+    - `/api/v1/results/cumulative-results/`: Annual cumulative CGPA standings and calculation trigger.
+  - Documentation:
+    - `docs/GRADING.md`: Comprehensive reference guide on Bangladesh National Curriculum GPA 5.0 grading rules, mathematical formulas, component pass policies, 4th subject bonus, and golden test cases.
 - **Task 11**: Exam Setup & Mark Entry (`apps/exams`).
   - Core Models:
     - `ExamType`: Institutional exam categories (Term, Class Test, Model Test, Final, Send-Up, Board Mock) with weightage for final grade compilation.

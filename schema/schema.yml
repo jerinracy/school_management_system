@@ -11716,6 +11716,907 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/results/cumulative-results/:
+    get:
+      operationId: results_cumulative_results_list
+      description: Annual session cumulative CGPA standings and promotion recommendations.
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_passed
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: promotion_recommended
+        schema:
+          type: boolean
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCumulativeResultList'
+          description: ''
+  /api/v1/results/cumulative-results/{id}/:
+    get:
+      operationId: results_cumulative_results_retrieve
+      description: Annual session cumulative CGPA standings and promotion recommendations.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Cumulative Annual Result.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CumulativeResult'
+          description: ''
+  /api/v1/results/cumulative-results/calculate/:
+    post:
+      operationId: results_cumulative_results_calculate_create
+      description: Annual session cumulative CGPA standings and promotion recommendations.
+      summary: Trigger annual cumulative CGPA calculation
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CumulativeCalculateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CumulativeCalculateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CumulativeCalculateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CumulativeResult'
+          description: ''
+  /api/v1/results/exam-results/:
+    get:
+      operationId: results_exam_results_list
+      description: Student exam results summary, ranking, and tabulation execution
+        endpoint.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: final_grade
+        schema:
+          type: string
+      - in: query
+        name: is_passed
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - draft
+          - published
+        description: |-
+          * `draft` - Draft (Tabulating)
+          * `approved` - Approved by Head Teacher
+          * `published` - Published to Students/Guardians
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExamResultList'
+          description: ''
+  /api/v1/results/exam-results/{id}/:
+    get:
+      operationId: results_exam_results_retrieve
+      description: Student exam results summary, ranking, and tabulation execution
+        endpoint.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Exam Result.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResult'
+          description: ''
+  /api/v1/results/exam-results/calculate/:
+    post:
+      operationId: results_exam_results_calculate_create
+      description: Student exam results summary, ranking, and tabulation execution
+        endpoint.
+      summary: Trigger result tabulation and ranking for an exam
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamResultCalculateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExamResultCalculateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExamResultCalculateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResult'
+          description: ''
+  /api/v1/results/exam-results/summary/:
+    get:
+      operationId: results_exam_results_summary_retrieve
+      description: Student exam results summary, ranking, and tabulation execution
+        endpoint.
+      summary: Get statistical overview of exam performance and GPA distribution
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResult'
+          description: ''
+  /api/v1/results/grading-scales/:
+    get:
+      operationId: results_grading_scales_list
+      description: Manage institutional grading scales and grade tier thresholds.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGradingScaleList'
+          description: ''
+    post:
+      operationId: results_grading_scales_create
+      description: Manage institutional grading scales and grade tier thresholds.
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradingScale'
+          description: ''
+  /api/v1/results/grading-scales/{id}/:
+    get:
+      operationId: results_grading_scales_retrieve
+      description: Manage institutional grading scales and grade tier thresholds.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grading Scale.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradingScale'
+          description: ''
+    put:
+      operationId: results_grading_scales_update
+      description: Manage institutional grading scales and grade tier thresholds.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grading Scale.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradingScale'
+          description: ''
+    patch:
+      operationId: results_grading_scales_partial_update
+      description: Manage institutional grading scales and grade tier thresholds.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grading Scale.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGradingScaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGradingScaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGradingScaleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradingScale'
+          description: ''
+    delete:
+      operationId: results_grading_scales_destroy
+      description: Manage institutional grading scales and grade tier thresholds.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Grading Scale.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/results/grading-scales/seed_bd_defaults/:
+    post:
+      operationId: results_grading_scales_seed_bd_defaults_create
+      description: Manage institutional grading scales and grade tier thresholds.
+      summary: Seed standard Bangladesh National Curriculum (GPA 5.0) grading scale
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GradingScaleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradingScale'
+          description: ''
+  /api/v1/results/optional-subjects/:
+    get:
+      operationId: results_optional_subjects_list
+      description: Assign and manage optional 4th subjects for students in Class 9-12.
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentOptionalSubjectList'
+          description: ''
+    post:
+      operationId: results_optional_subjects_create
+      description: Assign and manage optional 4th subjects for students in Class 9-12.
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentOptionalSubjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentOptionalSubjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentOptionalSubjectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentOptionalSubject'
+          description: ''
+  /api/v1/results/optional-subjects/{id}/:
+    get:
+      operationId: results_optional_subjects_retrieve
+      description: Assign and manage optional 4th subjects for students in Class 9-12.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Student 4th/Optional Subject.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentOptionalSubject'
+          description: ''
+    put:
+      operationId: results_optional_subjects_update
+      description: Assign and manage optional 4th subjects for students in Class 9-12.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Student 4th/Optional Subject.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentOptionalSubjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentOptionalSubjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentOptionalSubjectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentOptionalSubject'
+          description: ''
+    patch:
+      operationId: results_optional_subjects_partial_update
+      description: Assign and manage optional 4th subjects for students in Class 9-12.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Student 4th/Optional Subject.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentOptionalSubjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentOptionalSubjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentOptionalSubjectRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentOptionalSubject'
+          description: ''
+    delete:
+      operationId: results_optional_subjects_destroy
+      description: Assign and manage optional 4th subjects for students in Class 9-12.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Student 4th/Optional Subject.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/results/subject-results/:
+    get:
+      operationId: results_subject_results_list
+      description: Read-only view for evaluated subject scores and grade points.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam_subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_fourth_subject
+        schema:
+          type: boolean
+      - in: query
+        name: is_passed
+        schema:
+          type: boolean
+      - in: query
+        name: letter_grade
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubjectResultList'
+          description: ''
+  /api/v1/results/subject-results/{id}/:
+    get:
+      operationId: results_subject_results_retrieve
+      description: Read-only view for evaluated subject scores and grade points.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Subject Result.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectResult'
+          description: ''
+  /api/v1/results/term-weightages/:
+    get:
+      operationId: results_term_weightages_list
+      description: Configure multi-term weightage percentages for annual CGPA calculation.
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTermWeightageRuleList'
+          description: ''
+    post:
+      operationId: results_term_weightages_create
+      description: Configure multi-term weightage percentages for annual CGPA calculation.
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TermWeightageRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TermWeightageRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TermWeightageRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermWeightageRule'
+          description: ''
+  /api/v1/results/term-weightages/{id}/:
+    get:
+      operationId: results_term_weightages_retrieve
+      description: Configure multi-term weightage percentages for annual CGPA calculation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term Weightage Rule.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermWeightageRule'
+          description: ''
+    put:
+      operationId: results_term_weightages_update
+      description: Configure multi-term weightage percentages for annual CGPA calculation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term Weightage Rule.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TermWeightageRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TermWeightageRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TermWeightageRuleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermWeightageRule'
+          description: ''
+    patch:
+      operationId: results_term_weightages_partial_update
+      description: Configure multi-term weightage percentages for annual CGPA calculation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term Weightage Rule.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTermWeightageRuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTermWeightageRuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTermWeightageRuleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermWeightageRule'
+          description: ''
+    delete:
+      operationId: results_term_weightages_destroy
+      description: Configure multi-term weightage percentages for annual CGPA calculation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term Weightage Rule.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/staff/departments/:
     get:
       operationId: staff_departments_list
@@ -16152,6 +17053,107 @@ components:
       required:
       - source_session_id
       - target_session_id
+    CumulativeCalculateRequest:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        class_level_id:
+          type: string
+          format: uuid
+        async_mode:
+          type: boolean
+          default: false
+      required:
+      - class_level_id
+      - session_id
+    CumulativeResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+          readOnly: true
+        class_level:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        roll_no:
+          type: integer
+          readOnly: true
+        section_name:
+          type: string
+          readOnly: true
+        term_results:
+          readOnly: true
+          description: Detailed array of term exams, weights, marks obtained, and
+            GPAs.
+        cumulative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+          readOnly: true
+        cumulative_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+        cumulative_grade:
+          type: string
+          readOnly: true
+        is_passed:
+          type: boolean
+          readOnly: true
+        final_section_position:
+          type: integer
+          readOnly: true
+          nullable: true
+        final_class_position:
+          type: integer
+          readOnly: true
+          nullable: true
+        promotion_recommended:
+          type: boolean
+          readOnly: true
+          description: Whether this student meets institutional criteria for promotion
+            to next class level.
+        calculated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - calculated_at
+      - class_level
+      - cumulative_gpa
+      - cumulative_grade
+      - cumulative_marks
+      - final_class_position
+      - final_section_position
+      - id
+      - is_passed
+      - promotion_recommended
+      - roll_no
+      - section_name
+      - session
+      - student
+      - student_code
+      - student_name
+      - term_results
     DailyAttendance:
       type: object
       properties:
@@ -16975,6 +17977,146 @@ components:
       - name
       - session
       - start_date
+    ExamResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        roll_no:
+          type: integer
+          readOnly: true
+        section_name:
+          type: string
+          readOnly: true
+        class_level_name:
+          type: string
+          readOnly: true
+        total_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+          readOnly: true
+        total_full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,2})?$
+          readOnly: true
+        percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        gpa_without_fourth:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+          description: GPA calculated solely across mandatory subjects.
+        fourth_subject_bonus:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+          description: Bonus grade points from 4th subject above 2.00 (max 3.00 points).
+        final_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+          description: Final GPA including 4th subject bonus, capped at 5.00 (0.00
+            if failed any mandatory).
+        final_grade:
+          type: string
+          readOnly: true
+          description: Letter grade matching the final GPA.
+        is_passed:
+          type: boolean
+          readOnly: true
+          description: True if student passed all compulsory subjects.
+        failed_subject_count:
+          type: integer
+          readOnly: true
+        failed_subjects_summary:
+          readOnly: true
+          description: List of names of subjects failed.
+        section_position:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Merit rank within the section.
+        class_position:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Merit rank within the entire class level.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ExamResultStatusEnum'
+          readOnly: true
+        calculated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - calculated_at
+      - class_level_name
+      - class_position
+      - exam
+      - failed_subject_count
+      - failed_subjects_summary
+      - final_gpa
+      - final_grade
+      - fourth_subject_bonus
+      - gpa_without_fourth
+      - id
+      - is_passed
+      - percentage
+      - roll_no
+      - section_name
+      - section_position
+      - status
+      - student
+      - student_code
+      - student_name
+      - total_full_marks
+      - total_marks
+    ExamResultCalculateRequest:
+      type: object
+      properties:
+        exam_id:
+          type: string
+          format: uuid
+        async_mode:
+          type: boolean
+          default: false
+      required:
+      - exam_id
+    ExamResultStatusEnum:
+      enum:
+      - draft
+      - approved
+      - published
+      type: string
+      description: |-
+        * `draft` - Draft (Tabulating)
+        * `approved` - Approved by Head Teacher
+        * `published` - Published to Students/Guardians
     ExamRoutine:
       type: object
       properties:
@@ -17448,6 +18590,158 @@ components:
           type: boolean
       required:
       - exam
+    GradeTier:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        letter_grade:
+          type: string
+          description: Letter designation (e.g. A+, A, A-, B, C, D, F)
+          maxLength: 10
+        grade_point:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Grade point value (e.g. 5.00, 4.00, 3.50, 3.00, 2.00, 1.00,
+            0.00)
+        min_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Minimum mark percentage inclusive (e.g. 80.00)
+        max_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Maximum mark percentage inclusive (e.g. 100.00)
+        remarks_en:
+          type: string
+          description: e.g. Outstanding, Excellent
+          maxLength: 50
+        remarks_bn:
+          type: string
+          description: e.g. অসাধারণ, চমৎকার
+          maxLength: 50
+      required:
+      - grade_point
+      - id
+      - letter_grade
+      - max_percentage
+      - min_percentage
+    GradeTierRequest:
+      type: object
+      properties:
+        letter_grade:
+          type: string
+          minLength: 1
+          description: Letter designation (e.g. A+, A, A-, B, C, D, F)
+          maxLength: 10
+        grade_point:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Grade point value (e.g. 5.00, 4.00, 3.50, 3.00, 2.00, 1.00,
+            0.00)
+        min_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Minimum mark percentage inclusive (e.g. 80.00)
+        max_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Maximum mark percentage inclusive (e.g. 100.00)
+        remarks_en:
+          type: string
+          description: e.g. Outstanding, Excellent
+          maxLength: 50
+        remarks_bn:
+          type: string
+          description: e.g. অসাধারণ, চমৎকার
+          maxLength: 50
+      required:
+      - grade_point
+      - letter_grade
+      - max_percentage
+      - min_percentage
+    GradingScale:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. BD National Curriculum GPA 5.0
+          maxLength: 100
+        scale_type:
+          $ref: '#/components/schemas/ScaleTypeEnum'
+        max_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Maximum possible grade point average (e.g. 5.00 or 4.00)
+        pass_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Minimum grade point average required to pass (e.g. 1.00)
+        is_default:
+          type: boolean
+          description: Whether this scale is the default for new exams in the institution.
+        description:
+          type: string
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeTier'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - tiers
+      - updated_at
+    GradingScaleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. BD National Curriculum GPA 5.0
+          maxLength: 100
+        scale_type:
+          $ref: '#/components/schemas/ScaleTypeEnum'
+        max_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Maximum possible grade point average (e.g. 5.00 or 4.00)
+        pass_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Minimum grade point average required to pass (e.g. 1.00)
+        is_default:
+          type: boolean
+          description: Whether this scale is the default for new exams in the institution.
+        description:
+          type: string
+      required:
+      - name
     Group:
       type: object
       properties:
@@ -19321,6 +20615,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ClassSubject'
+    PaginatedCumulativeResultList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CumulativeResult'
     PaginatedDailyAttendanceList:
       type: object
       required:
@@ -19528,6 +20845,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Exam'
+    PaginatedExamResultList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamResult'
     PaginatedExamRoutineList:
       type: object
       required:
@@ -19643,6 +20983,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GraceMarkRule'
+    PaginatedGradingScaleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradingScale'
     PaginatedGroupList:
       type: object
       required:
@@ -20287,6 +21650,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentList'
+    PaginatedStudentOptionalSubjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentOptionalSubject'
     PaginatedSubjectList:
       type: object
       required:
@@ -20310,6 +21696,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Subject'
+    PaginatedSubjectResultList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubjectResult'
     PaginatedSubstituteAssignmentList:
       type: object
       required:
@@ -20379,6 +21788,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Term'
+    PaginatedTermWeightageRuleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TermWeightageRule'
     PaginatedTestimonialList:
       type: object
       required:
@@ -21322,6 +22754,31 @@ components:
           maxLength: 255
         is_active:
           type: boolean
+    PatchedGradingScaleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. BD National Curriculum GPA 5.0
+          maxLength: 100
+        scale_type:
+          $ref: '#/components/schemas/ScaleTypeEnum'
+        max_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Maximum possible grade point average (e.g. 5.00 or 4.00)
+        pass_gpa:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          description: Minimum grade point average required to pass (e.g. 1.00)
+        is_default:
+          type: boolean
+          description: Whether this scale is the default for new exams in the institution.
+        description:
+          type: string
     PatchedGroupRequest:
       type: object
       properties:
@@ -22013,6 +23470,21 @@ components:
         emergency_contact_phone:
           type: string
           maxLength: 20
+    PatchedStudentOptionalSubjectRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
     PatchedSubjectRequest:
       type: object
       properties:
@@ -22112,6 +23584,24 @@ components:
           maximum: 2147483647
           minimum: 0
           default: 1
+    PatchedTermWeightageRuleRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        exam:
+          type: string
+          format: uuid
+        weightage_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Percentage contribution towards cumulative annual result (e.g.
+            30.00, 70.00).
     PatchedUserProfileUpdateRequest:
       type: object
       description: Serializer for self-updating user profile.
@@ -23493,6 +24983,16 @@ components:
       - period_id
       - section_id
       - weekday
+    ScaleTypeEnum:
+      enum:
+      - gpa_5
+      - gpa_4
+      - custom
+      type: string
+      description: |-
+        * `gpa_5` - Bangladesh National Curriculum (GPA 5.0)
+        * `gpa_4` - Standard 4.0 Scale (GPA 4.0)
+        * `custom` - Custom Grading Scale
     SeatPlan:
       type: object
       properties:
@@ -25049,6 +26549,72 @@ components:
       - name_bn
       - name_en
       - student_id
+    StudentOptionalSubject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        subject_name:
+          type: string
+          readOnly: true
+        subject_code:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - created_at
+      - id
+      - session
+      - student
+      - student_code
+      - student_name
+      - subject
+      - subject_code
+      - subject_name
+    StudentOptionalSubjectRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+      required:
+      - class_level
+      - session
+      - student
+      - subject
     Subject:
       type: object
       properties:
@@ -25139,6 +26705,118 @@ components:
       - code
       - name_bn
       - name_en
+    SubjectResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+          readOnly: true
+        exam_subject:
+          type: string
+          format: uuid
+          readOnly: true
+        subject_name:
+          type: string
+          readOnly: true
+        subject_code:
+          type: string
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        creative_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        mcq_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        practical_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        total_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+        full_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+        marks_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        grade_point:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          readOnly: true
+        letter_grade:
+          type: string
+          readOnly: true
+        is_passed:
+          type: boolean
+          readOnly: true
+        is_absent:
+          type: boolean
+          readOnly: true
+        grace_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        is_fourth_subject:
+          type: boolean
+          readOnly: true
+        fail_reason:
+          type: string
+          readOnly: true
+          description: Detailed failure reason e.g. 'MCQ component failed (8 < 10)'
+      required:
+      - creative_marks
+      - exam
+      - exam_subject
+      - fail_reason
+      - full_marks
+      - grace_marks
+      - grade_point
+      - id
+      - is_absent
+      - is_fourth_subject
+      - is_passed
+      - letter_grade
+      - marks_percentage
+      - mcq_marks
+      - practical_marks
+      - student
+      - student_code
+      - student_name
+      - subject_code
+      - subject_name
+      - total_marks
     SubjectTypeEnum:
       enum:
       - student
@@ -25394,6 +27072,65 @@ components:
       - name
       - session
       - start_date
+    TermWeightageRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        class_level_name:
+          type: string
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_name:
+          type: string
+          readOnly: true
+        weightage_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Percentage contribution towards cumulative annual result (e.g.
+            30.00, 70.00).
+      required:
+      - class_level
+      - class_level_name
+      - exam
+      - exam_name
+      - id
+      - session
+      - weightage_percentage
+    TermWeightageRuleRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        exam:
+          type: string
+          format: uuid
+        weightage_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Percentage contribution towards cumulative annual result (e.g.
+            30.00, 70.00).
+      required:
+      - class_level
+      - exam
+      - session
+      - weightage_percentage
     Testimonial:
       type: object
       properties:
