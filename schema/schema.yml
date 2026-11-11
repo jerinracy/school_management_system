@@ -5005,6 +5005,1454 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserRole'
           description: ''
+  /api/v1/devices/commands/:
+    get:
+      operationId: devices_commands_list
+      description: Audit view for dispatched hardware instructions.
+      parameters:
+      - in: query
+        name: command_type
+        schema:
+          type: string
+          enum:
+          - clear_log
+          - delete_user
+          - enroll_user
+          - reboot
+          - sync_time
+        description: |-
+          * `enroll_user` - Enroll User
+          * `delete_user` - Delete User
+          * `sync_time` - Sync Time
+          * `reboot` - Reboot Device
+          * `clear_log` - Clear Log
+      - in: query
+        name: device
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - acknowledged
+          - failed
+          - queued
+          - sent
+        description: |-
+          * `queued` - Queued
+          * `sent` - Sent to Device
+          * `acknowledged` - Acknowledged
+          * `failed` - Failed
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceCommandList'
+          description: ''
+  /api/v1/devices/commands/{id}/:
+    get:
+      operationId: devices_commands_retrieve
+      description: Audit view for dispatched hardware instructions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device command.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCommand'
+          description: ''
+  /api/v1/devices/consents/:
+    get:
+      operationId: devices_consents_list
+      description: Guardian and employee consent management.
+      parameters:
+      - in: query
+        name: guardian
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBiometricConsentList'
+          description: ''
+    post:
+      operationId: devices_consents_create
+      description: Guardian and employee consent management.
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricConsent'
+          description: ''
+  /api/v1/devices/consents/{id}/:
+    get:
+      operationId: devices_consents_retrieve
+      description: Guardian and employee consent management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this biometric consent.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricConsent'
+          description: ''
+    put:
+      operationId: devices_consents_update
+      description: Guardian and employee consent management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this biometric consent.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricConsent'
+          description: ''
+    patch:
+      operationId: devices_consents_partial_update
+      description: Guardian and employee consent management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this biometric consent.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBiometricConsentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBiometricConsentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBiometricConsentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricConsent'
+          description: ''
+    delete:
+      operationId: devices_consents_destroy
+      description: Guardian and employee consent management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this biometric consent.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/devices/consents/{id}/withdraw/:
+    post:
+      operationId: devices_consents_withdraw_create
+      description: Withdraw consent and queue hardware user deletions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this biometric consent.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BiometricConsentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricConsent'
+          description: ''
+  /api/v1/devices/enrollments/:
+    get:
+      operationId: devices_enrollments_list
+      description: Terminal enrollment metadata records (NO templates stored).
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: method
+        schema:
+          type: string
+          enum:
+          - face
+          - fingerprint
+          - iris
+          - mobile
+          - nfc
+          - palm
+          - pin
+          - qr
+          - rfid
+        description: |-
+          * `fingerprint` - Fingerprint (আঙুলের ছাপ)
+          * `face` - Facial Recognition (মুখাবয়ব)
+          * `iris` - Iris Recognition (আইরিশ)
+          * `palm` - Palm Vein (হাতের তালু)
+          * `rfid` - RFID Card (স্মার্ট কার্ড)
+          * `nfc` - NFC Badge (এনএফসি)
+          * `qr` - QR Code (কিউআর কোড)
+          * `pin` - PIN / Password (পিন কোড)
+          * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBiometricEnrollmentList'
+          description: ''
+  /api/v1/devices/enrollments/{id}/:
+    get:
+      operationId: devices_enrollments_retrieve
+      description: Terminal enrollment metadata records (NO templates stored).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this biometric enrollment.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiometricEnrollment'
+          description: ''
+  /api/v1/devices/groups/:
+    get:
+      operationId: devices_groups_list
+      description: Logical perimeter groupings of terminals.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: target_audience
+        schema:
+          type: string
+          enum:
+          - all
+          - drivers
+          - staff
+          - students
+        description: |-
+          * `all` - All
+          * `students` - Students
+          * `staff` - Staff
+          * `drivers` - Drivers
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceGroupList'
+          description: ''
+    post:
+      operationId: devices_groups_create
+      description: Logical perimeter groupings of terminals.
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGroup'
+          description: ''
+  /api/v1/devices/groups/{id}/:
+    get:
+      operationId: devices_groups_retrieve
+      description: Logical perimeter groupings of terminals.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device group.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGroup'
+          description: ''
+    put:
+      operationId: devices_groups_update
+      description: Logical perimeter groupings of terminals.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device group.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGroup'
+          description: ''
+    patch:
+      operationId: devices_groups_partial_update
+      description: Logical perimeter groupings of terminals.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device group.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceGroupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGroup'
+          description: ''
+    delete:
+      operationId: devices_groups_destroy
+      description: Logical perimeter groupings of terminals.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device group.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/devices/groups/{id}/add-member/:
+    post:
+      operationId: devices_groups_add_member_create
+      description: Add a terminal to this group.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device group.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGroup'
+          description: ''
+  /api/v1/devices/groups/{id}/remove-member/:
+    post:
+      operationId: devices_groups_remove_member_create
+      description: Remove a terminal from this group.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device group.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceGroupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceGroup'
+          description: ''
+  /api/v1/devices/punches/:
+    get:
+      operationId: devices_punches_list
+      description: Immutable audit trail of raw biometric scans.
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: punch_state
+        schema:
+          type: string
+      - in: query
+        name: raw_user_id
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - duplicate
+          - processed
+          - unmapped
+          - unprocessed
+        description: |-
+          * `unprocessed` - Unprocessed
+          * `processed` - Processed into Attendance
+          * `duplicate` - Duplicate In Window
+          * `unmapped` - Unmapped User (Review Queue)
+      - in: query
+        name: verify_type
+        schema:
+          type: string
+          enum:
+          - face
+          - fingerprint
+          - iris
+          - mobile
+          - nfc
+          - palm
+          - pin
+          - qr
+          - rfid
+        description: |-
+          * `fingerprint` - Fingerprint (আঙুলের ছাপ)
+          * `face` - Facial Recognition (মুখাবয়ব)
+          * `iris` - Iris Recognition (আইরিশ)
+          * `palm` - Palm Vein (হাতের তালু)
+          * `rfid` - RFID Card (স্মার্ট কার্ড)
+          * `nfc` - NFC Badge (এনএফসি)
+          * `qr` - QR Code (কিউআর কোড)
+          * `pin` - PIN / Password (পিন কোড)
+          * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRawPunchList'
+          description: ''
+  /api/v1/devices/punches/{id}/:
+    get:
+      operationId: devices_punches_retrieve
+      description: Immutable audit trail of raw biometric scans.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this raw punch.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawPunch'
+          description: ''
+  /api/v1/devices/terminals/:
+    get:
+      operationId: devices_terminals_list
+      description: Manage hardware terminals, groups, and device commands.
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: device_type
+        schema:
+          type: string
+          enum:
+          - face
+          - fingerprint
+          - iris
+          - mobile
+          - nfc
+          - palm
+          - pin
+          - qr
+          - rfid
+        description: |-
+          * `fingerprint` - Fingerprint (আঙুলের ছাপ)
+          * `face` - Facial Recognition (মুখাবয়ব)
+          * `iris` - Iris Recognition (আইরিশ)
+          * `palm` - Palm Vein (হাতের তালু)
+          * `rfid` - RFID Card (স্মার্ট কার্ড)
+          * `nfc` - NFC Badge (এনএফসি)
+          * `qr` - QR Code (কিউআর কোড)
+          * `pin` - PIN / Password (পিন কোড)
+          * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: protocol
+        schema:
+          type: string
+          enum:
+          - generic_http
+          - mqtt
+          - pull_sdk
+          - push_adms
+          - simulator
+        description: |-
+          * `push_adms` - Push (ZKTeco ADMS/iClock)
+          * `generic_http` - Generic HTTP Webhook (HMAC)
+          * `mqtt` - MQTT Broker
+          * `pull_sdk` - Pull via SDK / Network Socket
+          * `simulator` - Virtual Simulator
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - maintenance
+          - offline
+          - online
+        description: |-
+          * `online` - Online
+          * `offline` - Offline
+          * `maintenance` - Maintenance
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceList'
+          description: ''
+    post:
+      operationId: devices_terminals_create
+      description: Manage hardware terminals, groups, and device commands.
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+  /api/v1/devices/terminals/{id}/:
+    get:
+      operationId: devices_terminals_retrieve
+      description: Manage hardware terminals, groups, and device commands.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+    put:
+      operationId: devices_terminals_update
+      description: Manage hardware terminals, groups, and device commands.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+    patch:
+      operationId: devices_terminals_partial_update
+      description: Manage hardware terminals, groups, and device commands.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+    delete:
+      operationId: devices_terminals_destroy
+      description: Manage hardware terminals, groups, and device commands.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/devices/terminals/{id}/enroll-user/:
+    post:
+      operationId: devices_terminals_enroll_user_create
+      description: Enroll student or staff on device with verified consent.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+  /api/v1/devices/terminals/{id}/health-logs/:
+    get:
+      operationId: devices_terminals_health_logs_retrieve
+      description: Retrieve recent diagnostic telemetry for terminal.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+  /api/v1/devices/terminals/{id}/queue-command/:
+    post:
+      operationId: devices_terminals_queue_command_create
+      description: Queue a remote hardware instruction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+  /api/v1/devices/terminals/{id}/test-connection/:
+    post:
+      operationId: devices_terminals_test_connection_create
+      description: Test terminal heartbeat or simulator ping.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+  /api/v1/devices/unmapped-punches/:
+    get:
+      operationId: devices_unmapped_punches_list
+      description: Review queue for punches with unrecognized hardware user PINs.
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: verify_type
+        schema:
+          type: string
+          enum:
+          - face
+          - fingerprint
+          - iris
+          - mobile
+          - nfc
+          - palm
+          - pin
+          - qr
+          - rfid
+        description: |-
+          * `fingerprint` - Fingerprint (আঙুলের ছাপ)
+          * `face` - Facial Recognition (মুখাবয়ব)
+          * `iris` - Iris Recognition (আইরিশ)
+          * `palm` - Palm Vein (হাতের তালু)
+          * `rfid` - RFID Card (স্মার্ট কার্ড)
+          * `nfc` - NFC Badge (এনএফসি)
+          * `qr` - QR Code (কিউআর কোড)
+          * `pin` - PIN / Password (পিন কোড)
+          * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRawPunchList'
+          description: ''
+  /api/v1/devices/unmapped-punches/{id}/:
+    get:
+      operationId: devices_unmapped_punches_retrieve
+      description: Review queue for punches with unrecognized hardware user PINs.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this raw punch.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawPunch'
+          description: ''
+  /api/v1/devices/unmapped-punches/{id}/resolve/:
+    post:
+      operationId: devices_unmapped_punches_resolve_create
+      description: Resolve unmapped punch to person and create persistent PIN mapping.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this raw punch.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RawPunch'
+          description: ''
+  /api/v1/devices/user-maps/:
+    get:
+      operationId: devices_user_maps_list
+      description: Device PIN mappings to school persons.
+      parameters:
+      - in: query
+        name: device
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceUserMapList'
+          description: ''
+    post:
+      operationId: devices_user_maps_create
+      description: Device PIN mappings to school persons.
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUserMapRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceUserMapRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceUserMapRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceUserMap'
+          description: ''
+  /api/v1/devices/user-maps/{id}/:
+    get:
+      operationId: devices_user_maps_retrieve
+      description: Device PIN mappings to school persons.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device user map.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceUserMap'
+          description: ''
+    put:
+      operationId: devices_user_maps_update
+      description: Device PIN mappings to school persons.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device user map.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUserMapRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceUserMapRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceUserMapRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceUserMap'
+          description: ''
+    patch:
+      operationId: devices_user_maps_partial_update
+      description: Device PIN mappings to school persons.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device user map.
+        required: true
+      tags:
+      - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceUserMapRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceUserMapRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceUserMapRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceUserMap'
+          description: ''
+    delete:
+      operationId: devices_user_maps_destroy
+      description: Device PIN mappings to school persons.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this device user map.
+        required: true
+      tags:
+      - devices
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/guardians/families/:
     get:
       operationId: guardians_families_list
@@ -10340,6 +11788,171 @@ components:
       - phone
       - relation
       - student
+    BiometricConsent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        subject_type:
+          $ref: '#/components/schemas/SubjectTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        guardian:
+          type: string
+          format: uuid
+          nullable: true
+          description: Mandatory for minor students
+        guardian_name:
+          type: string
+          readOnly: true
+        consent_version:
+          type: string
+          maxLength: 20
+        granted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        withdrawn_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - granted_at
+      - guardian_name
+      - id
+      - institution
+      - is_active
+      - staff_name
+      - student_name
+      - updated_at
+    BiometricConsentRequest:
+      type: object
+      properties:
+        subject_type:
+          $ref: '#/components/schemas/SubjectTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        guardian:
+          type: string
+          format: uuid
+          nullable: true
+          description: Mandatory for minor students
+        consent_version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        withdrawn_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+    BiometricEnrollment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        subject_type:
+          $ref: '#/components/schemas/SubjectTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        device:
+          type: string
+          format: uuid
+        device_name:
+          type: string
+          readOnly: true
+        method:
+          $ref: '#/components/schemas/VerifyTypeEnum'
+        device_user_id:
+          type: string
+          maxLength: 50
+        consent:
+          type: string
+          format: uuid
+        enrolled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - consent
+      - created_at
+      - device
+      - device_name
+      - device_user_id
+      - enrolled_at
+      - id
+      - institution
+      - method
+      - staff_name
+      - student_name
+      - updated_at
     BloodGroup9d3Enum:
       enum:
       - A+
@@ -10707,6 +12320,20 @@ components:
       - group
       - session
       - subject
+    CommandTypeEnum:
+      enum:
+      - enroll_user
+      - delete_user
+      - sync_time
+      - reboot
+      - clear_log
+      type: string
+      description: |-
+        * `enroll_user` - Enroll User
+        * `delete_user` - Delete User
+        * `sync_time` - Sync Time
+        * `reboot` - Reboot Device
+        * `clear_log` - Clear Log
     CopySessionInputRequest:
       type: object
       properties:
@@ -10849,6 +12476,390 @@ components:
           $ref: '#/components/schemas/RoleCategoryEnum'
       required:
       - title
+    Device:
+      type: object
+      description: Serializer for hardware terminal devices.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        branch_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: Descriptive title, e.g. 'Main Gate Terminal 1' or 'Staff Room
+            Face Scanner'
+          maxLength: 100
+        device_type:
+          $ref: '#/components/schemas/VerifyTypeEnum'
+        vendor:
+          type: string
+          description: Hardware manufacturer, e.g. ZKTeco, Hikvision, Suprema, eSSL
+          maxLength: 50
+        model:
+          type: string
+          description: Model name, e.g. SpeedFace-V5L
+          maxLength: 50
+        serial_no:
+          type: string
+          description: Unique hardware serial number (SN)
+          maxLength: 100
+        protocol:
+          $ref: '#/components/schemas/ProtocolEnum'
+        ip_address:
+          type: string
+          nullable: true
+        port:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        api_token:
+          type: string
+        location:
+          type: string
+          description: Physical placement, e.g. Main Gate, Library, Staff Lounge
+          maxLength: 100
+        timezone_offset_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Timezone offset in minutes (+360 for Asia/Dhaka UTC+6)
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeviceStatusEnum'
+          readOnly: true
+        last_seen:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        firmware_version:
+          type: string
+          maxLength: 50
+        user_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        punch_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch_name
+      - created_at
+      - id
+      - institution
+      - last_seen
+      - name
+      - serial_no
+      - status
+      - updated_at
+    DeviceCommand:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+        device:
+          type: string
+          format: uuid
+        device_name:
+          type: string
+          readOnly: true
+        command_type:
+          $ref: '#/components/schemas/CommandTypeEnum'
+        payload:
+          type: string
+          description: Formatted device instruction or JSON
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeviceCommandStatusEnum'
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        response_message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - acknowledged_at
+      - command_type
+      - created_at
+      - device
+      - device_name
+      - id
+      - institution
+      - sent_at
+      - status
+      - updated_at
+    DeviceCommandStatusEnum:
+      enum:
+      - queued
+      - sent
+      - acknowledged
+      - failed
+      type: string
+      description: |-
+        * `queued` - Queued
+        * `sent` - Sent to Device
+        * `acknowledged` - Acknowledged
+        * `failed` - Failed
+    DeviceGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. 'Main Gate - Students', 'Staff Room'
+          maxLength: 100
+        description:
+          type: string
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceEnum'
+        members_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - members_count
+      - name
+      - updated_at
+    DeviceGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. 'Main Gate - Students', 'Staff Room'
+          maxLength: 100
+        description:
+          type: string
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceEnum'
+      required:
+      - name
+    DeviceRequest:
+      type: object
+      description: Serializer for hardware terminal devices.
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive title, e.g. 'Main Gate Terminal 1' or 'Staff Room
+            Face Scanner'
+          maxLength: 100
+        device_type:
+          $ref: '#/components/schemas/VerifyTypeEnum'
+        vendor:
+          type: string
+          minLength: 1
+          description: Hardware manufacturer, e.g. ZKTeco, Hikvision, Suprema, eSSL
+          maxLength: 50
+        model:
+          type: string
+          description: Model name, e.g. SpeedFace-V5L
+          maxLength: 50
+        serial_no:
+          type: string
+          minLength: 1
+          description: Unique hardware serial number (SN)
+          maxLength: 100
+        protocol:
+          $ref: '#/components/schemas/ProtocolEnum'
+        ip_address:
+          type: string
+          nullable: true
+          minLength: 1
+        port:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        auth_secret:
+          type: string
+          writeOnly: true
+        api_token:
+          type: string
+        location:
+          type: string
+          description: Physical placement, e.g. Main Gate, Library, Staff Lounge
+          maxLength: 100
+        timezone_offset_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Timezone offset in minutes (+360 for Asia/Dhaka UTC+6)
+        firmware_version:
+          type: string
+          maxLength: 50
+        user_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        punch_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+      required:
+      - name
+      - serial_no
+    DeviceStatusEnum:
+      enum:
+      - online
+      - offline
+      - maintenance
+      type: string
+      description: |-
+        * `online` - Online
+        * `offline` - Offline
+        * `maintenance` - Maintenance
+    DeviceUserMap:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        device:
+          type: string
+          format: uuid
+        device_name:
+          type: string
+          readOnly: true
+        device_user_id:
+          type: string
+          description: Hardware user PIN/ID as registered on terminal, e.g. '1001'
+          maxLength: 50
+        user_type:
+          $ref: '#/components/schemas/UserType841Enum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        rfid_card:
+          type: string
+          maxLength: 50
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - device
+      - device_name
+      - device_user_id
+      - id
+      - institution
+      - staff_name
+      - student_name
+      - updated_at
+    DeviceUserMapRequest:
+      type: object
+      properties:
+        device:
+          type: string
+          format: uuid
+        device_user_id:
+          type: string
+          minLength: 1
+          description: Hardware user PIN/ID as registered on terminal, e.g. '1001'
+          maxLength: 50
+        user_type:
+          $ref: '#/components/schemas/UserType841Enum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        rfid_card:
+          type: string
+          maxLength: 50
+      required:
+      - device
+      - device_user_id
     Family:
       type: object
       description: Serializer for Family households.
@@ -12381,6 +14392,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuthorizedPickup'
+    PaginatedBiometricConsentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BiometricConsent'
+    PaginatedBiometricEnrollmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BiometricEnrollment'
     PaginatedBranchList:
       type: object
       required:
@@ -12496,6 +14553,98 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Designation'
+    PaginatedDeviceCommandList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceCommand'
+    PaginatedDeviceGroupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceGroup'
+    PaginatedDeviceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+    PaginatedDeviceUserMapList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceUserMap'
     PaginatedFamilyList:
       type: object
       required:
@@ -12795,6 +14944,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QuotaRule'
+    PaginatedRawPunchList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RawPunch'
     PaginatedRoleList:
       type: object
       required:
@@ -13420,6 +15592,34 @@ components:
           type: boolean
         notes:
           type: string
+    PatchedBiometricConsentRequest:
+      type: object
+      properties:
+        subject_type:
+          $ref: '#/components/schemas/SubjectTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        guardian:
+          type: string
+          format: uuid
+          nullable: true
+          description: Mandatory for minor students
+        consent_version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        withdrawn_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
     PatchedBranchRequest:
       type: object
       description: Serializer for Branch.
@@ -13536,6 +15736,110 @@ components:
           description: 'Hierarchy rank: lower number represents higher seniority'
         role_category:
           $ref: '#/components/schemas/RoleCategoryEnum'
+    PatchedDeviceGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. 'Main Gate - Students', 'Staff Room'
+          maxLength: 100
+        description:
+          type: string
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceEnum'
+    PatchedDeviceRequest:
+      type: object
+      description: Serializer for hardware terminal devices.
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive title, e.g. 'Main Gate Terminal 1' or 'Staff Room
+            Face Scanner'
+          maxLength: 100
+        device_type:
+          $ref: '#/components/schemas/VerifyTypeEnum'
+        vendor:
+          type: string
+          minLength: 1
+          description: Hardware manufacturer, e.g. ZKTeco, Hikvision, Suprema, eSSL
+          maxLength: 50
+        model:
+          type: string
+          description: Model name, e.g. SpeedFace-V5L
+          maxLength: 50
+        serial_no:
+          type: string
+          minLength: 1
+          description: Unique hardware serial number (SN)
+          maxLength: 100
+        protocol:
+          $ref: '#/components/schemas/ProtocolEnum'
+        ip_address:
+          type: string
+          nullable: true
+          minLength: 1
+        port:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        auth_secret:
+          type: string
+          writeOnly: true
+        api_token:
+          type: string
+        location:
+          type: string
+          description: Physical placement, e.g. Main Gate, Library, Staff Lounge
+          maxLength: 100
+        timezone_offset_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Timezone offset in minutes (+360 for Asia/Dhaka UTC+6)
+        firmware_version:
+          type: string
+          maxLength: 50
+        user_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        punch_capacity:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+    PatchedDeviceUserMapRequest:
+      type: object
+      properties:
+        device:
+          type: string
+          format: uuid
+        device_user_id:
+          type: string
+          minLength: 1
+          description: Hardware user PIN/ID as registered on terminal, e.g. '1001'
+          maxLength: 50
+        user_type:
+          $ref: '#/components/schemas/UserType841Enum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        rfid_card:
+          type: string
+          maxLength: 50
     PatchedFamilyRequest:
       type: object
       description: Serializer for Family households.
@@ -14240,7 +16544,7 @@ components:
           type: string
           maxLength: 255
         user_type:
-          $ref: '#/components/schemas/UserTypeEnum'
+          $ref: '#/components/schemas/UserType8d7Enum'
         is_active:
           type: boolean
         must_change_password:
@@ -14622,6 +16926,20 @@ components:
       - target_class
       - target_roll_no
       - target_section
+    ProtocolEnum:
+      enum:
+      - push_adms
+      - generic_http
+      - mqtt
+      - pull_sdk
+      - simulator
+      type: string
+      description: |-
+        * `push_adms` - Push (ZKTeco ADMS/iClock)
+        * `generic_http` - Generic HTTP Webhook (HMAC)
+        * `mqtt` - MQTT Broker
+        * `pull_sdk` - Pull via SDK / Network Socket
+        * `simulator` - Virtual Simulator
     PurposeEnum:
       enum:
       - login
@@ -14728,6 +17046,115 @@ components:
         * `freedom_fighter` - Freedom Fighter Quota (Muktidjoddha)
         * `disability` - Special Needs / Disability
         * `catchment` - Catchment / Local Area Quota
+    RawPunch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        device:
+          type: string
+          format: uuid
+          readOnly: true
+        device_name:
+          type: string
+          readOnly: true
+        serial_no:
+          type: string
+          readOnly: true
+        raw_user_id:
+          type: string
+          readOnly: true
+        device_time:
+          type: string
+          format: date-time
+          readOnly: true
+        received_at:
+          type: string
+          format: date-time
+          readOnly: true
+        clock_drift_seconds:
+          type: integer
+          readOnly: true
+        verify_type:
+          allOf:
+          - $ref: '#/components/schemas/VerifyTypeEnum'
+          readOnly: true
+        punch_state:
+          type: string
+          readOnly: true
+          description: 0=In, 1=Out, etc.
+        work_code:
+          type: string
+          readOnly: true
+        payload_hash:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/RawPunchStatusEnum'
+          readOnly: true
+        resolved_student:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        resolved_staff:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - clock_drift_seconds
+      - created_at
+      - device
+      - device_name
+      - device_time
+      - error_message
+      - id
+      - institution
+      - payload_hash
+      - punch_state
+      - raw_user_id
+      - received_at
+      - resolved_staff
+      - resolved_student
+      - serial_no
+      - staff_name
+      - status
+      - student_name
+      - verify_type
+      - work_code
+    RawPunchStatusEnum:
+      enum:
+      - unprocessed
+      - processed
+      - duplicate
+      - unmapped
+      type: string
+      description: |-
+        * `unprocessed` - Unprocessed
+        * `processed` - Processed into Attendance
+        * `duplicate` - Duplicate In Window
+        * `unmapped` - Unmapped User (Review Queue)
     RelationDefaultEnum:
       enum:
       - father
@@ -16596,16 +19023,12 @@ components:
       - name_en
     SubjectTypeEnum:
       enum:
-      - compulsory
-      - optional
-      - fourth_subject
-      - co_curricular
+      - student
+      - staff
       type: string
       description: |-
-        * `compulsory` - Compulsory
-        * `optional` - Optional / Elective
-        * `fourth_subject` - 4th Subject (Additional)
-        * `co_curricular` - Co-Curricular / Activity
+        * `student` - Student
+        * `staff` - Staff
     SubstituteAssignment:
       type: object
       properties:
@@ -16681,6 +19104,18 @@ components:
       - routine_slot
       - slot_date
       - substitute_teacher
+    TargetAudienceEnum:
+      enum:
+      - all
+      - students
+      - staff
+      - drivers
+      type: string
+      description: |-
+        * `all` - All
+        * `students` - Students
+        * `staff` - Staff
+        * `drivers` - Drivers
     TeacherAssignment:
       type: object
       description: Instructor class/subject mapping serializer.
@@ -17078,7 +19513,7 @@ components:
           type: string
           maxLength: 255
         user_type:
-          $ref: '#/components/schemas/UserTypeEnum'
+          $ref: '#/components/schemas/UserType8d7Enum'
         is_active:
           type: boolean
         must_change_password:
@@ -17146,7 +19581,7 @@ components:
           type: string
           maxLength: 255
         user_type:
-          $ref: '#/components/schemas/UserTypeEnum'
+          $ref: '#/components/schemas/UserType8d7Enum'
         is_active:
           type: boolean
         must_change_password:
@@ -17180,7 +19615,7 @@ components:
           type: string
           maxLength: 255
         user_type:
-          $ref: '#/components/schemas/UserTypeEnum'
+          $ref: '#/components/schemas/UserType8d7Enum'
         is_active:
           type: boolean
         must_change_password:
@@ -17216,7 +19651,7 @@ components:
           type: string
           maxLength: 255
         user_type:
-          $ref: '#/components/schemas/UserTypeEnum'
+          $ref: '#/components/schemas/UserType8d7Enum'
         is_active:
           type: boolean
         must_change_password:
@@ -17329,7 +19764,15 @@ components:
       - is_active
       - last_seen_at
       - platform
-    UserTypeEnum:
+    UserType841Enum:
+      enum:
+      - student
+      - staff
+      type: string
+      description: |-
+        * `student` - Student
+        * `staff` - Staff
+    UserType8d7Enum:
       enum:
       - superadmin
       - admin
@@ -17369,6 +19812,28 @@ components:
           maxLength: 6
       required:
       - otp
+    VerifyTypeEnum:
+      enum:
+      - fingerprint
+      - face
+      - iris
+      - palm
+      - rfid
+      - nfc
+      - qr
+      - pin
+      - mobile
+      type: string
+      description: |-
+        * `fingerprint` - Fingerprint (আঙুলের ছাপ)
+        * `face` - Facial Recognition (মুখাবয়ব)
+        * `iris` - Iris Recognition (আইরিশ)
+        * `palm` - Palm Vein (হাতের তালু)
+        * `rfid` - RFID Card (স্মার্ট কার্ড)
+        * `nfc` - NFC Badge (এনএফসি)
+        * `qr` - QR Code (কিউআর কোড)
+        * `pin` - PIN / Password (পিন কোড)
+        * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
     WeekdayEnum:
       enum:
       - 0

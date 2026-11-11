@@ -23,6 +23,9 @@ urlpatterns = [
     path("api/v1/students/", include("apps.students.urls", namespace="v1_students")),
     path("api/v1/guardians/", include("apps.guardians.urls", namespace="v1_guardians")),
     path("api/v1/staff/", include("apps.staff.urls", namespace="v1_staff")),
+    path("api/v1/devices/", include("apps.devices.urls", namespace="v1_devices")),
+    # Direct root-level routes for physical ZKTeco ADMS hardware terminals
+    path("iclock/", include("apps.devices.urls_adms")),
     # OpenAPI Schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # React Dashboard SPA shell catch-all

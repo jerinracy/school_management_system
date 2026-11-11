@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 09**: Biometric & Attendance Device Management (`apps/devices`).
+  - Core Models:
+    - `Device`: Hardware terminal registry supporting fingerprint, facial recognition, iris, palm vein, RFID/NFC smart cards, QR, and virtual simulators across vendors (ZKTeco, Hikvision, Suprema, eSSL, Custom). Unique serial number constraint per institution, API token and HMAC secret support.
+    - `DeviceGroup` & `DeviceGroupMember`: Logical perimeter groupings of terminals partitioned by audience (`all`, `students`, `staff`, `drivers`).
+    - `DeviceUserMap`: Binds device hardware PINs to student or staff identities.
+    - `BiometricConsent`: Enforces child privacy (`AGENTS.md §A3 Rule 4`) with mandatory guardian authorization for students, version tracking, and instant decommissioning on withdrawal.
+    - `BiometricEnrollment`: Safe enrollment tracking storing only metadata (PIN, method, device, consent) with absolute zero raw biometric images or templates stored.
+    - `DeviceCommand`: Asynchronous hardware command queue for enrollment, deletion, reboot, time sync, and log clearing.
+    - `DeviceHealthLog`: Periodic diagnostic telemetry and clock drift tracking.
+    - `RawPunch`: Immutable, append-only log of raw punches. Unique constraint on `(device, raw_user_id, device_time)` guarantees idempotent ingestion without duplicate records.
+  - Multi-Protocol Hardware Adapters (`apps/devices/adapters`):
+    - `AdapterRegistry`: Dynamic resolution of adapters by vendor and protocol.
+    - `ZKTecoPushAdapter`: Handles ZKTeco ADMS push protocol, parsing tab-delimited ATTLOG lines and formatting user commands.
+    - `GenericHTTPAdapter`: Modern JSON webhook intake with HMAC-SHA256 signature verification.
+    - `FakeDeviceAdapter`: High-throughput simulator for automated testing and demo queues.
+    - Hardware protocol stubs for Hikvision ISAPI, Suprema BioStar 2, and eSSL Pull SDK.
+  - Ingestion & Service Layer (`apps/devices/services`):
+    - `ingest_raw_punches`: High-throughput punch intake resolving users via `DeviceUserMap`, routing unknown scans to `unmapped` review queue, updating device online status and calculating clock drift.
+    - `resolve_unmapped_punch`: Re-links unmapped punch to student/staff, creates permanent user mapping, and resolves other pending punches with matching PIN.
+    - `record_biometric_consent` & `withdraw_biometric_consent`: Strict guardian consent validation and hardware user decommissioning.
+    - `enroll_user_on_device`: Validates active consent and queues hardware enrollment command.
+  - REST API & Hardware Endpoints:
+    - Endpoints for Terminals, Groups, User Maps, Consents, Enrollments, Commands, and Raw Punches.
+    - Unmapped punch review queue with `/resolve/` action.
+    - Dedicated root `/iclock/` routes for physical ZKTeco ADMS terminals: `/iclock/cdata` (heartbeat & ATTLOG push), `/iclock/getrequest` (command polling), `/iclock/devicecmd` (command acknowledgement).
+    - Generic Webhook push intake at `/api/v1/devices/push/webhook/`.
+  - Management Command:
+    - `simulate_punches`: CLI tool simulating realistic check-in/out scans and unmapped queues for demo and verification.
 - **Task 08**: Staff & HR Management (Teachers, Employees, Designations, Leave, Assignments) (`apps/staff`).
   - Core Models:
     - `Department`: Academic and administrative departments with optional Head of Department link.

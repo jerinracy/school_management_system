@@ -160,3 +160,19 @@
   - **Academic Bridge**: `Section`, `RoutineSlot`, and `SubstituteAssignment` models are extended with nullable `teacher_staff` foreign keys. Backward compatibility is retained for existing `teacher_user` fields while enabling transition to rich Staff profiles.
 - **Consequences**:
   - Eliminates leave balance overdraws and concurrency race conditions, provides clean MPO tracking for Bangladeshi school regulatory audits, and unifies academic routine management under concrete Staff profiles.
+
+---
+
+## ADR-011: Vendor-Agnostic Biometric Architecture, Raw Punch Immutability & Child Privacy Compliance
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: Bangladeshi schools deploy a diverse range of biometric attendance hardware (ZKTeco ADMS push, Hikvision ISAPI, Suprema BioStar, eSSL, RFID cards, and virtual simulators). Hardware devices experience clock drift, intermittent connectivity causing buffer resends, and numeric PIN registries that do not natively map to student/staff UUIDs. Furthermore, strict privacy guidelines (`AGENTS.md §A3 Rule 4`) forbid storing raw biometric images or templates, and student enrollment requires legal guardian authorization.
+- **Decision**:
+  - **Zero Raw Biometric Templates**: Neither raw fingerprint images nor facial recognition feature templates are accepted or stored in the database. `BiometricEnrollment` records store only terminal device metadata and user PINs.
+  - **Mandatory Guardian Consent**: Minor students require signed guardian consent (`BiometricConsent`) before hardware enrollment. Consent withdrawal immediately marks enrollments inactive and queues device deletion commands.
+  - **Vendor-Agnostic Adapter Pattern**: `BaseDeviceAdapter` defines a normalized interface for request authentication, payload parsing, and command formatting. `AdapterRegistry` dynamically binds devices by `(vendor, protocol)` with support for ZKTeco ADMS push, Generic HTTP HMAC-SHA256 webhooks, and virtual simulators.
+  - **Immutable Append-Only Punch Ledger**: All incoming scans are stored in `RawPunch`. A database unique constraint on `(device, raw_user_id, device_time)` ensures intake idempotency and deduplication during hardware network retransmissions.
+  - **Review Queue for Unmapped Punches**: Unrecognized hardware PINs are captured with `status="unmapped"`. Resolving an unmapped punch creates a persistent `DeviceUserMap` and automatically reconciles all pending punches for that PIN.
+  - **Native ADMS Protocol Support**: Standard ZKTeco endpoints are served directly at the root (`/iclock/cdata`, `/iclock/getrequest`, `/iclock/devicecmd`), allowing out-of-the-box hardware terminal configuration without reverse proxy rewrites.
+- **Consequences**:
+  - Full compliance with child biometric privacy standards, complete hardware vendor neutrality, resilient intake capable of handling hardware buffer bursts, and an auditable queue for terminal administration.
