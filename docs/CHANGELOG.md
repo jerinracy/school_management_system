@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 13**: Report Card Generation & Tabulation Sheet (`apps/results`).
+  - Core Models:
+    - `TabulationSheet`: Class/section broadsheet metadata tracking generated formats (`excel`, `pdf`), file links, total students, and generation status.
+    - `ReportCard`: Comprehensive student progress report tracking template styles (`standard_academic`, `detailed_competency`, `bilingual_formal`), generated PDF links, teacher remarks, principal approval stamps, and publication status.
+    - `ResultPublication`: Examination result publication lifecycle (`draft`, `approved`, `published`, `withheld`) governing release dates, student/guardian visibility flags, public portal search permissions, and formal remarks.
+  - Tabulation Broadsheet Engine (`apps/results/services/tabulation_service.py`):
+    - Multi-component matrix tabulation across creative (CQ), multiple-choice (MCQ), practical (PR), total marks, grade point (GP), and letter grade (LG) per subject.
+    - Styled Excel broadsheet export via `openpyxl` with dynamic headers, zebra striping, fail-cell highlighting in soft red, and cohort summary metrics.
+    - Landscape PDF broadsheet generator via `ReportLab` (`render_story_to_pdf`) with Bengali typography.
+  - Bilingual Report Card Engine (`apps/results/services/report_card_service.py`):
+    - ReportLab PDF generator using TrueType `Kalpurush.ttf` for authentic Bengali typography.
+    - Term attendance statistics integration (`DailyAttendance` working days, present, late, absent, attendance percentage).
+    - Subject-wise breakdown table with component marks, highest marks in cohort, letter grades, and grade points.
+    - Official NCTB 8-tier GPA 5.0 grading scale legend, overall GPA summary (with & without 4th subject), teacher remarks, and signature blocks.
+    - Bulk ZIP archive generator streaming section-wide report cards into a single downloadable ZIP file.
+  - Result Publication & Visibility Control (`apps/results/services/publication_service.py`):
+    - Multi-stage publication workflow: Draft -> Principal/Admin Approval -> Formal Release.
+    - Role-guarded visibility helper (`can_view_exam_result`): Students and guardians are blocked from viewing unapproved or unpublished results.
+  - Diagnostic Analytics & Promotion Feed (`apps/results/services/analytics_service.py`):
+    - `get_weak_students_analytics`: Automated diagnostics surfacing students with failed subjects or GPAs below configurable thresholds, with failure frequency distributions.
+    - `get_promotion_eligibility_feed`: End-of-year promotion recommendations categorising students into `eligible`, `conditional`, and `retained` based on cumulative CGPA and attendance thresholds.
+  - Background Tasks (`apps/results/tasks.py`):
+    - `generate_tabulation_sheet_task`: Celery async worker task for heavy class-wide tabulation broadsheets.
+    - `generate_bulk_report_cards_task`: Celery async worker task generating bulk zipped student progress cards.
+  - REST API ViewSets (`apps/results/views.py`):
+    - `/api/v1/results/tabulation-sheets/`: Query and trigger broadsheet exports (`generate_excel`, `generate_pdf`).
+    - `/api/v1/results/report-cards/`: Individual student progress cards, bulk generation (`bulk_generate`), and ZIP export (`bulk_zip`).
+    - `/api/v1/results/publications/`: Examination publication lifecycle (`approve`, `publish`, `unpublish`).
+    - `/api/v1/results/public-search/`: Rate-limited portal endpoint for roll/student-ID lookup of published results.
+    - `/api/v1/results/analytics/`: Diagnostic endpoints for `weak_students` and `promotion_eligibility`.
 - **Task 12**: Grading Engine (GPA 5.0, BD National Curriculum) (`apps/results`).
   - Core Models:
     - `GradingScale` & `GradeTier`: Configurable institutional grading system (defaulted to Bangladesh Secondary/Higher Secondary GPA 5.0 scale: A+, A, A-, B, C, D, F) with mark percentages, grade points, letter grades, and remarks.

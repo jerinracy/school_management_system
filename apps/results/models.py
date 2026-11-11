@@ -568,3 +568,188 @@ class CumulativeResult(TenantOwnedModel, SoftDeleteMixin):
 
     def __str__(self) -> str:
         return f"{self.student.student_id} - Annual CGPA {self.cumulative_gpa} ({self.cumulative_grade})"
+
+
+class TabulationSheetFormat(models.TextChoices):
+    EXCEL = "xlsx", "Excel Spreadsheet (.xlsx)"
+    PDF = "pdf", "PDF Document (.pdf)"
+
+
+class TabulationSheet(TenantOwnedModel, SoftDeleteMixin):
+    """Archived and downloadable examination tabulation broadsheet for a class/section."""
+
+    exam = models.ForeignKey(
+        "exams.Exam",
+        on_delete=models.CASCADE,
+        related_name="tabulation_sheets",
+    )
+    class_level = models.ForeignKey(
+        "academics.ClassLevel",
+        on_delete=models.CASCADE,
+        related_name="tabulation_sheets",
+    )
+    section = models.ForeignKey(
+        "academics.Section",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tabulation_sheets",
+        help_text="Optional section filter. If blank, includes all sections of the class level.",
+    )
+    file_format = models.CharField(
+        max_length=10,
+        choices=TabulationSheetFormat.choices,
+        default=TabulationSheetFormat.EXCEL,
+    )
+    file = models.FileField(
+        upload_to="results/tabulations/%Y/%m/",
+        blank=True,
+        null=True,
+    )
+    version = models.PositiveIntegerField(
+        default=1,
+    )
+    generated_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    generated_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    total_students = models.PositiveIntegerField(
+        default=0,
+    )
+
+    class Meta:
+        ordering = ["-generated_at"]
+        verbose_name = "Tabulation Sheet"
+        verbose_name_plural = "Tabulation Sheets"
+        indexes = [
+            models.Index(fields=["institution", "exam", "class_level"]),
+        ]
+
+    def __str__(self) -> str:
+        sec_str = f" - {self.section.name}" if self.section else " (All Sections)"
+        return f"{self.exam.name} - {self.class_level.name}{sec_str} ({self.file_format.upper()} v{self.version})"
+
+
+class ReportCardTemplateStyle(models.TextChoices):
+    DEFAULT_BD = "default_bd", "Standard Bangladesh National Curriculum"
+    MODERN = "modern", "Modern Bilingual Card"
+
+
+class ReportCard(TenantOwnedModel, SoftDeleteMixin):
+    """Official student progress report card document."""
+
+    exam = models.ForeignKey(
+        "exams.Exam",
+        on_delete=models.CASCADE,
+        related_name="report_cards",
+    )
+    student = models.ForeignKey(
+        "students.Student",
+        on_delete=models.CASCADE,
+        related_name="report_cards",
+    )
+    enrollment = models.ForeignKey(
+        "students.StudentEnrollment",
+        on_delete=models.CASCADE,
+        related_name="report_cards",
+    )
+    exam_result = models.ForeignKey(
+        "results.ExamResult",
+        on_delete=models.CASCADE,
+        related_name="report_cards",
+        null=True,
+        blank=True,
+    )
+    template_style = models.CharField(
+        max_length=20,
+        choices=ReportCardTemplateStyle.choices,
+        default=ReportCardTemplateStyle.DEFAULT_BD,
+    )
+    file = models.FileField(
+        upload_to="results/report_cards/%Y/%m/",
+        blank=True,
+        null=True,
+    )
+    generated_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    generated_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        ordering = ["-generated_at"]
+        verbose_name = "Report Card"
+        verbose_name_plural = "Report Cards"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["institution", "exam", "student"],
+                condition=models.Q(is_deleted=False),
+                name="unique_report_card_per_exam_student",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["institution", "exam", "student"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Report Card: {self.student.student_id} - {self.exam.name}"
+
+
+class ResultPublication(TenantOwnedModel, SoftDeleteMixin):
+    """Institutional publication control and visibility schedule for examination results."""
+
+    exam = models.OneToOneField(
+        "exams.Exam",
+        on_delete=models.CASCADE,
+        related_name="publication",
+    )
+    is_published = models.BooleanField(
+        default=False,
+        help_text="If True, results are officially published and visible to authorized users.",
+    )
+    published_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+    is_visible_to_guardians = models.BooleanField(
+        default=True,
+        help_text="Allow guardians to view this exam's results on the portal/app.",
+    )
+    is_visible_to_students = models.BooleanField(
+        default=True,
+        help_text="Allow students to view their own result on the portal/app.",
+    )
+    allow_public_search = models.BooleanField(
+        default=False,
+        help_text="Allow public unauthenticated result lookup via student ID/roll number.",
+    )
+    published_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    remarks = models.TextField(
+        blank=True,
+        help_text="Official remarks or publication notes from the Head Teacher/Principal.",
+    )
+
+    class Meta:
+        verbose_name = "Result Publication"
+        verbose_name_plural = "Result Publications"
+
+    def __str__(self) -> str:
+        status_str = "Published" if self.is_published else "Draft/Unpublished"
+        return f"{self.exam.name} - {status_str}"

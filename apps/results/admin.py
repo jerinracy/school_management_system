@@ -8,8 +8,11 @@ from apps.results.models import (
     ExamResult,
     GradeTier,
     GradingScale,
+    ReportCard,
+    ResultPublication,
     StudentOptionalSubject,
     SubjectResult,
+    TabulationSheet,
     TermWeightageRule,
 )
 
@@ -126,3 +129,53 @@ class CumulativeResultAdmin(admin.ModelAdmin):
     ]
     list_filter = ["is_passed", "promotion_recommended", "session", "class_level"]
     search_fields = ["student__name_en", "student__student_id"]
+
+
+@admin.register(TabulationSheet)
+class TabulationSheetAdmin(admin.ModelAdmin):
+    list_display = [
+        "exam",
+        "class_level",
+        "section",
+        "file_format",
+        "version",
+        "total_students",
+        "generated_at",
+        "institution",
+    ]
+    list_filter = ["file_format", "exam", "class_level"]
+    search_fields = ["exam__name", "class_level__name"]
+
+
+@admin.register(ReportCard)
+class ReportCardAdmin(admin.ModelAdmin):
+    list_display = [
+        "student",
+        "exam",
+        "enrollment",
+        "template_style",
+        "generated_at",
+        "institution",
+    ]
+    list_filter = ["template_style", "exam"]
+    search_fields = ["student__name_en", "student__student_id", "exam__name"]
+
+
+@admin.register(ResultPublication)
+class ResultPublicationAdmin(admin.ModelAdmin):
+    list_display = [
+        "exam",
+        "is_published",
+        "published_at",
+        "is_visible_to_guardians",
+        "is_visible_to_students",
+        "allow_public_search",
+        "institution",
+    ]
+    list_filter = [
+        "is_published",
+        "is_visible_to_guardians",
+        "is_visible_to_students",
+        "allow_public_search",
+    ]
+    search_fields = ["exam__name"]

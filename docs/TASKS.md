@@ -20,7 +20,7 @@ Legend:
 | **Task 10** | Attendance Engine (Daily Processing, Shifts, Leaves) | DONE | Task 06, Task 08, Task 09 | 2026-11-11 |
 | **Task 11** | Exam Setup & Mark Entry | DONE | Task 04 | 2026-11-11 |
 | **Task 12** | Grading Engine (GPA 5.0, BD National Curriculum) | DONE | Task 11 | 2026-11-11 |
-| **Task 13** | Report Card Generation & Tabulation Sheet | TODO | Task 12 | - |
+| **Task 13** | Report Card Generation & Tabulation Sheet | DONE | Task 12 | 2026-11-11 |
 | **Task 14** | Fee Structure & Invoice Generation | TODO | Task 06 | - |
 | **Task 15** | Payment Collection & Gateways (bKash, Nagad, SSLCommerz) | TODO | Task 14 | - |
 | **Task 16** | SMS Gateway Integration & Communication Suite | TODO | Task 03, Task 07 | - |

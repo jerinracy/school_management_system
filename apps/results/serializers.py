@@ -8,8 +8,11 @@ from apps.results.models import (
     ExamResult,
     GradeTier,
     GradingScale,
+    ReportCard,
+    ResultPublication,
     StudentOptionalSubject,
     SubjectResult,
+    TabulationSheet,
     TermWeightageRule,
 )
 
@@ -232,3 +235,143 @@ class CumulativeCalculateSerializer(serializers.Serializer):
     session_id = serializers.UUIDField(required=True)
     class_level_id = serializers.UUIDField(required=True)
     async_mode = serializers.BooleanField(default=False)
+
+
+class TabulationSheetSerializer(serializers.ModelSerializer):
+    exam_name = serializers.CharField(source="exam.name", read_only=True)
+    class_level_name = serializers.CharField(source="class_level.name", read_only=True)
+    section_name = serializers.CharField(
+        source="section.name", read_only=True, default="All Sections"
+    )
+    download_url = serializers.FileField(source="file", read_only=True)
+
+    class Meta:
+        model = TabulationSheet
+        fields = [
+            "id",
+            "exam",
+            "exam_name",
+            "class_level",
+            "class_level_name",
+            "section",
+            "section_name",
+            "file_format",
+            "file",
+            "download_url",
+            "version",
+            "total_students",
+            "generated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "download_url",
+            "version",
+            "total_students",
+            "generated_at",
+        ]
+
+
+class TabulationGenerateSerializer(serializers.Serializer):
+    exam_id = serializers.UUIDField(required=True)
+    class_level_id = serializers.UUIDField(required=True)
+    section_id = serializers.UUIDField(required=False, allow_null=True)
+    file_format = serializers.ChoiceField(choices=["xlsx", "pdf"], default="xlsx")
+    async_mode = serializers.BooleanField(default=False)
+
+
+class ReportCardSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source="student.name_en", read_only=True)
+    student_code = serializers.CharField(source="student.student_id", read_only=True)
+    exam_name = serializers.CharField(source="exam.name", read_only=True)
+    roll_no = serializers.IntegerField(source="enrollment.roll_no", read_only=True)
+    class_level_name = serializers.CharField(source="enrollment.class_level.name", read_only=True)
+    section_name = serializers.CharField(source="enrollment.section.name", read_only=True)
+    download_url = serializers.FileField(source="file", read_only=True)
+
+    class Meta:
+        model = ReportCard
+        fields = [
+            "id",
+            "exam",
+            "exam_name",
+            "student",
+            "student_name",
+            "student_code",
+            "roll_no",
+            "class_level_name",
+            "section_name",
+            "template_style",
+            "file",
+            "download_url",
+            "generated_at",
+        ]
+        read_only_fields = ["id", "download_url", "generated_at"]
+
+
+class ReportCardGenerateSerializer(serializers.Serializer):
+    exam_result_id = serializers.UUIDField(required=True)
+    template_style = serializers.ChoiceField(choices=["default_bd", "modern"], default="default_bd")
+
+
+class ReportCardBulkZipSerializer(serializers.Serializer):
+    exam_id = serializers.UUIDField(required=True)
+    class_level_id = serializers.UUIDField(required=True)
+    section_id = serializers.UUIDField(required=False, allow_null=True)
+    async_mode = serializers.BooleanField(default=False)
+
+
+class ResultPublicationSerializer(serializers.ModelSerializer):
+    exam_name = serializers.CharField(source="exam.name", read_only=True)
+
+    class Meta:
+        model = ResultPublication
+        fields = [
+            "id",
+            "exam",
+            "exam_name",
+            "is_published",
+            "published_at",
+            "is_visible_to_guardians",
+            "is_visible_to_students",
+            "allow_public_search",
+            "remarks",
+        ]
+        read_only_fields = ["id", "published_at"]
+
+
+class ResultApproveSerializer(serializers.Serializer):
+    exam_id = serializers.UUIDField(required=True)
+
+
+class ResultPublishSerializer(serializers.Serializer):
+    exam_id = serializers.UUIDField(required=True)
+    is_visible_to_guardians = serializers.BooleanField(default=True)
+    is_visible_to_students = serializers.BooleanField(default=True)
+    allow_public_search = serializers.BooleanField(default=False)
+    remarks = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class PublicResultSearchSerializer(serializers.Serializer):
+    exam_id = serializers.UUIDField(required=True)
+    student_id = serializers.CharField(required=False, allow_blank=True)
+    roll_no = serializers.IntegerField(required=False, allow_null=True)
+
+
+class WeakStudentsResponseSerializer(serializers.Serializer):
+    exam_id = serializers.CharField()
+    exam_name = serializers.CharField()
+    total_students = serializers.IntegerField()
+    weak_student_count = serializers.IntegerField()
+    weak_student_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
+    subject_failure_frequencies = serializers.ListField(child=serializers.DictField())
+    students = serializers.ListField(child=serializers.DictField())
+
+
+class PromotionEligibilityResponseSerializer(serializers.Serializer):
+    session_id = serializers.CharField()
+    class_level_id = serializers.CharField()
+    criteria = serializers.DictField()
+    counts = serializers.DictField()
+    eligible = serializers.ListField(child=serializers.DictField())
+    conditional = serializers.ListField(child=serializers.DictField())
+    retained = serializers.ListField(child=serializers.DictField())

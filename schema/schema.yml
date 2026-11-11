@@ -11716,6 +11716,40 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/results/analytics/promotion_eligibility/:
+    get:
+      operationId: results_analytics_promotion_eligibility_retrieve
+      description: 'Diagnostic academic analytics: weak-student identification and
+        promotion feeds.'
+      summary: Retrieve promotion recommendations feed based on annual CGPA & attendance
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionEligibilityResponse'
+          description: ''
+  /api/v1/results/analytics/weak_students/:
+    get:
+      operationId: results_analytics_weak_students_retrieve
+      description: 'Diagnostic academic analytics: weak-student identification and
+        promotion feeds.'
+      summary: Retrieve weak students at academic risk for an exam
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeakStudentsResponse'
+          description: ''
   /api/v1/results/cumulative-results/:
     get:
       operationId: results_cumulative_results_list
@@ -12350,6 +12384,571 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/results/public-search/:
+    get:
+      operationId: results_public_search_retrieve
+      description: Public, rate-limited result lookup endpoint for students/guardians
+        by roll or Student ID.
+      summary: Public student result lookup by roll or student ID
+      parameters:
+      - in: query
+        name: exam_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: roll_no
+        schema:
+          type: integer
+          nullable: true
+      - in: query
+        name: student_id
+        schema:
+          type: string
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResult'
+          description: ''
+  /api/v1/results/publications/:
+    get:
+      operationId: results_publications_list
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResultPublicationList'
+          description: ''
+    post:
+      operationId: results_publications_create
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultPublicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResultPublicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResultPublicationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+  /api/v1/results/publications/{id}/:
+    get:
+      operationId: results_publications_retrieve
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Result Publication.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+    put:
+      operationId: results_publications_update
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Result Publication.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultPublicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResultPublicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResultPublicationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+    patch:
+      operationId: results_publications_partial_update
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Result Publication.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedResultPublicationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedResultPublicationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedResultPublicationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+    delete:
+      operationId: results_publications_destroy
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Result Publication.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/results/publications/approve/:
+    post:
+      operationId: results_publications_approve_create
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      summary: Approve exam results (Principal / Head Teacher)
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultApproveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResultApproveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResultApproveRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+  /api/v1/results/publications/publish/:
+    post:
+      operationId: results_publications_publish_create
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      summary: Formally publish examination results to student/guardian portals
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultPublishRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResultPublishRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResultPublishRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+  /api/v1/results/publications/unpublish/:
+    post:
+      operationId: results_publications_unpublish_create
+      description: 'Examination publication workflow: approval, formal release, and
+        visibility schedule.'
+      summary: Revert published results back to draft for mark corrections
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultApproveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResultApproveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResultApproveRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultPublication'
+          description: ''
+  /api/v1/results/report-cards/:
+    get:
+      operationId: results_report_cards_list
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      parameters:
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReportCardList'
+          description: ''
+    post:
+      operationId: results_report_cards_create
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
+  /api/v1/results/report-cards/{id}/:
+    get:
+      operationId: results_report_cards_retrieve
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Card.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
+    put:
+      operationId: results_report_cards_update
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Card.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportCardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
+    patch:
+      operationId: results_report_cards_partial_update
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Card.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReportCardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReportCardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReportCardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
+    delete:
+      operationId: results_report_cards_destroy
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Card.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/results/report-cards/{id}/download/:
+    get:
+      operationId: results_report_cards_download_retrieve
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      summary: Download progress report card PDF directly
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Card.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
+  /api/v1/results/report-cards/bulk_zip/:
+    post:
+      operationId: results_report_cards_bulk_zip_create
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      summary: Batch-generate and download report cards in a ZIP archive
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCardBulkZipRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportCardBulkZipRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportCardBulkZipRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
+  /api/v1/results/report-cards/generate/:
+    post:
+      operationId: results_report_cards_generate_create
+      description: Printable progress report card management, single PDF generation,
+        and bulk ZIP download.
+      summary: Generate progress report card PDF for a student result
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCardGenerateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportCardGenerateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportCardGenerateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCard'
+          description: ''
   /api/v1/results/subject-results/:
     get:
       operationId: results_subject_results_list
@@ -12439,6 +13038,259 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SubjectResult'
+          description: ''
+  /api/v1/results/tabulation-sheets/:
+    get:
+      operationId: results_tabulation_sheets_list
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: exam
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: file_format
+        schema:
+          type: string
+          enum:
+          - pdf
+          - xlsx
+        description: |-
+          * `xlsx` - Excel Spreadsheet (.xlsx)
+          * `pdf` - PDF Document (.pdf)
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTabulationSheetList'
+          description: ''
+    post:
+      operationId: results_tabulation_sheets_create
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TabulationSheetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TabulationSheetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TabulationSheetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabulationSheet'
+          description: ''
+  /api/v1/results/tabulation-sheets/{id}/:
+    get:
+      operationId: results_tabulation_sheets_retrieve
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Tabulation Sheet.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabulationSheet'
+          description: ''
+    put:
+      operationId: results_tabulation_sheets_update
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Tabulation Sheet.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TabulationSheetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TabulationSheetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TabulationSheetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabulationSheet'
+          description: ''
+    patch:
+      operationId: results_tabulation_sheets_partial_update
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Tabulation Sheet.
+        required: true
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTabulationSheetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTabulationSheetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTabulationSheetRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabulationSheet'
+          description: ''
+    delete:
+      operationId: results_tabulation_sheets_destroy
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Tabulation Sheet.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/results/tabulation-sheets/{id}/download/:
+    get:
+      operationId: results_tabulation_sheets_download_retrieve
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      summary: Download tabulation sheet file directly
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Tabulation Sheet.
+        required: true
+      tags:
+      - results
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabulationSheet'
+          description: ''
+  /api/v1/results/tabulation-sheets/generate/:
+    post:
+      operationId: results_tabulation_sheets_generate_create
+      description: Archived and downloadable class tabulation broadsheets (Excel and
+        PDF).
+      summary: Generate broadsheet tabulation sheet (Excel or PDF)
+      tags:
+      - results
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TabulationGenerateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TabulationGenerateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TabulationGenerateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TabulationSheet'
           description: ''
   /api/v1/results/term-weightages/:
     get:
@@ -21420,6 +22272,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReScrutinyRequest'
+    PaginatedReportCardList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportCard'
+    PaginatedResultPublicationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultPublication'
     PaginatedRoleList:
       type: object
       required:
@@ -21742,6 +22640,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubstituteAssignment'
+    PaginatedTabulationSheetList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TabulationSheet'
     PaginatedTeacherAssignmentList:
       type: object
       required:
@@ -23202,6 +24123,44 @@ components:
           type: string
           format: date-time
           nullable: true
+    PatchedReportCardRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        template_style:
+          $ref: '#/components/schemas/ReportCardTemplateStyleEnum'
+        file:
+          type: string
+          format: binary
+          nullable: true
+    PatchedResultPublicationRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        is_published:
+          type: boolean
+          description: If True, results are officially published and visible to authorized
+            users.
+        is_visible_to_guardians:
+          type: boolean
+          description: Allow guardians to view this exam's results on the portal/app.
+        is_visible_to_students:
+          type: boolean
+          description: Allow students to view their own result on the portal/app.
+        allow_public_search:
+          type: boolean
+          description: Allow public unauthenticated result lookup via student ID/roll
+            number.
+        remarks:
+          type: string
+          description: Official remarks or publication notes from the Head Teacher/Principal.
     PatchedRoleRequest:
       type: object
       description: Serializer for Role.
@@ -23538,6 +24497,27 @@ components:
         reason:
           type: string
           maxLength: 255
+    PatchedTabulationSheetRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional section filter. If blank, includes all sections of
+            the class level.
+        file_format:
+          $ref: '#/components/schemas/TabulationSheetFileFormatEnum'
+        file:
+          type: string
+          format: binary
+          nullable: true
     PatchedTeacherAssignmentRequest:
       type: object
       description: Instructor class/subject mapping serializer.
@@ -24140,6 +25120,42 @@ components:
         * `previewed` - Previewed
         * `applied` - Applied
         * `rolled_back` - Rolled Back
+    PromotionEligibilityResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        class_level_id:
+          type: string
+        criteria:
+          type: object
+          additionalProperties: {}
+        counts:
+          type: object
+          additionalProperties: {}
+        eligible:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        conditional:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        retained:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - class_level_id
+      - conditional
+      - counts
+      - criteria
+      - eligible
+      - retained
+      - session_id
     PromotionItem:
       type: object
       properties:
@@ -24650,6 +25666,221 @@ components:
         * `buddhism` - Buddhism
         * `christianity` - Christianity
         * `other` - Other
+    ReportCard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_name:
+          type: string
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        roll_no:
+          type: integer
+          readOnly: true
+        class_level_name:
+          type: string
+          readOnly: true
+        section_name:
+          type: string
+          readOnly: true
+        template_style:
+          $ref: '#/components/schemas/ReportCardTemplateStyleEnum'
+        file:
+          type: string
+          format: uri
+          nullable: true
+        download_url:
+          type: string
+          format: uri
+          readOnly: true
+        generated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level_name
+      - download_url
+      - exam
+      - exam_name
+      - generated_at
+      - id
+      - roll_no
+      - section_name
+      - student
+      - student_code
+      - student_name
+    ReportCardBulkZipRequest:
+      type: object
+      properties:
+        exam_id:
+          type: string
+          format: uuid
+        class_level_id:
+          type: string
+          format: uuid
+        section_id:
+          type: string
+          format: uuid
+          nullable: true
+        async_mode:
+          type: boolean
+          default: false
+      required:
+      - class_level_id
+      - exam_id
+    ReportCardGenerateRequest:
+      type: object
+      properties:
+        exam_result_id:
+          type: string
+          format: uuid
+        template_style:
+          allOf:
+          - $ref: '#/components/schemas/ReportCardGenerateTemplateStyleEnum'
+          default: default_bd
+      required:
+      - exam_result_id
+    ReportCardGenerateTemplateStyleEnum:
+      enum:
+      - default_bd
+      - modern
+      type: string
+      description: |-
+        * `default_bd` - default_bd
+        * `modern` - modern
+    ReportCardRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        template_style:
+          $ref: '#/components/schemas/ReportCardTemplateStyleEnum'
+        file:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - exam
+      - student
+    ReportCardTemplateStyleEnum:
+      enum:
+      - default_bd
+      - modern
+      type: string
+      description: |-
+        * `default_bd` - Standard Bangladesh National Curriculum
+        * `modern` - Modern Bilingual Card
+    ResultApproveRequest:
+      type: object
+      properties:
+        exam_id:
+          type: string
+          format: uuid
+      required:
+      - exam_id
+    ResultPublication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_name:
+          type: string
+          readOnly: true
+        is_published:
+          type: boolean
+          description: If True, results are officially published and visible to authorized
+            users.
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_visible_to_guardians:
+          type: boolean
+          description: Allow guardians to view this exam's results on the portal/app.
+        is_visible_to_students:
+          type: boolean
+          description: Allow students to view their own result on the portal/app.
+        allow_public_search:
+          type: boolean
+          description: Allow public unauthenticated result lookup via student ID/roll
+            number.
+        remarks:
+          type: string
+          description: Official remarks or publication notes from the Head Teacher/Principal.
+      required:
+      - exam
+      - exam_name
+      - id
+      - published_at
+    ResultPublicationRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        is_published:
+          type: boolean
+          description: If True, results are officially published and visible to authorized
+            users.
+        is_visible_to_guardians:
+          type: boolean
+          description: Allow guardians to view this exam's results on the portal/app.
+        is_visible_to_students:
+          type: boolean
+          description: Allow students to view their own result on the portal/app.
+        allow_public_search:
+          type: boolean
+          description: Allow public unauthenticated result lookup via student ID/roll
+            number.
+        remarks:
+          type: string
+          description: Official remarks or publication notes from the Head Teacher/Principal.
+      required:
+      - exam
+    ResultPublishRequest:
+      type: object
+      properties:
+        exam_id:
+          type: string
+          format: uuid
+        is_visible_to_guardians:
+          type: boolean
+          default: true
+        is_visible_to_students:
+          type: boolean
+          default: true
+        allow_public_search:
+          type: boolean
+          default: false
+        remarks:
+          type: string
+          default: ''
+      required:
+      - exam_id
     Role:
       type: object
       description: Serializer for Role.
@@ -26900,6 +28131,129 @@ components:
       - routine_slot
       - slot_date
       - substitute_teacher
+    TabulationGenerateFileFormatEnum:
+      enum:
+      - xlsx
+      - pdf
+      type: string
+      description: |-
+        * `xlsx` - xlsx
+        * `pdf` - pdf
+    TabulationGenerateRequest:
+      type: object
+      properties:
+        exam_id:
+          type: string
+          format: uuid
+        class_level_id:
+          type: string
+          format: uuid
+        section_id:
+          type: string
+          format: uuid
+          nullable: true
+        file_format:
+          allOf:
+          - $ref: '#/components/schemas/TabulationGenerateFileFormatEnum'
+          default: xlsx
+        async_mode:
+          type: boolean
+          default: false
+      required:
+      - class_level_id
+      - exam_id
+    TabulationSheet:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        exam:
+          type: string
+          format: uuid
+        exam_name:
+          type: string
+          readOnly: true
+        class_level:
+          type: string
+          format: uuid
+        class_level_name:
+          type: string
+          readOnly: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional section filter. If blank, includes all sections of
+            the class level.
+        section_name:
+          type: string
+          readOnly: true
+          default: All Sections
+        file_format:
+          $ref: '#/components/schemas/TabulationSheetFileFormatEnum'
+        file:
+          type: string
+          format: uri
+          nullable: true
+        download_url:
+          type: string
+          format: uri
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        total_students:
+          type: integer
+          readOnly: true
+        generated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - class_level_name
+      - download_url
+      - exam
+      - exam_name
+      - generated_at
+      - id
+      - section_name
+      - total_students
+      - version
+    TabulationSheetFileFormatEnum:
+      enum:
+      - xlsx
+      - pdf
+      type: string
+      description: |-
+        * `xlsx` - Excel Spreadsheet (.xlsx)
+        * `pdf` - PDF Document (.pdf)
+    TabulationSheetRequest:
+      type: object
+      properties:
+        exam:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional section filter. If blank, includes all sections of
+            the class level.
+        file_format:
+          $ref: '#/components/schemas/TabulationSheetFileFormatEnum'
+        file:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - class_level
+      - exam
     TargetAudienceEnum:
       enum:
       - all
@@ -27699,6 +29053,39 @@ components:
         * `qr` - QR Code (কিউআর কোড)
         * `pin` - PIN / Password (পিন কোড)
         * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+    WeakStudentsResponse:
+      type: object
+      properties:
+        exam_id:
+          type: string
+        exam_name:
+          type: string
+        total_students:
+          type: integer
+        weak_student_count:
+          type: integer
+        weak_student_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        subject_failure_frequencies:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        students:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - exam_id
+      - exam_name
+      - students
+      - subject_failure_frequencies
+      - total_students
+      - weak_student_count
+      - weak_student_percentage
     WeekdayEnum:
       enum:
       - 0

@@ -236,3 +236,33 @@
   - 100% compliant with Bangladeshi national examination and board grading standards.
   - High computational performance and rock-solid determinism in merit rank assignment.
   - Complete decoupling enables straightforward testing and future extensions (such as semester systems or university 4.0 scales).
+
+---
+
+## ADR-015: Bilingual Report Card Typography, Broadsheet Tabulation & Examination Publication Lifecycle
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**:
+  - Academic administration in Bangladeshi schools culminates in two primary artifacts and a strict release workflow:
+    1. **Tabulation Broadsheet**: A master multi-column ledger (in both Excel and landscape PDF formats) displaying every enrolled student alongside every subject with breakdown of CQ, MCQ, and practical marks, subject GP/LG, grand total marks, GPAs (with and without 4th subject), and class/section merit positions.
+    2. **Student Progress Report Card**: Official individual document containing bilingual (Bangla and English) school details, student particulars, term attendance metrics, subject-wise marks alongside cohort highest marks, GPA 5.0 breakdown, NCTB grading scale legend, teacher remarks, and signature blocks.
+    3. **Result Publication Lifecycle**: Results must remain inaccessible to students and guardians while undergoing teacher verification, administrative tabulation, and principal approval. Once formally approved and published, results become visible in student/guardian portals and optional public search portals.
+    4. **Academic Diagnostics & Promotion Feed**: Early detection of failing/borderline students for remedial intervention, and annual promotion qualification based on CGPA and minimum attendance thresholds.
+- **Decision**:
+  - **Dynamic Tabulation Engine (`apps/results/services/tabulation_service.py`)**:
+    - Generates multi-level Excel spreadsheets via `openpyxl` with dynamic multi-row header merging per subject (CQ, MCQ, PR, Tot, GP, Grade), auto-fit column widths, zebra striping, and soft-red highlighting on failing components.
+    - Generates landscape A4 broadsheet PDFs using ReportLab (`render_story_to_pdf`) with embedded `Kalpurush.ttf` fonts.
+  - **Bilingual Progress Report Cards (`apps/results/services/report_card_service.py`)**:
+    - Built using ReportLab Flowables (`Paragraph`, `Table`, `Spacer`, `HRFlowable`) utilizing `apps.core.pdf.engine` and TrueType `Kalpurush.ttf`.
+    - Real-time attendance integration pulling working days, attendance counts, and presence percentages from `DailyAttendance`.
+    - In-memory ZIP archive generation streaming all student progress report cards into a single downloadable file.
+  - **Publication Security & Access Control (`apps/results/services/publication_service.py`)**:
+    - Multi-stage publication model: `draft` -> `approved` -> `published` (with optional `withheld` or `unpublished` rollbacks).
+    - `can_view_exam_result` predicate enforces that students and guardians cannot view results or download report cards until the exam is officially approved and published.
+  - **Diagnostic Analytics (`apps/results/services/analytics_service.py`)**:
+    - `get_weak_students_analytics`: Identifies students at risk (failing subjects or GPA below threshold) along with frequency analysis of failing subjects across the cohort.
+    - `get_promotion_eligibility_feed`: Categorizes session cohorts into `eligible`, `conditional`, and `retained` based on minimum CGPA and attendance percentage.
+- **Consequences**:
+  - Provides institutional administrators and examination committees with complete broadsheet oversight.
+  - Generates authentic, board-compliant report cards with professional Bengali typography.
+  - Prevents premature result leakage before official administrative sign-off.
