@@ -1,0 +1,3293 @@
+openapi: 3.0.3
+info:
+  title: School Management System API (Bangladesh)
+  version: 1.0.0
+  description: Production-grade Multi-Tenant School Management API for Bangladeshi
+    Institutions. Supports Biometric Attendance, Admission, GPA 5.0 Examination, and
+    Multi-Gateway Fees.
+paths:
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Authenticate using username or BD mobile number with password.
+      summary: User Login
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Login successful, tokens returned.
+        '401':
+          description: Invalid credentials.
+        '429':
+          description: Account locked due to consecutive failed attempts.
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Logout current session and invalidate refresh token.
+      summary: Logout
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Successfully logged out.
+  /api/v1/auth/logout-all/:
+    post:
+      operationId: auth_logout_all_create
+      description: Revoke all active sessions for current user.
+      summary: Logout All Sessions
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: All sessions revoked.
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Retrieve and update current user's profile and permissions.
+      summary: Get Current Profile
+      tags:
+      - Profile
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: auth_me_partial_update
+      description: Retrieve and update current user's profile and permissions.
+      summary: Update Profile
+      tags:
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/otp/request/:
+    post:
+      operationId: auth_otp_request_create
+      description: Request a one-time password delivered via SMS.
+      summary: Request Phone OTP
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: OTP sent successfully.
+  /api/v1/auth/otp/verify/:
+    post:
+      operationId: auth_otp_verify_create
+      description: Verify phone OTP and obtain JWT tokens.
+      summary: Verify Phone OTP
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPVerifyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Verification successful.
+  /api/v1/auth/password/change/:
+    post:
+      operationId: auth_password_change_create
+      description: Change authenticated user's password.
+      summary: Change Password
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Password changed successfully.
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/roles/:
+    get:
+      operationId: auth_roles_list
+      description: CRUD for institutional roles.
+      summary: List Roles
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Role Management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoleList'
+          description: ''
+    post:
+      operationId: auth_roles_create
+      description: CRUD for institutional roles.
+      summary: Create Role
+      tags:
+      - Role Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/v1/auth/roles/{id}/:
+    get:
+      operationId: auth_roles_retrieve
+      description: CRUD for institutional roles.
+      summary: Get Role
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Role.
+        required: true
+      tags:
+      - Role Management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    put:
+      operationId: auth_roles_update
+      description: CRUD for institutional roles.
+      summary: Update Role
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Role.
+        required: true
+      tags:
+      - Role Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    patch:
+      operationId: auth_roles_partial_update
+      description: CRUD for institutional roles.
+      summary: Partial Update Role
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Role.
+        required: true
+      tags:
+      - Role Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    delete:
+      operationId: auth_roles_destroy
+      description: CRUD for institutional roles.
+      summary: Delete Role
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Role.
+        required: true
+      tags:
+      - Role Management
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/sessions/:
+    get:
+      operationId: auth_sessions_list
+      description: View and revoke current user sessions.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserSessionList'
+          description: ''
+  /api/v1/auth/sessions/{id}/:
+    get:
+      operationId: auth_sessions_retrieve
+      description: View and revoke current user sessions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User Session.
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+          description: ''
+  /api/v1/auth/sessions/{id}/revoke/:
+    post:
+      operationId: auth_sessions_revoke_create
+      description: View and revoke current user sessions.
+      summary: Revoke Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User Session.
+        required: true
+      tags:
+      - Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+          description: ''
+  /api/v1/auth/users/:
+    get:
+      operationId: auth_users_list
+      description: Admin CRUD for institutional users.
+      summary: List Users
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: user_type
+        schema:
+          type: string
+          enum:
+          - accountant
+          - admin
+          - assistant_head
+          - clerk
+          - driver
+          - guardian
+          - head_teacher
+          - librarian
+          - security
+          - staff
+          - student
+          - superadmin
+          - teacher
+        description: |-
+          * `superadmin` - Super Admin
+          * `admin` - Institution Admin
+          * `head_teacher` - Head Teacher
+          * `assistant_head` - Assistant Head Teacher
+          * `teacher` - Teacher
+          * `accountant` - Accountant
+          * `librarian` - Librarian
+          * `clerk` - Clerk
+          * `staff` - Office Staff
+          * `student` - Student
+          * `guardian` - Guardian
+          * `driver` - Driver
+          * `security` - Security
+      tags:
+      - User Management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+    post:
+      operationId: auth_users_create
+      description: Admin CRUD for institutional users.
+      summary: Create User
+      tags:
+      - User Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreate'
+          description: ''
+  /api/v1/auth/users/{id}/:
+    get:
+      operationId: auth_users_retrieve
+      description: Admin CRUD for institutional users.
+      summary: Get User
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - User Management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: auth_users_update
+      description: Admin CRUD for institutional users.
+      summary: Update User
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - User Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: auth_users_partial_update
+      description: Admin CRUD for institutional users.
+      summary: Partial Update User
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - User Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: auth_users_destroy
+      description: Admin CRUD for institutional users.
+      summary: Delete User
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - User Management
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/users/{id}/assign-role/:
+    post:
+      operationId: auth_users_assign_role_create
+      description: Admin CRUD for institutional users.
+      summary: Assign Role to User
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - User Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRoleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRole'
+          description: ''
+  /api/v1/health/:
+    get:
+      operationId: health_retrieve
+      description: Verifies database and Redis cache connectivity.
+      summary: System Health Check
+      tags:
+      - System
+      responses:
+        '200':
+          description: All backend systems are operational.
+        '503':
+          description: One or more dependent systems are degraded.
+  /api/v1/institutions/branches/:
+    get:
+      operationId: institutions_branches_list
+      description: CRUD viewset for institution branches.
+      summary: List Branches
+      parameters:
+      - in: query
+        name: is_main
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Branches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBranchList'
+          description: ''
+    post:
+      operationId: institutions_branches_create
+      description: CRUD viewset for institution branches.
+      summary: Create Branch
+      tags:
+      - Branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BranchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BranchRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+  /api/v1/institutions/branches/{id}/:
+    get:
+      operationId: institutions_branches_retrieve
+      description: CRUD viewset for institution branches.
+      summary: Get Branch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Branch.
+        required: true
+      tags:
+      - Branches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    put:
+      operationId: institutions_branches_update
+      description: CRUD viewset for institution branches.
+      summary: Update Branch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Branch.
+        required: true
+      tags:
+      - Branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BranchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BranchRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    patch:
+      operationId: institutions_branches_partial_update
+      description: CRUD viewset for institution branches.
+      summary: Partial Update Branch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Branch.
+        required: true
+      tags:
+      - Branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBranchRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBranchRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBranchRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    delete:
+      operationId: institutions_branches_destroy
+      description: CRUD viewset for institution branches.
+      summary: Delete Branch
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Branch.
+        required: true
+      tags:
+      - Branches
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/institutions/holidays/:
+    get:
+      operationId: institutions_holidays_list
+      description: CRUD viewset for institution holidays.
+      summary: List Holidays
+      parameters:
+      - in: query
+        name: applies_to_all_branches
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - emergency
+          - govt
+          - institutional
+        description: |-
+          * `govt` - Government Public Holiday
+          * `institutional` - Institutional Holiday
+          * `emergency` - Emergency Closure
+      tags:
+      - Holidays
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHolidayList'
+          description: ''
+    post:
+      operationId: institutions_holidays_create
+      description: CRUD viewset for institution holidays.
+      summary: Create Holiday
+      tags:
+      - Holidays
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HolidayRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HolidayRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HolidayRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+  /api/v1/institutions/holidays/{id}/:
+    get:
+      operationId: institutions_holidays_retrieve
+      description: CRUD viewset for institution holidays.
+      summary: Get Holiday
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Holiday.
+        required: true
+      tags:
+      - Holidays
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+    put:
+      operationId: institutions_holidays_update
+      description: CRUD viewset for institution holidays.
+      summary: Update Holiday
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Holiday.
+        required: true
+      tags:
+      - Holidays
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HolidayRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HolidayRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HolidayRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+    patch:
+      operationId: institutions_holidays_partial_update
+      description: CRUD viewset for institution holidays.
+      summary: Partial Update Holiday
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Holiday.
+        required: true
+      tags:
+      - Holidays
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHolidayRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHolidayRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHolidayRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Holiday'
+          description: ''
+    delete:
+      operationId: institutions_holidays_destroy
+      description: CRUD viewset for institution holidays.
+      summary: Delete Holiday
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Holiday.
+        required: true
+      tags:
+      - Holidays
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/institutions/profile/:
+    get:
+      operationId: institutions_profile_retrieve
+      description: Retrieve or update the authenticated user's institution profile.
+      summary: Get Institution Profile
+      tags:
+      - Institution Profile
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+          description: ''
+    patch:
+      operationId: institutions_profile_partial_update
+      description: Retrieve or update the authenticated user's institution profile.
+      summary: Update Institution Profile
+      tags:
+      - Institution Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedInstitutionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedInstitutionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedInstitutionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+          description: ''
+  /api/v1/institutions/sessions/:
+    get:
+      operationId: institutions_sessions_list
+      description: CRUD and lifecycle actions for Academic Sessions.
+      summary: List Academic Sessions
+      parameters:
+      - in: query
+        name: is_current
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - closed
+          - planned
+        description: |-
+          * `planned` - Planned
+          * `active` - Active
+          * `closed` - Closed
+      tags:
+      - Academic Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAcademicSessionList'
+          description: ''
+    post:
+      operationId: institutions_sessions_create
+      description: CRUD and lifecycle actions for Academic Sessions.
+      summary: Create Academic Session
+      tags:
+      - Academic Sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcademicSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AcademicSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AcademicSessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSession'
+          description: ''
+  /api/v1/institutions/sessions/{id}/:
+    get:
+      operationId: institutions_sessions_retrieve
+      description: CRUD and lifecycle actions for Academic Sessions.
+      summary: Get Academic Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Academic Session.
+        required: true
+      tags:
+      - Academic Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSession'
+          description: ''
+    put:
+      operationId: institutions_sessions_update
+      description: CRUD and lifecycle actions for Academic Sessions.
+      summary: Update Academic Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Academic Session.
+        required: true
+      tags:
+      - Academic Sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcademicSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AcademicSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AcademicSessionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSession'
+          description: ''
+    patch:
+      operationId: institutions_sessions_partial_update
+      description: CRUD and lifecycle actions for Academic Sessions.
+      summary: Partial Update Academic Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Academic Session.
+        required: true
+      tags:
+      - Academic Sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAcademicSessionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAcademicSessionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAcademicSessionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSession'
+          description: ''
+    delete:
+      operationId: institutions_sessions_destroy
+      description: CRUD and lifecycle actions for Academic Sessions.
+      summary: Delete Academic Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Academic Session.
+        required: true
+      tags:
+      - Academic Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/institutions/sessions/{id}/activate/:
+    post:
+      operationId: institutions_sessions_activate_create
+      description: Atomically activates this academic session as the only current
+        session for the tenant.
+      summary: Activate Academic Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Academic Session.
+        required: true
+      tags:
+      - Academic Sessions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSession'
+          description: ''
+        '400':
+          description: Cannot activate session.
+  /api/v1/institutions/sessions/{id}/close/:
+    post:
+      operationId: institutions_sessions_close_create
+      description: Safely and irreversibly closes an active academic session. Requires
+        confirm=True in payload.
+      summary: Close Academic Session
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Academic Session.
+        required: true
+      tags:
+      - Academic Sessions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionCloseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SessionCloseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SessionCloseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicSession'
+          description: ''
+        '400':
+          description: Pre-checks failed.
+  /api/v1/institutions/shifts/:
+    get:
+      operationId: institutions_shifts_list
+      description: CRUD viewset for branch shifts.
+      summary: List Shifts
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: name
+        schema:
+          type: string
+          enum:
+          - day
+          - evening
+          - morning
+        description: |-
+          * `morning` - Morning
+          * `day` - Day
+          * `evening` - Evening
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Shifts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShiftList'
+          description: ''
+    post:
+      operationId: institutions_shifts_create
+      description: CRUD viewset for branch shifts.
+      summary: Create Shift
+      tags:
+      - Shifts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShiftRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShiftRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+  /api/v1/institutions/shifts/{id}/:
+    get:
+      operationId: institutions_shifts_retrieve
+      description: CRUD viewset for branch shifts.
+      summary: Get Shift
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Shift.
+        required: true
+      tags:
+      - Shifts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+    put:
+      operationId: institutions_shifts_update
+      description: CRUD viewset for branch shifts.
+      summary: Update Shift
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Shift.
+        required: true
+      tags:
+      - Shifts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShiftRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShiftRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+    patch:
+      operationId: institutions_shifts_partial_update
+      description: CRUD viewset for branch shifts.
+      summary: Partial Update Shift
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Shift.
+        required: true
+      tags:
+      - Shifts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedShiftRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedShiftRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedShiftRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shift'
+          description: ''
+    delete:
+      operationId: institutions_shifts_destroy
+      description: CRUD viewset for branch shifts.
+      summary: Delete Shift
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Shift.
+        required: true
+      tags:
+      - Shifts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/institutions/terms/:
+    get:
+      operationId: institutions_terms_list
+      description: CRUD viewset for academic terms.
+      summary: List Terms
+      parameters:
+      - in: query
+        name: order
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Terms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTermList'
+          description: ''
+    post:
+      operationId: institutions_terms_create
+      description: CRUD viewset for academic terms.
+      summary: Create Term
+      tags:
+      - Terms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TermRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TermRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TermRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Term'
+          description: ''
+  /api/v1/institutions/terms/{id}/:
+    get:
+      operationId: institutions_terms_retrieve
+      description: CRUD viewset for academic terms.
+      summary: Get Term
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term.
+        required: true
+      tags:
+      - Terms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Term'
+          description: ''
+    put:
+      operationId: institutions_terms_update
+      description: CRUD viewset for academic terms.
+      summary: Update Term
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term.
+        required: true
+      tags:
+      - Terms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TermRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TermRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TermRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Term'
+          description: ''
+    patch:
+      operationId: institutions_terms_partial_update
+      description: CRUD viewset for academic terms.
+      summary: Partial Update Term
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term.
+        required: true
+      tags:
+      - Terms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTermRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTermRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTermRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Term'
+          description: ''
+    delete:
+      operationId: institutions_terms_destroy
+      description: CRUD viewset for academic terms.
+      summary: Delete Term
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Term.
+        required: true
+      tags:
+      - Terms
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AcademicSession:
+      type: object
+      description: Serializer for AcademicSession.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Session name (e.g. 2026)
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_current:
+          type: boolean
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        terms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Term'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - id
+      - institution
+      - is_current
+      - name
+      - start_date
+      - status
+      - terms
+      - updated_at
+    AcademicSessionRequest:
+      type: object
+      description: Serializer for AcademicSession.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Session name (e.g. 2026)
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+      required:
+      - end_date
+      - name
+      - start_date
+    BoardEnum:
+      enum:
+      - dhaka
+      - rajshahi
+      - chittagong
+      - comilla
+      - jessore
+      - barisal
+      - sylhet
+      - dinajpur
+      - mymensingh
+      - madrasah
+      - technical
+      - cambridge
+      - edexcel
+      - ib
+      type: string
+      description: |-
+        * `dhaka` - Dhaka
+        * `rajshahi` - Rajshahi
+        * `chittagong` - Chittagong
+        * `comilla` - Comilla
+        * `jessore` - Jessore
+        * `barisal` - Barisal
+        * `sylhet` - Sylhet
+        * `dinajpur` - Dinajpur
+        * `mymensingh` - Mymensingh
+        * `madrasah` - Madrasah
+        * `technical` - Technical
+        * `cambridge` - Cambridge
+        * `edexcel` - Edexcel
+        * `ib` - International Baccalaureate
+    Branch:
+      type: object
+      description: Serializer for Branch.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        code:
+          type: string
+          description: Short unique branch code (e.g. MAIN, DHAN)
+          maxLength: 50
+        address:
+          type: string
+        is_main:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - institution
+      - name
+      - updated_at
+    BranchRequest:
+      type: object
+      description: Serializer for Branch.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        code:
+          type: string
+          minLength: 1
+          description: Short unique branch code (e.g. MAIN, DHAN)
+          maxLength: 50
+        address:
+          type: string
+        is_main:
+          type: boolean
+      required:
+      - code
+      - name
+    Holiday:
+      type: object
+      description: Serializer for Holiday.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/HolidayTypeEnum'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        applies_to_all_branches:
+          type: boolean
+        branches:
+          type: array
+          items:
+            type: string
+            format: uuid
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - id
+      - institution
+      - name
+      - start_date
+      - updated_at
+    HolidayRequest:
+      type: object
+      description: Serializer for Holiday.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/HolidayTypeEnum'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        applies_to_all_branches:
+          type: boolean
+        branches:
+          type: array
+          items:
+            type: string
+            format: uuid
+        description:
+          type: string
+      required:
+      - end_date
+      - name
+      - start_date
+    HolidayTypeEnum:
+      enum:
+      - govt
+      - institutional
+      - emergency
+      type: string
+      description: |-
+        * `govt` - Government Public Holiday
+        * `institutional` - Institutional Holiday
+        * `emergency` - Emergency Closure
+    Institution:
+      type: object
+      description: Serializer for Institution profile read and update.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_bn:
+          type: string
+          title: Name (Bangla)
+          maxLength: 255
+        name_en:
+          type: string
+          title: Name (English)
+          maxLength: 255
+        eiin:
+          type: string
+          nullable: true
+          description: Educational Institute Identification Number (e.g. 134567)
+          maxLength: 20
+        mpo_status:
+          $ref: '#/components/schemas/MpoStatusEnum'
+        board:
+          allOf:
+          - $ref: '#/components/schemas/BoardEnum'
+          title: Education Board
+        type:
+          allOf:
+          - $ref: '#/components/schemas/InstitutionTypeEnum'
+          title: Institution Type
+        division:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        upazila:
+          type: string
+          maxLength: 100
+        address_line:
+          type: string
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        seal:
+          type: string
+          format: uri
+          nullable: true
+        signature:
+          type: string
+          format: uri
+          nullable: true
+        timezone:
+          type: string
+          maxLength: 50
+        currency:
+          type: string
+          maxLength: 10
+        weekend_days: {}
+        settings: {}
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - district
+      - division
+      - id
+      - name_bn
+      - name_en
+      - phone
+      - upazila
+      - updated_at
+    InstitutionTypeEnum:
+      enum:
+      - primary
+      - secondary
+      - higher_secondary
+      - college
+      - madrasa
+      - kindergarten
+      type: string
+      description: |-
+        * `primary` - Primary (Class 1-5)
+        * `secondary` - Secondary (Class 6-10)
+        * `higher_secondary` - Higher Secondary (Class 11-12)
+        * `college` - Degree College
+        * `madrasa` - Madrasa (Dakhil/Alim)
+        * `kindergarten` - Kindergarten
+    LanguagePreferenceEnum:
+      enum:
+      - bn
+      - en
+      type: string
+      description: |-
+        * `bn` - Bangla
+        * `en` - English
+    LoginRequest:
+      type: object
+      description: Serializer for username/phone and password login.
+      properties:
+        identifier:
+          type: string
+          minLength: 1
+          description: Username or Bangladeshi mobile number (+8801XXXXXXXXX / 01XXXXXXXXX).
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        device_id:
+          type: string
+          minLength: 1
+          default: ''
+        device_name:
+          type: string
+          minLength: 1
+          default: ''
+        platform:
+          allOf:
+          - $ref: '#/components/schemas/PlatformEnum'
+          default: web
+        app_version:
+          type: string
+          minLength: 1
+          default: ''
+        fcm_token:
+          type: string
+          minLength: 1
+          default: ''
+      required:
+      - identifier
+      - password
+    MpoStatusEnum:
+      enum:
+      - non_mpo
+      - mpo
+      - partial_mpo
+      type: string
+      description: |-
+        * `non_mpo` - Non-MPO
+        * `mpo` - MPO
+        * `partial_mpo` - Partial MPO
+    NameEnum:
+      enum:
+      - morning
+      - day
+      - evening
+      type: string
+      description: |-
+        * `morning` - Morning
+        * `day` - Day
+        * `evening` - Evening
+    OTPRequestRequest:
+      type: object
+      description: Serializer for requesting phone OTP.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/PurposeEnum'
+          default: login
+      required:
+      - phone
+    OTPVerifyRequest:
+      type: object
+      description: Serializer for verifying phone OTP.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/PurposeEnum'
+          default: login
+        device_id:
+          type: string
+          minLength: 1
+          default: ''
+        platform:
+          allOf:
+          - $ref: '#/components/schemas/PlatformEnum'
+          default: web
+      required:
+      - code
+      - phone
+    PaginatedAcademicSessionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicSession'
+    PaginatedBranchList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Branch'
+    PaginatedHolidayList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Holiday'
+    PaginatedRoleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+    PaginatedShiftList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shift'
+    PaginatedTermList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Term'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PaginatedUserSessionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSession'
+    PasswordChangeRequest:
+      type: object
+      description: Serializer for changing password.
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - new_password
+      - old_password
+    PatchedAcademicSessionRequest:
+      type: object
+      description: Serializer for AcademicSession.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Session name (e.g. 2026)
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+    PatchedBranchRequest:
+      type: object
+      description: Serializer for Branch.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        code:
+          type: string
+          minLength: 1
+          description: Short unique branch code (e.g. MAIN, DHAN)
+          maxLength: 50
+        address:
+          type: string
+        is_main:
+          type: boolean
+    PatchedHolidayRequest:
+      type: object
+      description: Serializer for Holiday.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        type:
+          $ref: '#/components/schemas/HolidayTypeEnum'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        applies_to_all_branches:
+          type: boolean
+        branches:
+          type: array
+          items:
+            type: string
+            format: uuid
+        description:
+          type: string
+    PatchedInstitutionRequest:
+      type: object
+      description: Serializer for Institution profile read and update.
+      properties:
+        name_bn:
+          type: string
+          minLength: 1
+          title: Name (Bangla)
+          maxLength: 255
+        name_en:
+          type: string
+          minLength: 1
+          title: Name (English)
+          maxLength: 255
+        eiin:
+          type: string
+          nullable: true
+          description: Educational Institute Identification Number (e.g. 134567)
+          maxLength: 20
+        mpo_status:
+          $ref: '#/components/schemas/MpoStatusEnum'
+        board:
+          allOf:
+          - $ref: '#/components/schemas/BoardEnum'
+          title: Education Board
+        type:
+          allOf:
+          - $ref: '#/components/schemas/InstitutionTypeEnum'
+          title: Institution Type
+        division:
+          type: string
+          minLength: 1
+          maxLength: 100
+        district:
+          type: string
+          minLength: 1
+          maxLength: 100
+        upazila:
+          type: string
+          minLength: 1
+          maxLength: 100
+        address_line:
+          type: string
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        logo:
+          type: string
+          format: binary
+          nullable: true
+        seal:
+          type: string
+          format: binary
+          nullable: true
+        signature:
+          type: string
+          format: binary
+          nullable: true
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 50
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        weekend_days: {}
+        settings: {}
+        is_active:
+          type: boolean
+    PatchedRoleRequest:
+      type: object
+      description: Serializer for Role.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        permissions:
+          type: array
+          items:
+            type: integer
+    PatchedShiftRequest:
+      type: object
+      description: Serializer for Shift.
+      properties:
+        branch:
+          type: string
+          format: uuid
+        name:
+          allOf:
+          - $ref: '#/components/schemas/NameEnum'
+          default: morning
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+    PatchedTermRequest:
+      type: object
+      description: Serializer for Term.
+      properties:
+        session:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          default: 1
+    PatchedUserProfileUpdateRequest:
+      type: object
+      description: Serializer for self-updating user profile.
+      properties:
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+    PatchedUserRequest:
+      type: object
+      description: Serializer for User details.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          description: Normalized BD mobile number (+8801XXXXXXXXX).
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        user_type:
+          $ref: '#/components/schemas/UserTypeEnum'
+        is_active:
+          type: boolean
+        must_change_password:
+          type: boolean
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+    PlatformEnum:
+      enum:
+      - web
+      - android
+      - ios
+      type: string
+      description: |-
+        * `web` - Web Dashboard
+        * `android` - Android App
+        * `ios` - iOS App
+    PurposeEnum:
+      enum:
+      - login
+      - password_reset
+      - verify
+      type: string
+      description: |-
+        * `login` - login
+        * `password_reset` - password_reset
+        * `verify` - verify
+    Role:
+      type: object
+      description: Serializer for Role.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 50
+        is_system:
+          type: boolean
+          readOnly: true
+          description: System roles are seeded and protected against deletion.
+        permissions:
+          type: array
+          items:
+            type: integer
+        permission_codenames:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - institution
+      - is_system
+      - name
+      - permission_codenames
+      - updated_at
+    RoleRequest:
+      type: object
+      description: Serializer for Role.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        permissions:
+          type: array
+          items:
+            type: integer
+      required:
+      - code
+      - name
+    SessionCloseRequest:
+      type: object
+      description: Serializer for confirming session closure.
+      properties:
+        confirm:
+          type: boolean
+          description: Must be True to confirm irreversible session closure.
+      required:
+      - confirm
+    Shift:
+      type: object
+      description: Serializer for Shift.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+        branch_code:
+          type: string
+          readOnly: true
+        name:
+          allOf:
+          - $ref: '#/components/schemas/NameEnum'
+          default: morning
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch
+      - branch_code
+      - created_at
+      - end_time
+      - id
+      - institution
+      - start_time
+      - updated_at
+    ShiftRequest:
+      type: object
+      description: Serializer for Shift.
+      properties:
+        branch:
+          type: string
+          format: uuid
+        name:
+          allOf:
+          - $ref: '#/components/schemas/NameEnum'
+          default: morning
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+      required:
+      - branch
+      - end_time
+      - start_time
+    StatusEnum:
+      enum:
+      - planned
+      - active
+      - closed
+      type: string
+      description: |-
+        * `planned` - Planned
+        * `active` - Active
+        * `closed` - Closed
+    Term:
+      type: object
+      description: Serializer for Term.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        session_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          default: 1
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - id
+      - institution
+      - name
+      - session
+      - session_name
+      - start_date
+      - updated_at
+    TermRequest:
+      type: object
+      description: Serializer for Term.
+      properties:
+        session:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          default: 1
+      required:
+      - end_date
+      - name
+      - session
+      - start_date
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    User:
+      type: object
+      description: Serializer for User details.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: Tenant institution. Null only for platform superadmins.
+        username:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          description: Normalized BD mobile number (+8801XXXXXXXXX).
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        user_type:
+          $ref: '#/components/schemas/UserTypeEnum'
+        is_active:
+          type: boolean
+        must_change_password:
+          type: boolean
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        is_totp_enabled:
+          type: boolean
+          readOnly: true
+        roles:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - date_joined
+      - id
+      - institution
+      - is_totp_enabled
+      - last_login
+      - phone
+      - roles
+      - username
+    UserCreate:
+      type: object
+      description: Serializer for creating a new user by Admin.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: Tenant institution. Null only for platform superadmins.
+        username:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          description: Normalized BD mobile number (+8801XXXXXXXXX).
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        user_type:
+          $ref: '#/components/schemas/UserTypeEnum'
+        is_active:
+          type: boolean
+        must_change_password:
+          type: boolean
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+      required:
+      - id
+      - institution
+      - phone
+      - username
+    UserCreateRequest:
+      type: object
+      description: Serializer for creating a new user by Admin.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          description: Normalized BD mobile number (+8801XXXXXXXXX).
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        user_type:
+          $ref: '#/components/schemas/UserTypeEnum'
+        is_active:
+          type: boolean
+        must_change_password:
+          type: boolean
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - phone
+      - username
+    UserRequest:
+      type: object
+      description: Serializer for User details.
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          description: Normalized BD mobile number (+8801XXXXXXXXX).
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        full_name:
+          type: string
+          maxLength: 255
+        user_type:
+          $ref: '#/components/schemas/UserTypeEnum'
+        is_active:
+          type: boolean
+        must_change_password:
+          type: boolean
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - phone
+      - username
+    UserRole:
+      type: object
+      description: Serializer for UserRole assignments.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+        role:
+          type: string
+          format: uuid
+        role_name:
+          type: string
+          readOnly: true
+        role_code:
+          type: string
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        branch_code:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch
+      - branch_code
+      - created_at
+      - id
+      - role
+      - role_code
+      - role_name
+      - user
+    UserRoleRequest:
+      type: object
+      description: Serializer for UserRole assignments.
+      properties:
+        user:
+          type: string
+          format: uuid
+        role:
+          type: string
+          format: uuid
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - branch
+      - role
+      - user
+    UserSession:
+      type: object
+      description: Serializer for active user sessions.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        device_id:
+          type: string
+          readOnly: true
+        device_name:
+          type: string
+          readOnly: true
+        platform:
+          allOf:
+          - $ref: '#/components/schemas/PlatformEnum'
+          readOnly: true
+        app_version:
+          type: string
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+      required:
+      - app_version
+      - device_id
+      - device_name
+      - id
+      - ip_address
+      - is_active
+      - last_seen_at
+      - platform
+    UserTypeEnum:
+      enum:
+      - superadmin
+      - admin
+      - head_teacher
+      - assistant_head
+      - teacher
+      - accountant
+      - librarian
+      - clerk
+      - staff
+      - student
+      - guardian
+      - driver
+      - security
+      type: string
+      description: |-
+        * `superadmin` - Super Admin
+        * `admin` - Institution Admin
+        * `head_teacher` - Head Teacher
+        * `assistant_head` - Assistant Head Teacher
+        * `teacher` - Teacher
+        * `accountant` - Accountant
+        * `librarian` - Librarian
+        * `clerk` - Clerk
+        * `staff` - Office Staff
+        * `student` - Student
+        * `guardian` - Guardian
+        * `driver` - Driver
+        * `security` - Security
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
