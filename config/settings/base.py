@@ -46,6 +46,8 @@ LOCAL_APPS = [
     "apps.core.apps.CoreConfig",
     "apps.institutions.apps.InstitutionsConfig",
     "apps.accounts.apps.AccountsConfig",
+    "apps.academics.apps.AcademicsConfig",
+    "apps.admissions.apps.AdmissionsConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

@@ -1,0 +1,1 @@
+"""Admissions tests package."""

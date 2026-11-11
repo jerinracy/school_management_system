@@ -11,8 +11,8 @@ Legend:
 | **Task 01** | Project Setup & Foundations | DONE | None | 2026-11-11 |
 | **Task 02** | Institution, Branch, Shift, Academic Session | DONE | Task 01 | 2026-11-11 |
 | **Task 03** | Auth, Users, Roles, Permissions, OTP, Sessions | DONE | Task 01, Task 02 | 2026-11-11 |
-| **Task 04** | Academic Structure (Class, Section, Group, Subject, Routine) | TODO | Task 02, Task 03 | - |
-| **Task 05** | Admission (Online Application, Test, Merit, Lottery) | TODO | Task 04 | - |
+| **Task 04** | Academic Structure (Class, Section, Group, Subject, Routine) | DONE | Task 02, Task 03 | 2026-11-11 |
+| **Task 05** | Admission (Online Application, Test, Merit, Lottery) | DONE | Task 04 | 2026-11-11 |
 | **Task 06** | Student Lifecycle (Profile, Enrollment, Documents) | TODO | Task 04, Task 05 | - |
 | **Task 07** | Guardian Portal & Student-Guardian Relationship | TODO | Task 03, Task 06 | - |
 | **Task 08** | Staff & HR Management (Teachers, Employees, Designations) | TODO | Task 02, Task 03 | - |

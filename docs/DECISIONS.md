@@ -84,3 +84,34 @@
   - The ONLY public registration allowed in the system is for prospective student applicants in the Online Admission Portal (Task 05).
 - **Consequences**:
   - Eliminates unverified tenant spam accounts and guarantees that all users in the system belong to verified real-world relationships.
+
+---
+
+## ADR-006: Timetable Conflict Prevention and Structure Replication
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: Scheduling school timetables is prone to teacher double-booking, room clashes, and administrative overhead during annual academic session transitions.
+- **Decision**:
+  - Double-booking prevention uses defense-in-depth:
+    1. Database-level partial unique indexes on `(teacher_user, weekday, period)` and `(room, weekday, period)` preventing race conditions.
+    2. Service-layer validator (`validate_routine_slot_conflicts`) returning structured conflict reports with human-readable error messages and weekend/holiday warnings.
+    3. Dedicated validation endpoint (`/api/v1/academics/routine/validate/`) allowing frontend drag-and-drop timetable builders to validate slot placements before submission.
+  - Academic structure rollover across sessions provides dry-run simulation (`copy_academic_structure_from_previous_session` with `dry_run=True` default), idempotently copying sections and subject offerings while skipping duplicates.
+- **Consequences**:
+  - Guarantees schedule integrity while providing a seamless UX for school administrators.
+
+---
+
+## ADR-007: Public Prospective Admission Portal & Auditable Deterministic Lottery Engine
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: Bangladeshi schools require both merit-based test admissions (for high schools/colleges) and government-mandated digital lottery draws (primary/secondary grades 1-9). Furthermore, external parents must apply online without possessing a prior system user account, requiring robust duplicate prevention and status tracking.
+- **Decision**:
+  - Public applications allow unauthenticated submissions under `/api/v1/admissions/public/apply/` scoped to an active `AdmissionCircular`.
+  - Duplicate submissions are strictly prevented by a unique database constraint and service-layer check on `(circular, birth_reg_no, dob)`.
+  - Application numbers use standard format `ADM-{YYYY}-{5-digit sequence}` with atomic counter sequencing per institution.
+  - Lottery draws are made deterministic and auditable by accepting/storing an integer `seed` and serializing the resulting draw order into `drawn_order` JSON on `LotteryDraw`. Re-running the draw with the same seed produces the identical sequence for regulatory audit.
+  - Admission status transitions follow an explicit finite state machine enforced by `transition_application_status`.
+  - Once an application reaches `admitted` status, `convert_admitted_application_to_student` transitions the applicant to Task 06 intake without data loss.
+- **Consequences**:
+  - Eliminates duplicate entries and fraudulent registrations while fulfilling Ministry of Education regulatory requirements for transparent lottery draws and merit list rankings.

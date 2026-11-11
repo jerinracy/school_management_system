@@ -18,6 +18,8 @@ urlpatterns = [
     path("api/v1/", include("apps.core.urls", namespace="v1_core")),
     path("api/v1/auth/", include("apps.accounts.urls", namespace="v1_accounts")),
     path("api/v1/institutions/", include("apps.institutions.urls", namespace="v1_institutions")),
+    path("api/v1/academics/", include("apps.academics.urls", namespace="v1_academics")),
+    path("api/v1/admissions/", include("apps.admissions.urls", namespace="v1_admissions")),
     # OpenAPI Schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # React Dashboard SPA shell catch-all
