@@ -25,7 +25,7 @@ from apps.students.models import (
     Testimonial,
     TransferCertificate,
 )
-from apps.students.permissions import CanManageStudents, CanViewStudents
+from apps.students.permissions import CanManageStudents, CanViewStudents, IsGuardianOfStudent
 from apps.students.serializers import (
     AdmitFromApplicationSerializer,
     AutoAssignRollsSerializer,
@@ -83,7 +83,7 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
 
     def get_permissions(self) -> list[Any]:
         if self.action in ["list", "retrieve"]:
-            return [IsAuthenticated(), CanViewStudents()]
+            return [IsAuthenticated(), (CanViewStudents | IsGuardianOfStudent)()]
         return [IsAuthenticated(), CanManageStudents()]
 
     def get_serializer_class(self) -> type[Any]:

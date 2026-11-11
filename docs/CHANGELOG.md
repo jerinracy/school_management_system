@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 07**: Guardian Portal & Student-Guardian Relationship (`apps/guardians`).
+  - Core Models:
+    - `Guardian`: Multi-tenant master guardian directory storing normalized contact numbers (`+8801XXXXXXXXX`), NID (10/13/17 digits), occupation, annual income, addresses, emergency contact flag, and optional User linkage for parent portal access. Unique active phone constraint per tenant.
+    - `StudentGuardian`: Central relationship mapping connecting students to guardians with permission flags (`is_primary`, `can_pickup`, `receives_sms`, `financial_responsible`) and relationship types (Father, Mother, Brother, Sister, Uncle, Aunt, Grandparent, Legal Guardian, Other). Unique student-guardian constraint.
+    - `Family`: Household grouping entity linking siblings and primary contacts under a single tenant-scoped family code (`FAM-YYYY-XXXXX`).
+    - `AuthorizedPickup`: Third-party pickup authorization records with OTP-based parent verification workflow (`otp_verified`, `otp_verified_at`).
+  - Business Services:
+    - `guardian_service.py`: Automated phone normalization, guardian creation and update, portal User provisioning with secure password generation and SMS dispatch via `SMSService`, atomic primary guardian linkage and synchronization with Student emergency contact info, and duplicate guardian merging.
+    - `family_service.py`: Sibling discovery engine searching across shared contact phone numbers and guardian NIDs with automated candidate matching and Family grouping.
+    - `pickup_service.py`: Designated pickup person registration with notification dispatch and 6-digit OTP verification challenge via Redis cache.
+  - Security & Permissions:
+    - Centralized `IsGuardianOfStudent` permission class ensuring guardian users only access records belonging to their linked children.
+    - DRF ViewSets with tenant scoping and role-based permissions (`guardians.view`, `guardians.manage`).
+  - REST API (`/api/v1/guardians/`):
+    - Guardian CRUD, `/link-student/`, `/unlink-student/`, `/create-portal-account/`, `/merge-duplicates/`, `/sibling-suggestions/`.
+    - `/my-children/` endpoint aggregating linked wards, active enrollment, section roll, and parent permissions.
+    - Family CRUD and `/link-siblings/`.
+    - Authorized Pickup CRUD, `/send-otp/`, and `/verify-otp/`.
 - **Task 06**: Student Management (Profile, Enrollment, Documents, ID Cards, Promotion, Bulk Import, Bangla PDF) (`apps/students`, `apps/core/pdf`).
   - Core Models:
     - `Student`: Multi-tenant master student record with configurable `student_id`, bilingual names (`name_bn`, `name_en`), DOB, gender, blood group, religion, 17-digit birth registration number, photo, present/permanent address, status (`active`, `transferred`, `dropped`, `graduated`, `alumni`, `suspended`), admission date, and special categories (orphan, freedom-fighter quota, disability, stipend).

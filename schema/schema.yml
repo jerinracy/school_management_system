@@ -5005,6 +5005,912 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserRole'
           description: ''
+  /api/v1/guardians/families/:
+    get:
+      operationId: guardians_families_list
+      description: Manage household Family groups and sibling links.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFamilyList'
+          description: ''
+    post:
+      operationId: guardians_families_create
+      description: Manage household Family groups and sibling links.
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FamilyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FamilyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FamilyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+          description: ''
+  /api/v1/guardians/families/{id}/:
+    get:
+      operationId: guardians_families_retrieve
+      description: Manage household Family groups and sibling links.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Family.
+        required: true
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+          description: ''
+    put:
+      operationId: guardians_families_update
+      description: Manage household Family groups and sibling links.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Family.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FamilyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FamilyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FamilyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+          description: ''
+    patch:
+      operationId: guardians_families_partial_update
+      description: Manage household Family groups and sibling links.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Family.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFamilyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFamilyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFamilyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+          description: ''
+    delete:
+      operationId: guardians_families_destroy
+      description: Manage household Family groups and sibling links.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Family.
+        required: true
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/guardians/families/{id}/link-siblings/:
+    post:
+      operationId: guardians_families_link_siblings_create
+      description: Link specified student guardians into this household Family unit.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Family.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkSiblingsFamilyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LinkSiblingsFamilyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LinkSiblingsFamilyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+          description: ''
+  /api/v1/guardians/guardians/:
+    get:
+      operationId: guardians_guardians_list
+      description: Manage master guardian records, student linkage, and parent portal
+        activation.
+      parameters:
+      - in: query
+        name: family
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_emergency_contact
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: relation_default
+        schema:
+          type: string
+          enum:
+          - aunt
+          - brother
+          - father
+          - grandparent
+          - legal_guardian
+          - mother
+          - other
+          - sister
+          - uncle
+        description: |-
+          * `father` - Father (পিতা)
+          * `mother` - Mother (মাতা)
+          * `brother` - Brother (ভাই)
+          * `sister` - Sister (বোন)
+          * `uncle` - Uncle (চাচা/মামা/ফুফা/খালু)
+          * `aunt` - Aunt (ফুফু/খালা/চাচী/মামী)
+          * `grandparent` - Grandparent (দাদা/দাদী/নানা/নানী)
+          * `legal_guardian` - Legal Guardian (আইনগত অভিভাবক)
+          * `other` - Other (অন্যান্য)
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGuardianList'
+          description: ''
+    post:
+      operationId: guardians_guardians_create
+      description: Manage master guardian records, student linkage, and parent portal
+        activation.
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guardian'
+          description: ''
+  /api/v1/guardians/guardians/{id}/:
+    get:
+      operationId: guardians_guardians_retrieve
+      description: Manage master guardian records, student linkage, and parent portal
+        activation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuardianDetail'
+          description: ''
+    put:
+      operationId: guardians_guardians_update
+      description: Manage master guardian records, student linkage, and parent portal
+        activation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guardian'
+          description: ''
+    patch:
+      operationId: guardians_guardians_partial_update
+      description: Manage master guardian records, student linkage, and parent portal
+        activation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGuardianRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGuardianRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGuardianRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guardian'
+          description: ''
+    delete:
+      operationId: guardians_guardians_destroy
+      description: Manage master guardian records, student linkage, and parent portal
+        activation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/guardians/guardians/{id}/create-portal-account/:
+    post:
+      operationId: guardians_guardians_create_portal_account_create
+      description: Generate and deliver login credentials for the Guardian portal.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GuardianRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/guardians/guardians/{id}/link-student/:
+    post:
+      operationId: guardians_guardians_link_student_create
+      description: Establish or update relationship between this guardian and a student.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkStudentActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LinkStudentActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LinkStudentActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentGuardian'
+          description: ''
+  /api/v1/guardians/guardians/{id}/unlink-student/:
+    post:
+      operationId: guardians_guardians_unlink_student_create
+      description: Sever relationship between this guardian and a student.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Guardian.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnlinkStudentActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UnlinkStudentActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UnlinkStudentActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/guardians/guardians/merge-duplicates/:
+    post:
+      operationId: guardians_guardians_merge_duplicates_create
+      description: Merge multiple duplicate guardian records into a designated primary
+        guardian.
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeGuardianActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MergeGuardianActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MergeGuardianActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuardianDetail'
+          description: ''
+  /api/v1/guardians/guardians/my-children/:
+    get:
+      operationId: guardians_guardians_my_children_list
+      description: List all active student wards linked to the logged-in guardian
+        user.
+      parameters:
+      - in: query
+        name: family
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_emergency_contact
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: relation_default
+        schema:
+          type: string
+          enum:
+          - aunt
+          - brother
+          - father
+          - grandparent
+          - legal_guardian
+          - mother
+          - other
+          - sister
+          - uncle
+        description: |-
+          * `father` - Father (পিতা)
+          * `mother` - Mother (মাতা)
+          * `brother` - Brother (ভাই)
+          * `sister` - Sister (বোন)
+          * `uncle` - Uncle (চাচা/মামা/ফুফা/খালু)
+          * `aunt` - Aunt (ফুফু/খালা/চাচী/মামী)
+          * `grandparent` - Grandparent (দাদা/দাদী/নানা/নানী)
+          * `legal_guardian` - Legal Guardian (আইনগত অভিভাবক)
+          * `other` - Other (অন্যান্য)
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMyChildrenList'
+          description: ''
+  /api/v1/guardians/guardians/sibling-suggestions/:
+    get:
+      operationId: guardians_guardians_sibling_suggestions_retrieve
+      description: Find potential sibling relationships via shared phone or NID.
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+          description: ''
+  /api/v1/guardians/pickups/:
+    get:
+      operationId: guardians_pickups_list
+      description: Manage authorized pickup persons and OTP verification.
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: query
+        name: otp_verified
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuthorizedPickupList'
+          description: ''
+    post:
+      operationId: guardians_pickups_create
+      description: Manage authorized pickup persons and OTP verification.
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedPickup'
+          description: ''
+  /api/v1/guardians/pickups/{id}/:
+    get:
+      operationId: guardians_pickups_retrieve
+      description: Manage authorized pickup persons and OTP verification.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Authorized Pickup Person.
+        required: true
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedPickup'
+          description: ''
+    put:
+      operationId: guardians_pickups_update
+      description: Manage authorized pickup persons and OTP verification.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Authorized Pickup Person.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedPickup'
+          description: ''
+    patch:
+      operationId: guardians_pickups_partial_update
+      description: Manage authorized pickup persons and OTP verification.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Authorized Pickup Person.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAuthorizedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAuthorizedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAuthorizedPickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizedPickup'
+          description: ''
+    delete:
+      operationId: guardians_pickups_destroy
+      description: Manage authorized pickup persons and OTP verification.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Authorized Pickup Person.
+        required: true
+      tags:
+      - guardians
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/guardians/pickups/{id}/send-otp/:
+    post:
+      operationId: guardians_pickups_send_otp_create
+      description: Send verification OTP to student's primary guardian.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Authorized Pickup Person.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AuthorizedPickupRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/guardians/pickups/{id}/verify-otp/:
+    post:
+      operationId: guardians_pickups_verify_otp_create
+      description: Verify entered OTP code to validate pickup person authorization.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Authorized Pickup Person.
+        required: true
+      tags:
+      - guardians
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPickupOTPActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyPickupOTPActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyPickupOTPActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/health/:
     get:
       operationId: health_retrieve
@@ -7104,9 +8010,8 @@ components:
           maxLength: 255
         seats_available:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         application_fee:
           type: string
           format: decimal
@@ -7167,9 +8072,8 @@ components:
           maxLength: 255
         seats_available:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         application_fee:
           type: string
           format: decimal
@@ -7209,9 +8113,8 @@ components:
           maxLength: 255
         seats_available:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         application_fee:
           type: string
           format: decimal
@@ -7860,6 +8763,99 @@ components:
           default: ''
       required:
       - new_status
+    AuthorizedPickup:
+      type: object
+      description: Serializer for authorized pickup persons.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        relation:
+          type: string
+          description: Relation to student e.g. Driver, Grandparent, Neighbor
+          maxLength: 50
+        phone:
+          type: string
+        nid:
+          type: string
+          maxLength: 30
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+        otp_verified:
+          type: boolean
+          readOnly: true
+          description: Indicates whether this pickup person was verified via guardian
+            OTP
+        otp_verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - otp_verified
+      - otp_verified_at
+      - phone
+      - relation
+      - student
+      - student_name
+    AuthorizedPickupRequest:
+      type: object
+      description: Serializer for authorized pickup persons.
+      properties:
+        student:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        relation:
+          type: string
+          minLength: 1
+          description: Relation to student e.g. Driver, Grandparent, Neighbor
+          maxLength: 50
+        phone:
+          type: string
+          minLength: 1
+        nid:
+          type: string
+          maxLength: 30
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        is_active:
+          type: boolean
+        notes:
+          type: string
+      required:
+      - name
+      - phone
+      - relation
+      - student
     BloodGroup9d3Enum:
       enum:
       - A+
@@ -8050,9 +9046,8 @@ components:
           maxLength: 20
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           description: Numeric sequencing from lowest to highest grade (1..14)
         medium:
           $ref: '#/components/schemas/MediumEnum'
@@ -8098,9 +9093,8 @@ components:
           maxLength: 20
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           description: Numeric sequencing from lowest to highest grade (1..14)
         medium:
           $ref: '#/components/schemas/MediumEnum'
@@ -8275,6 +9269,57 @@ components:
         * `transfer_certificate` - Transfer Certificate (TC)
         * `medical_certificate` - Medical Certificate
         * `other` - Other
+    Family:
+      type: object
+      description: Serializer for Family households.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        family_code:
+          type: string
+          readOnly: true
+          description: Institution-scoped family code, e.g. FAM-2026-00001
+        name:
+          type: string
+          description: Family household title, e.g. 'Ahmed Family' or 'রহমান পরিবার'
+          maxLength: 150
+        primary_contact_phone:
+          type: string
+        address:
+          type: string
+          description: Common family residential address
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - family_code
+      - id
+      - updated_at
+    FamilyRequest:
+      type: object
+      description: Serializer for Family households.
+      properties:
+        name:
+          type: string
+          description: Family household title, e.g. 'Ahmed Family' or 'রহমান পরিবার'
+          maxLength: 150
+        primary_contact_phone:
+          type: string
+        address:
+          type: string
+          description: Common family residential address
+        notes:
+          type: string
     GenderEnum:
       enum:
       - male
@@ -8330,6 +9375,222 @@ components:
       required:
       - code
       - name
+    Guardian:
+      type: object
+      description: Standard serializer for Guardian profiles.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: Portal login account if activated
+        has_portal_account:
+          type: boolean
+          readOnly: true
+        family:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked household family
+        name_en:
+          type: string
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        relation_default:
+          $ref: '#/components/schemas/RelationDefaultEnum'
+        phone:
+          type: string
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        occupation:
+          type: string
+          maxLength: 100
+        annual_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Annual household income in BDT
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        is_emergency_contact:
+          type: boolean
+          description: Default emergency call contact flag
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - has_portal_account
+      - id
+      - name_en
+      - phone
+      - updated_at
+      - user
+    GuardianDetail:
+      type: object
+      description: Detailed guardian serializer embedding linked students.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: Portal login account if activated
+        has_portal_account:
+          type: boolean
+          readOnly: true
+        family:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked household family
+        name_en:
+          type: string
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        relation_default:
+          $ref: '#/components/schemas/RelationDefaultEnum'
+        phone:
+          type: string
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        occupation:
+          type: string
+          maxLength: 100
+        annual_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Annual household income in BDT
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        is_emergency_contact:
+          type: boolean
+          description: Default emergency call contact flag
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        student_relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentGuardian'
+          readOnly: true
+      required:
+      - created_at
+      - has_portal_account
+      - id
+      - name_en
+      - phone
+      - student_relations
+      - updated_at
+      - user
+    GuardianRequest:
+      type: object
+      description: Standard serializer for Guardian profiles.
+      properties:
+        family:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked household family
+        name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        relation_default:
+          $ref: '#/components/schemas/RelationDefaultEnum'
+        phone:
+          type: string
+          minLength: 1
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        occupation:
+          type: string
+          maxLength: 100
+        annual_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Annual household income in BDT
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        is_emergency_contact:
+          type: boolean
+          description: Default emergency call contact flag
+      required:
+      - name_en
+      - phone
     Holiday:
       type: object
       description: Serializer for Holiday.
@@ -8534,6 +9795,42 @@ components:
       description: |-
         * `bn` - Bangla
         * `en` - English
+    LinkSiblingsFamilyRequest:
+      type: object
+      description: Payload to link multiple students and their guardians to a Family.
+      properties:
+        student_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - student_ids
+    LinkStudentActionRequest:
+      type: object
+      description: Payload to establish a student-guardian relationship.
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        relation:
+          allOf:
+          - $ref: '#/components/schemas/RelationEnum'
+          default: father
+        is_primary:
+          type: boolean
+          default: false
+        can_pickup:
+          type: boolean
+          default: true
+        receives_sms:
+          type: boolean
+          default: true
+        financial_responsible:
+          type: boolean
+          default: false
+      required:
+      - student_id
     LoginRequest:
       type: object
       description: Serializer for username/phone and password login.
@@ -8594,14 +9891,12 @@ components:
           readOnly: true
         total_candidates:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         selected_candidates_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         drawn_order:
           description: Ordered list of application IDs selected by the draw
         is_confirmed:
@@ -8644,6 +9939,21 @@ components:
         * `english_version` - English Version (NCTB)
         * `english_medium` - English Medium (Cambridge/Edexcel)
         * `madrasa` - Madrasa (Dakhil/Alim)
+    MergeGuardianActionRequest:
+      type: object
+      description: Payload to merge duplicate guardian records.
+      properties:
+        primary_guardian_id:
+          type: string
+          format: uuid
+        duplicate_guardian_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - duplicate_guardian_ids
+      - primary_guardian_id
     MeritList:
       type: object
       properties:
@@ -8708,9 +10018,8 @@ components:
           readOnly: true
         rank:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         merit_type:
           $ref: '#/components/schemas/MeritTypeEnum'
         merit_type_display:
@@ -8739,9 +10048,8 @@ components:
           format: uuid
         rank:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         merit_type:
           $ref: '#/components/schemas/MeritTypeEnum'
         score:
@@ -8831,6 +10139,59 @@ components:
         * `non_mpo` - Non-MPO
         * `mpo` - MPO
         * `partial_mpo` - Partial MPO
+    MyChildren:
+      type: object
+      description: Aggregated child detail view for logged-in guardians.
+      properties:
+        id:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+        name_en:
+          type: string
+        name_bn:
+          type: string
+        gender:
+          type: string
+        blood_group:
+          type: string
+        status:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        relation:
+          type: string
+        is_primary:
+          type: boolean
+        can_pickup:
+          type: boolean
+        receives_sms:
+          type: boolean
+        financial_responsible:
+          type: boolean
+        enrollment:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+      required:
+      - blood_group
+      - can_pickup
+      - enrollment
+      - financial_responsible
+      - gender
+      - id
+      - is_primary
+      - name_bn
+      - name_en
+      - photo
+      - receives_sms
+      - relation
+      - status
+      - student_id
     NameEnum:
       enum:
       - morning
@@ -9063,6 +10424,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApplicationPayment'
+    PaginatedAuthorizedPickupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizedPickup'
     PaginatedBranchList:
       type: object
       required:
@@ -9132,6 +10516,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ClassSubject'
+    PaginatedFamilyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Family'
     PaginatedGroupList:
       type: object
       required:
@@ -9155,6 +10562,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Group'
+    PaginatedGuardianList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Guardian'
     PaginatedHolidayList:
       type: object
       required:
@@ -9224,6 +10654,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MeritList'
+    PaginatedMyChildrenList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyChildren'
     PaginatedPeriodList:
       type: object
       required:
@@ -9661,9 +11114,8 @@ components:
           maxLength: 255
         seats_available:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         application_fee:
           type: string
           format: decimal
@@ -9843,6 +11295,36 @@ components:
           $ref: '#/components/schemas/StatusDf7Enum'
         notes:
           type: string
+    PatchedAuthorizedPickupRequest:
+      type: object
+      description: Serializer for authorized pickup persons.
+      properties:
+        student:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        relation:
+          type: string
+          minLength: 1
+          description: Relation to student e.g. Driver, Grandparent, Neighbor
+          maxLength: 50
+        phone:
+          type: string
+          minLength: 1
+        nid:
+          type: string
+          maxLength: 30
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        is_active:
+          type: boolean
+        notes:
+          type: string
     PatchedBranchRequest:
       type: object
       description: Serializer for Branch.
@@ -9875,9 +11357,8 @@ components:
           maxLength: 20
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           description: Numeric sequencing from lowest to highest grade (1..14)
         medium:
           $ref: '#/components/schemas/MediumEnum'
@@ -9919,6 +11400,21 @@ components:
         is_optional_elective:
           type: boolean
           description: True if this subject can be chosen as an optional/4th subject
+    PatchedFamilyRequest:
+      type: object
+      description: Serializer for Family households.
+      properties:
+        name:
+          type: string
+          description: Family household title, e.g. 'Ahmed Family' or 'রহমান পরিবার'
+          maxLength: 150
+        primary_contact_phone:
+          type: string
+        address:
+          type: string
+          description: Common family residential address
+        notes:
+          type: string
     PatchedGroupRequest:
       type: object
       properties:
@@ -9932,6 +11428,57 @@ components:
           minLength: 1
           description: Unique code (e.g. SCI, BUS, HUM)
           maxLength: 20
+    PatchedGuardianRequest:
+      type: object
+      description: Standard serializer for Guardian profiles.
+      properties:
+        family:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked household family
+        name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        relation_default:
+          $ref: '#/components/schemas/RelationDefaultEnum'
+        phone:
+          type: string
+          minLength: 1
+        alt_phone:
+          type: string
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        nid:
+          type: string
+          description: Bangladeshi National ID number (10, 13, or 17 digits)
+          maxLength: 30
+        occupation:
+          type: string
+          maxLength: 100
+        annual_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Annual household income in BDT
+        present_address:
+          type: string
+        permanent_address:
+          type: string
+        photo:
+          type: string
+          format: binary
+          nullable: true
+        is_emergency_contact:
+          type: boolean
+          description: Default emergency call contact flag
     PatchedHolidayRequest:
       type: object
       description: Serializer for Holiday.
@@ -10055,9 +11602,8 @@ components:
           format: time
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           description: Order in the day (1, 2, 3...)
         is_break:
           type: boolean
@@ -10082,15 +11628,13 @@ components:
           description: Percentage of total seats reserved
         reserved_seats:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Absolute number of reserved seats (if percentage not used)
         priority:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
     PatchedRoleRequest:
       type: object
       description: Serializer for Role.
@@ -10122,9 +11666,8 @@ components:
           maxLength: 64
         capacity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Seating capacity
         type:
           $ref: '#/components/schemas/RoomTypeEnum'
@@ -10147,8 +11690,8 @@ components:
             * `4` - Wednesday
             * `5` - Thursday
             * `6` - Friday
-          minimum: -9223372036854775808
-          maximum: 9223372036854775807
+          minimum: -2147483648
+          maximum: 2147483647
         period:
           type: string
           format: uuid
@@ -10183,9 +11726,8 @@ components:
           maxLength: 64
         capacity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Maximum student capacity
         teacher_user:
           type: string
@@ -10302,9 +11844,8 @@ components:
             2nd Paper)
         paper_number:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           nullable: true
           description: Paper number (1 or 2) when has_papers is True
         marks_components_config:
@@ -10349,9 +11890,8 @@ components:
           format: date
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           default: 1
     PatchedUserProfileUpdateRequest:
       type: object
@@ -10443,9 +11983,8 @@ components:
           format: time
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           description: Order in the day (1, 2, 3...)
         is_break:
           type: boolean
@@ -10487,9 +12026,8 @@ components:
           format: time
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           description: Order in the day (1, 2, 3...)
         is_break:
           type: boolean
@@ -10603,19 +12141,16 @@ components:
           $ref: '#/components/schemas/PromotionBatchStatusEnum'
         total_students:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         promoted_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         retained_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         applied_at:
           type: string
           format: date-time
@@ -10660,19 +12195,16 @@ components:
           $ref: '#/components/schemas/PromotionBatchStatusEnum'
         total_students:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         promoted_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         retained_count:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         applied_at:
           type: string
           format: date-time
@@ -10727,9 +12259,8 @@ components:
           readOnly: true
         target_roll_no:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         action:
           $ref: '#/components/schemas/ActionEnum'
         gpa:
@@ -10767,9 +12298,8 @@ components:
           format: uuid
         target_roll_no:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         action:
           $ref: '#/components/schemas/ActionEnum'
         gpa:
@@ -10821,15 +12351,13 @@ components:
           description: Percentage of total seats reserved
         reserved_seats:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Absolute number of reserved seats (if percentage not used)
         priority:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
         created_at:
           type: string
           format: date-time
@@ -10866,15 +12394,13 @@ components:
           description: Percentage of total seats reserved
         reserved_seats:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Absolute number of reserved seats (if percentage not used)
         priority:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
       required:
       - circular
       - name
@@ -10895,6 +12421,50 @@ components:
         * `freedom_fighter` - Freedom Fighter Quota (Muktidjoddha)
         * `disability` - Special Needs / Disability
         * `catchment` - Catchment / Local Area Quota
+    RelationDefaultEnum:
+      enum:
+      - father
+      - mother
+      - brother
+      - sister
+      - uncle
+      - aunt
+      - grandparent
+      - legal_guardian
+      - other
+      type: string
+      description: |-
+        * `father` - Father (পিতা)
+        * `mother` - Mother (মাতা)
+        * `brother` - Brother (ভাই)
+        * `sister` - Sister (বোন)
+        * `uncle` - Uncle (চাচা/মামা/ফুফা/খালু)
+        * `aunt` - Aunt (ফুফু/খালা/চাচী/মামী)
+        * `grandparent` - Grandparent (দাদা/দাদী/নানা/নানী)
+        * `legal_guardian` - Legal Guardian (আইনগত অভিভাবক)
+        * `other` - Other (অন্যান্য)
+    RelationEnum:
+      enum:
+      - father
+      - mother
+      - brother
+      - sister
+      - uncle
+      - aunt
+      - grandparent
+      - legal_guardian
+      - other
+      type: string
+      description: |-
+        * `father` - Father (পিতা)
+        * `mother` - Mother (মাতা)
+        * `brother` - Brother (ভাই)
+        * `sister` - Sister (বোন)
+        * `uncle` - Uncle (চাচা/মামা/ফুফা/খালু)
+        * `aunt` - Aunt (ফুফু/খালা/চাচী/মামী)
+        * `grandparent` - Grandparent (দাদা/দাদী/নানা/নানী)
+        * `legal_guardian` - Legal Guardian (আইনগত অভিভাবক)
+        * `other` - Other (অন্যান্য)
     ReligionEnum:
       enum:
       - islam
@@ -10997,9 +12567,8 @@ components:
           maxLength: 64
         capacity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Seating capacity
         type:
           $ref: '#/components/schemas/RoomTypeEnum'
@@ -11036,9 +12605,8 @@ components:
           maxLength: 64
         capacity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Seating capacity
         type:
           $ref: '#/components/schemas/RoomTypeEnum'
@@ -11087,8 +12655,8 @@ components:
             * `4` - Wednesday
             * `5` - Thursday
             * `6` - Friday
-          minimum: -9223372036854775808
-          maximum: 9223372036854775807
+          minimum: -2147483648
+          maximum: 2147483647
         weekday_display:
           type: string
           readOnly: true
@@ -11177,8 +12745,8 @@ components:
             * `4` - Wednesday
             * `5` - Thursday
             * `6` - Friday
-          minimum: -9223372036854775808
-          maximum: 9223372036854775807
+          minimum: -2147483648
+          maximum: 2147483647
         period:
           type: string
           format: uuid
@@ -11259,9 +12827,8 @@ components:
           maxLength: 64
         capacity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Maximum student capacity
         teacher_user:
           type: string
@@ -11310,9 +12877,8 @@ components:
           maxLength: 64
         capacity:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Maximum student capacity
         teacher_user:
           type: string
@@ -11861,9 +13427,8 @@ components:
           readOnly: true
         roll_no:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Class section roll number.
         enrollment_date:
           type: string
@@ -11904,9 +13469,8 @@ components:
           nullable: true
         roll_no:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Class section roll number.
         enrollment_date:
           type: string
@@ -11937,6 +13501,56 @@ components:
         * `transferred` - Transferred
         * `dropped` - Dropped Out
         * `graduated` - Graduated
+    StudentGuardian:
+      type: object
+      description: Serializer for Student-Guardian relationship links.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        guardian:
+          type: string
+          format: uuid
+        guardian_name:
+          type: string
+          readOnly: true
+        guardian_phone:
+          type: string
+          readOnly: true
+        relation:
+          $ref: '#/components/schemas/RelationEnum'
+        is_primary:
+          type: boolean
+          description: Indicates primary contact receiving report cards and primary
+            calls
+        can_pickup:
+          type: boolean
+          description: Authorized to collect the student from school premises
+        receives_sms:
+          type: boolean
+          description: Receives automated attendance and notification SMS
+        financial_responsible:
+          type: boolean
+          description: Responsible for paying academic fees and dues
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - guardian
+      - guardian_name
+      - guardian_phone
+      - id
+      - student
+      - student_name
     StudentIDCard:
       type: object
       properties:
@@ -12073,9 +13687,8 @@ components:
             2nd Paper)
         paper_number:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           nullable: true
           description: Paper number (1 or 2) when has_papers is True
         marks_components_config:
@@ -12123,9 +13736,8 @@ components:
             2nd Paper)
         paper_number:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 32767
           minimum: 0
-          format: int64
           nullable: true
           description: Paper number (1 or 2) when has_papers is True
         marks_components_config:
@@ -12251,9 +13863,8 @@ components:
           format: date
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           default: 1
         created_at:
           type: string
@@ -12292,9 +13903,8 @@ components:
           format: date
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           default: 1
       required:
       - end_date
@@ -12331,9 +13941,8 @@ components:
           maxLength: 100
         passing_year:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         gpa:
           type: string
           format: decimal
@@ -12381,9 +13990,8 @@ components:
           maxLength: 100
         passing_year:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         gpa:
           type: string
           format: decimal
@@ -12500,6 +14108,15 @@ components:
       - issue_date
       - reason
       - student
+    UnlinkStudentActionRequest:
+      type: object
+      description: Payload to disassociate a student from a guardian.
+      properties:
+        student_id:
+          type: string
+          format: uuid
+      required:
+      - student_id
     User:
       type: object
       description: Serializer for User details.
@@ -12812,6 +14429,16 @@ components:
         * `guardian` - Guardian
         * `driver` - Driver
         * `security` - Security
+    VerifyPickupOTPActionRequest:
+      type: object
+      description: Payload to verify OTP for authorized pickup.
+      properties:
+        otp:
+          type: string
+          minLength: 6
+          maxLength: 6
+      required:
+      - otp
     WeekdayEnum:
       enum:
       - 0

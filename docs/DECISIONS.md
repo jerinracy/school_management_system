@@ -130,3 +130,19 @@
   - **Field-level Privacy**: Serializer representations dynamically mask 17-digit birth registration numbers and emergency contact phones for non-administrative users.
 - **Consequences**:
   - Prevents data corruption during promotion and roll-numbering, guarantees compliance with Bangladeshi school administration norms, and produces crisp, official PDF documents out of the box.
+
+---
+
+## ADR-009: Guardian Identity Model, Household Family Grouping & Delegated Student Authorization
+- **Date**: 2026-11-11
+- **Status**: Accepted
+- **Context**: In Bangladeshi schools, a guardian may have multiple children across different classes/sections, while a student typically has multiple guardians (Father, Mother, Local Guardian, Uncle, etc.). Furthermore, schools require strict parent portal authentication, sibling discounts/grouping, emergency contact synchronization, and security controls for third-party student pickup (e.g. drivers or relatives).
+- **Decision**:
+  - **Decoupled User & Guardian Entities**: `Guardian` is a standalone master record scoped to the institution with a unique active phone constraint. A portal `User` is provisioned on-demand (`apps.accounts.models.UserType.GUARDIAN`), linking to the `Guardian` profile.
+  - **Explicit Relationship Model (`StudentGuardian`)**: Multi-cardinality links between `Student` and `Guardian` store granular responsibility flags (`is_primary`, `can_pickup`, `receives_sms`, `financial_responsible`).
+  - **Primary Contact Synchronization**: Setting a guardian as `is_primary=True` atomically demotes other primaries for that student and synchronizes `emergency_contact_name` and `emergency_contact_phone` on the `Student` master record. Unlinking a primary automatically promotes the next available guardian.
+  - **Household Family Grouping (`Family`)**: Household unit characterized by `FAM-{YEAR}-{SEQUENCE}` grouping siblings for fee discounts and family notices. Sibling discovery searches across shared emergency contact phones and guardian NIDs.
+  - **Authorized Pickup Verification (`AuthorizedPickup`)**: Third-party pickup individuals are registered with relation/phone details and validated via short-lived (10-minute) 6-digit OTP challenges cached in Redis and dispatched via `SMSService`.
+  - **Object-Level Security (`IsGuardianOfStudent`)**: Guardian users are restricted from listing or viewing students outside their authorized `StudentGuardian` links.
+- **Consequences**:
+  - Delivers a secure, multi-child parent experience while maintaining strict multi-tenant isolation, automated primary contact invariants, and verified school pickup security.
