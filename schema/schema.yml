@@ -16734,6 +16734,1797 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/payroll/components/:
+    get:
+      operationId: payroll_components_list
+      description: CRUD for institutional earning and deduction components.
+      summary: List salary components
+      parameters:
+      - in: query
+        name: calculation_type
+        schema:
+          type: string
+          enum:
+          - fixed
+          - percentage_of_basic
+          - percentage_of_gross
+        description: |-
+          * `fixed` - Fixed Amount (নির্দিষ্ট)
+          * `percentage_of_basic` - % of Basic Salary (মূল বেতনের %)
+          * `percentage_of_gross` - % of Gross Salary (মোট বেতনের %)
+      - in: query
+        name: component_type
+        schema:
+          type: string
+          enum:
+          - deduction
+          - earning
+        description: |-
+          * `earning` - Earning (আয় / ভাতা)
+          * `deduction` - Deduction (কর্তন)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalaryComponentList'
+          description: ''
+    post:
+      operationId: payroll_components_create
+      description: CRUD for institutional earning and deduction components.
+      summary: Create salary component
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryComponentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalaryComponentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalaryComponentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryComponent'
+          description: ''
+  /api/v1/payroll/components/{id}/:
+    get:
+      operationId: payroll_components_retrieve
+      description: CRUD for institutional earning and deduction components.
+      summary: Retrieve salary component
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Component.
+        required: true
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryComponent'
+          description: ''
+    put:
+      operationId: payroll_components_update
+      description: CRUD for institutional earning and deduction components.
+      summary: Update salary component
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Component.
+        required: true
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryComponentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalaryComponentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalaryComponentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryComponent'
+          description: ''
+    patch:
+      operationId: payroll_components_partial_update
+      description: CRUD for institutional earning and deduction components.
+      summary: Partial update salary component
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Component.
+        required: true
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryComponentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryComponentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryComponentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryComponent'
+          description: ''
+    delete:
+      operationId: payroll_components_destroy
+      description: CRUD for institutional earning and deduction components.
+      summary: Soft-delete salary component
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Component.
+        required: true
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payroll/components/seed_defaults/:
+    post:
+      operationId: payroll_components_seed_defaults_create
+      description: CRUD for institutional earning and deduction components.
+      summary: Seed default Bangladeshi salary components
+      parameters:
+      - in: query
+        name: calculation_type
+        schema:
+          type: string
+          enum:
+          - fixed
+          - percentage_of_basic
+          - percentage_of_gross
+        description: |-
+          * `fixed` - Fixed Amount (নির্দিষ্ট)
+          * `percentage_of_basic` - % of Basic Salary (মূল বেতনের %)
+          * `percentage_of_gross` - % of Gross Salary (মোট বেতনের %)
+      - in: query
+        name: component_type
+        schema:
+          type: string
+          enum:
+          - deduction
+          - earning
+        description: |-
+          * `earning` - Earning (আয় / ভাতা)
+          * `deduction` - Deduction (কর্তন)
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalaryComponentList'
+          description: ''
+  /api/v1/payroll/loans/:
+    get:
+      operationId: payroll_loans_list
+      description: CRUD for salary advances and loans recovered via monthly payroll.
+      summary: List staff loans and advances
+      parameters:
+      - in: query
+        name: loan_type
+        schema:
+          type: string
+          enum:
+          - advance
+          - loan
+        description: |-
+          * `advance` - Salary Advance (অগ্রিম বেতন)
+          * `loan` - Institutional Loan (ঋণ)
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - completed
+          - paused
+        description: |-
+          * `active` - Active
+          * `completed` - Completed
+          * `paused` - Paused
+      tags:
+      - Payroll - Loans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffLoanList'
+          description: ''
+    post:
+      operationId: payroll_loans_create
+      description: CRUD for salary advances and loans recovered via monthly payroll.
+      summary: Issue staff loan / advance
+      tags:
+      - Payroll - Loans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffLoanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffLoanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffLoan'
+          description: ''
+  /api/v1/payroll/loans/{id}/:
+    get:
+      operationId: payroll_loans_retrieve
+      description: CRUD for salary advances and loans recovered via monthly payroll.
+      summary: Retrieve staff loan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Loan / Advance.
+        required: true
+      tags:
+      - Payroll - Loans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffLoan'
+          description: ''
+    put:
+      operationId: payroll_loans_update
+      description: CRUD for salary advances and loans recovered via monthly payroll.
+      summary: Update staff loan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Loan / Advance.
+        required: true
+      tags:
+      - Payroll - Loans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffLoanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffLoanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffLoan'
+          description: ''
+    patch:
+      operationId: payroll_loans_partial_update
+      description: CRUD for salary advances and loans recovered via monthly payroll.
+      summary: Partial update staff loan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Loan / Advance.
+        required: true
+      tags:
+      - Payroll - Loans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffLoanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffLoanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffLoanRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffLoan'
+          description: ''
+    delete:
+      operationId: payroll_loans_destroy
+      description: CRUD for salary advances and loans recovered via monthly payroll.
+      summary: Soft-delete staff loan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Loan / Advance.
+        required: true
+      tags:
+      - Payroll - Loans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payroll/overrides/:
+    get:
+      operationId: payroll_overrides_list
+      description: CRUD for per-employee component overrides.
+      summary: List staff salary overrides
+      parameters:
+      - in: query
+        name: component
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: profile
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Payroll - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffSalaryOverrideList'
+          description: ''
+    post:
+      operationId: payroll_overrides_create
+      description: CRUD for per-employee component overrides.
+      summary: Create staff salary override
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryOverrideRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryOverrideRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryOverrideRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryOverride'
+          description: ''
+  /api/v1/payroll/overrides/{id}/:
+    get:
+      operationId: payroll_overrides_retrieve
+      description: CRUD for per-employee component overrides.
+      summary: Retrieve staff salary override
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Override.
+        required: true
+      tags:
+      - Payroll - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryOverride'
+          description: ''
+    put:
+      operationId: payroll_overrides_update
+      description: CRUD for per-employee component overrides.
+      summary: Update staff salary override
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Override.
+        required: true
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryOverrideRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryOverrideRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryOverrideRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryOverride'
+          description: ''
+    patch:
+      operationId: payroll_overrides_partial_update
+      description: CRUD for per-employee component overrides.
+      summary: Partial update staff salary override
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Override.
+        required: true
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffSalaryOverrideRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffSalaryOverrideRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffSalaryOverrideRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryOverride'
+          description: ''
+    delete:
+      operationId: payroll_overrides_destroy
+      description: CRUD for per-employee component overrides.
+      summary: Delete staff salary override
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Override.
+        required: true
+      tags:
+      - Payroll - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payroll/payslips/:
+    get:
+      operationId: payroll_payslips_list
+      description: Read-only payslips with self-service endpoint and bilingual PDF
+        download.
+      summary: List payslips
+      parameters:
+      - in: query
+        name: is_paid
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+          enum:
+          - bank_transfer
+          - cash
+          - cheque
+          - mfs
+        description: |-
+          * `bank_transfer` - Bank Transfer / BEFTN (ব্যাংক)
+          * `cash` - Cash in Hand (নগদ)
+          * `cheque` - Bank Cheque (চেক)
+          * `mfs` - Mobile Financial Service (bKash / Nagad)
+      - in: query
+        name: payroll_run
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Payroll - Payslips
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayslipList'
+          description: ''
+  /api/v1/payroll/payslips/{id}/:
+    get:
+      operationId: payroll_payslips_retrieve
+      description: Read-only payslips with self-service endpoint and bilingual PDF
+        download.
+      summary: Retrieve payslip details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payslip.
+        required: true
+      tags:
+      - Payroll - Payslips
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payslip'
+          description: ''
+  /api/v1/payroll/payslips/{id}/pdf/:
+    get:
+      operationId: payroll_payslips_pdf_retrieve
+      description: Read-only payslips with self-service endpoint and bilingual PDF
+        download.
+      summary: Download bilingual Payslip PDF
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payslip.
+        required: true
+      tags:
+      - Payroll - Payslips
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/payroll/payslips/my_payslips/:
+    get:
+      operationId: payroll_payslips_my_payslips_list
+      description: Read-only payslips with self-service endpoint and bilingual PDF
+        download.
+      summary: List authenticated employee's own payslips
+      parameters:
+      - in: query
+        name: is_paid
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+          enum:
+          - bank_transfer
+          - cash
+          - cheque
+          - mfs
+        description: |-
+          * `bank_transfer` - Bank Transfer / BEFTN (ব্যাংক)
+          * `cash` - Cash in Hand (নগদ)
+          * `cheque` - Bank Cheque (চেক)
+          * `mfs` - Mobile Financial Service (bKash / Nagad)
+      - in: query
+        name: payroll_run
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Payroll - Payslips
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayslipList'
+          description: ''
+  /api/v1/payroll/profiles/:
+    get:
+      operationId: payroll_profiles_list
+      description: CRUD for employee salary profiles, MPO split, PF, and banking details.
+      summary: List staff salary profiles
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+          enum:
+          - bank_transfer
+          - cash
+          - cheque
+          - mfs
+        description: |-
+          * `bank_transfer` - Bank Transfer / BEFTN (ব্যাংক)
+          * `cash` - Cash in Hand (নগদ)
+          * `cheque` - Bank Cheque (চেক)
+          * `mfs` - Mobile Financial Service (bKash / Nagad)
+      - in: query
+        name: pf_enrolled
+        schema:
+          type: boolean
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: structure
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Payroll - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffSalaryProfileList'
+          description: ''
+    post:
+      operationId: payroll_profiles_create
+      description: CRUD for employee salary profiles, MPO split, PF, and banking details.
+      summary: Create staff salary profile
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryProfile'
+          description: ''
+  /api/v1/payroll/profiles/{id}/:
+    get:
+      operationId: payroll_profiles_retrieve
+      description: CRUD for employee salary profiles, MPO split, PF, and banking details.
+      summary: Retrieve staff salary profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Profile.
+        required: true
+      tags:
+      - Payroll - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryProfile'
+          description: ''
+    put:
+      operationId: payroll_profiles_update
+      description: CRUD for employee salary profiles, MPO split, PF, and banking details.
+      summary: Update staff salary profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Profile.
+        required: true
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryProfile'
+          description: ''
+    patch:
+      operationId: payroll_profiles_partial_update
+      description: CRUD for employee salary profiles, MPO split, PF, and banking details.
+      summary: Partial update staff salary profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Profile.
+        required: true
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffSalaryProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffSalaryProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffSalaryProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffSalaryProfile'
+          description: ''
+    delete:
+      operationId: payroll_profiles_destroy
+      description: CRUD for employee salary profiles, MPO split, PF, and banking details.
+      summary: Soft-delete staff salary profile
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Salary Profile.
+        required: true
+      tags:
+      - Payroll - Profiles
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payroll/runs/:
+    get:
+      operationId: payroll_runs_list
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: List monthly payroll runs
+      parameters:
+      - in: query
+        name: is_locked
+        schema:
+          type: boolean
+      - in: query
+        name: month
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - draft
+          - locked
+          - paid
+          - reviewed
+        description: |-
+          * `draft` - Draft
+          * `reviewed` - Reviewed
+          * `approved` - Approved
+          * `paid` - Paid
+          * `locked` - Locked
+      - in: query
+        name: year
+        schema:
+          type: integer
+      tags:
+      - Payroll - Runs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayrollRunList'
+          description: ''
+  /api/v1/payroll/runs/{id}/:
+    get:
+      operationId: payroll_runs_retrieve
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Retrieve monthly payroll run
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/runs/{id}/apply_bonus/:
+    post:
+      operationId: payroll_runs_apply_bonus_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Apply batch Eid/Festival bonus to a DRAFT payroll run
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyBonusRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplyBonusRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplyBonusRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/runs/{id}/approve/:
+    post:
+      operationId: payroll_runs_approve_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Approve a payroll run for disbursement
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/runs/{id}/bank_advice/:
+    get:
+      operationId: payroll_runs_bank_advice_retrieve
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Export BEFTN / Bank Advice sheet in XLSX or CSV format
+      parameters:
+      - in: query
+        name: export_format
+        schema:
+          type: string
+          enum:
+          - csv
+          - xlsx
+          default: xlsx
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+      tags:
+      - Payroll - Runs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/payroll/runs/{id}/lock/:
+    post:
+      operationId: payroll_runs_lock_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Permanently lock a PAID payroll run
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/runs/{id}/mark_paid/:
+    post:
+      operationId: payroll_runs_mark_paid_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Mark an approved payroll run as PAID and settle loan installments
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkPaidRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkPaidRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkPaidRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/runs/{id}/post_to_accounting/:
+    post:
+      operationId: payroll_runs_post_to_accounting_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Post payroll run to General Ledger (apps.accounting)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAccountingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostAccountingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostAccountingRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/payroll/runs/{id}/review/:
+    post:
+      operationId: payroll_runs_review_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Mark a DRAFT payroll run as REVIEWED
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Payroll Run.
+        required: true
+      tags:
+      - Payroll - Runs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/runs/generate/:
+    post:
+      operationId: payroll_runs_generate_create
+      description: View and process monthly payroll batches, bonuses, GL posting,
+        and BEFTN exports.
+      summary: Generate or recalculate a draft monthly payroll run
+      tags:
+      - Payroll - Runs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeneratePayrollRunRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GeneratePayrollRunRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GeneratePayrollRunRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRun'
+          description: ''
+  /api/v1/payroll/structure-lines/:
+    get:
+      operationId: payroll_structure_lines_list
+      description: CRUD for component formula lines attached to a SalaryStructure.
+      summary: List salary structure lines
+      parameters:
+      - in: query
+        name: component
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: structure
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalaryStructureLineList'
+          description: ''
+    post:
+      operationId: payroll_structure_lines_create
+      description: CRUD for component formula lines attached to a SalaryStructure.
+      summary: Create salary structure line
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureLineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureLineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureLineRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructureLine'
+          description: ''
+  /api/v1/payroll/structure-lines/{id}/:
+    get:
+      operationId: payroll_structure_lines_retrieve
+      description: CRUD for component formula lines attached to a SalaryStructure.
+      summary: Retrieve salary structure line
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure Line.
+        required: true
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructureLine'
+          description: ''
+    put:
+      operationId: payroll_structure_lines_update
+      description: CRUD for component formula lines attached to a SalaryStructure.
+      summary: Update salary structure line
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure Line.
+        required: true
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureLineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureLineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureLineRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructureLine'
+          description: ''
+    patch:
+      operationId: payroll_structure_lines_partial_update
+      description: CRUD for component formula lines attached to a SalaryStructure.
+      summary: Partial update salary structure line
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure Line.
+        required: true
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryStructureLineRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryStructureLineRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryStructureLineRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructureLine'
+          description: ''
+    delete:
+      operationId: payroll_structure_lines_destroy
+      description: CRUD for component formula lines attached to a SalaryStructure.
+      summary: Delete salary structure line
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure Line.
+        required: true
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payroll/structures/:
+    get:
+      operationId: payroll_structures_list
+      description: CRUD for reusable salary structure templates.
+      summary: List salary structures
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalaryStructureList'
+          description: ''
+    post:
+      operationId: payroll_structures_create
+      description: CRUD for reusable salary structure templates.
+      summary: Create salary structure
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructure'
+          description: ''
+  /api/v1/payroll/structures/{id}/:
+    get:
+      operationId: payroll_structures_retrieve
+      description: CRUD for reusable salary structure templates.
+      summary: Retrieve salary structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure.
+        required: true
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructure'
+          description: ''
+    put:
+      operationId: payroll_structures_update
+      description: CRUD for reusable salary structure templates.
+      summary: Update salary structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure.
+        required: true
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructure'
+          description: ''
+    patch:
+      operationId: payroll_structures_partial_update
+      description: CRUD for reusable salary structure templates.
+      summary: Partial update salary structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure.
+        required: true
+      tags:
+      - Payroll - Setup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryStructureRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryStructureRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalaryStructureRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalaryStructure'
+          description: ''
+    delete:
+      operationId: payroll_structures_destroy
+      description: CRUD for reusable salary structure templates.
+      summary: Soft-delete salary structure
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Salary Structure.
+        required: true
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payroll/structures/seed_defaults/:
+    post:
+      operationId: payroll_structures_seed_defaults_create
+      description: CRUD for reusable salary structure templates.
+      summary: Seed default Bangladeshi school salary structures
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Payroll - Setup
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalaryStructureList'
+          description: ''
   /api/v1/results/analytics/promotion_eligibility/:
     get:
       operationId: results_analytics_promotion_eligibility_retrieve
@@ -20869,6 +22660,14 @@ paths:
           description: ''
 components:
   schemas:
+    AbsenceDeductionBasisEnum:
+      enum:
+      - basic
+      - gross
+      type: string
+      description: |-
+        * `basic` - Pro-rata of Basic Salary
+        * `gross` - Pro-rata of Gross Salary
     AcademicSession:
       type: object
       description: Serializer for AcademicSession.
@@ -22075,6 +23874,29 @@ components:
       required:
       - amount
       - invoice_id
+    ApplyBonusRequest:
+      type: object
+      description: Input serializer for batch Eid/Festival bonus calculation.
+      properties:
+        bonus_title:
+          type: string
+          minLength: 1
+          default: Eid Festival Bonus
+          maxLength: 150
+        percentage_of_basic:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+        fixed_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        staff_type:
+          type: string
+          default: ''
+          maxLength: 30
     ApprovalStatusEnum:
       enum:
       - pending
@@ -22963,6 +24785,16 @@ components:
           default: true
       required:
       - file
+    CalculationTypeEnum:
+      enum:
+      - fixed
+      - percentage_of_basic
+      - percentage_of_gross
+      type: string
+      description: |-
+        * `fixed` - Fixed Amount (নির্দিষ্ট)
+        * `percentage_of_basic` - % of Basic Salary (মূল বেতনের %)
+        * `percentage_of_gross` - % of Gross Salary (মোট বেতনের %)
     CashbookClosing:
       type: object
       description: Daily cashbook closing reconciliation serializer.
@@ -23435,6 +25267,14 @@ components:
         * `sync_time` - Sync Time
         * `reboot` - Reboot Device
         * `clear_log` - Clear Log
+    ComponentTypeEnum:
+      enum:
+      - earning
+      - deduction
+      type: string
+      description: |-
+        * `earning` - Earning (আয় / ভাতা)
+        * `deduction` - Deduction (কর্তন)
     CopySessionInputRequest:
       type: object
       properties:
@@ -25644,6 +27484,34 @@ components:
         * `all` - All Staff
         * `male` - Male Only
         * `female` - Female Only
+    GeneratePayrollRunRequest:
+      type: object
+      description: Input serializer for generating or recalculating a monthly payroll
+        run.
+      properties:
+        year:
+          type: integer
+          maximum: 2100
+          minimum: 2000
+        month:
+          type: integer
+          maximum: 12
+          minimum: 1
+        working_days_in_month:
+          type: integer
+          maximum: 31
+          minimum: 1
+        absence_deduction_basis:
+          allOf:
+          - $ref: '#/components/schemas/AbsenceDeductionBasisEnum'
+          default: basic
+        title:
+          type: string
+          default: ''
+          maxLength: 150
+      required:
+      - month
+      - year
     GraceMarkRule:
       type: object
       properties:
@@ -27428,6 +29296,14 @@ components:
       required:
       - code
       - name
+    LineTypeEnum:
+      enum:
+      - earning
+      - deduction
+      type: string
+      description: |-
+        * `earning` - Earning (আয় / ভাতা)
+        * `deduction` - Deduction (কর্তন)
     LinkSiblingsFamilyRequest:
       type: object
       description: Payload to link multiple students and their guardians to a Family.
@@ -27464,6 +29340,14 @@ components:
           default: false
       required:
       - student_id
+    LoanTypeEnum:
+      enum:
+      - advance
+      - loan
+      type: string
+      description: |-
+        * `advance` - Salary Advance (অগ্রিম বেতন)
+        * `loan` - Institutional Loan (ঋণ)
     LoginRequest:
       type: object
       description: Serializer for username/phone and password login.
@@ -27674,6 +29558,14 @@ components:
       required:
       - exam_subject
       - student
+    MarkPaidRequest:
+      type: object
+      description: Input serializer for disbursing an approved payroll run.
+      properties:
+        payment_reference:
+          type: string
+          default: ''
+          maxLength: 100
     MediumEnum:
       enum:
       - bangla
@@ -30064,6 +31956,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Payment'
+    PaginatedPayrollRunList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollRun'
+    PaginatedPayslipList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payslip'
     PaginatedPeriodAttendanceList:
       type: object
       required:
@@ -30386,6 +32324,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SMSGatewayConfig'
+    PaginatedSalaryComponentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalaryComponent'
+    PaginatedSalaryStructureLineList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalaryStructureLine'
+    PaginatedSalaryStructureList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalaryStructure'
     PaginatedSeatPlanList:
       type: object
       required:
@@ -30478,6 +32485,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StaffList'
+    PaginatedStaffLoanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffLoan'
+    PaginatedStaffSalaryOverrideList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffSalaryOverride'
+    PaginatedStaffSalaryProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffSalaryProfile'
     PaginatedStudentEnrollmentBriefList:
       type: object
       required:
@@ -32754,6 +34830,74 @@ components:
         meta_config:
           description: Additional provider-specific parameters (e.g. headers, project
             id)
+    PatchedSalaryComponentRequest:
+      type: object
+      description: Serializer for institutional earning/deduction salary components.
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: Short unique code (e.g. BASIC, HRA, MED, CONV, PF, TDS).
+          maxLength: 40
+        name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        component_type:
+          $ref: '#/components/schemas/ComponentTypeEnum'
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        default_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Fixed BDT amount or percentage value (e.g. 40.00 for 40%).
+        is_taxable:
+          type: boolean
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+    PatchedSalaryStructureLineRequest:
+      type: object
+      description: Serializer for component lines within a SalaryStructure.
+      properties:
+        structure:
+          type: string
+          format: uuid
+        component:
+          type: string
+          format: uuid
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+    PatchedSalaryStructureRequest:
+      type: object
+      description: Serializer for reusable salary structure templates.
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 40
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        is_active:
+          type: boolean
     PatchedSectionRequest:
       type: object
       properties:
@@ -32883,6 +35027,122 @@ components:
         emergency_contact_relation:
           type: string
           maxLength: 50
+    PatchedStaffLoanRequest:
+      type: object
+      description: Serializer for salary advances and staff loans.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        loan_type:
+          $ref: '#/components/schemas/LoanTypeEnum'
+        principal_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        monthly_installment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/StaffLoanStatusEnum'
+        disbursed_date:
+          type: string
+          format: date
+        reason:
+          type: string
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+    PatchedStaffSalaryOverrideRequest:
+      type: object
+      description: Serializer for per-employee salary component overrides.
+      properties:
+        profile:
+          type: string
+          format: uuid
+        component:
+          type: string
+          format: uuid
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+    PatchedStaffSalaryProfileRequest:
+      type: object
+      description: Serializer for staff salary profile, MPO split, PF, and banking
+        details.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        structure:
+          type: string
+          format: uuid
+          nullable: true
+        basic_salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Monthly basic salary in BDT (মূল বেতন).
+        mpo_portion:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Government MPO disbursed portion for MPO-enlisted teachers.
+        institutional_portion:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: School-funded top-up portion.
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod5ddEnum'
+        bank_name:
+          type: string
+          maxLength: 120
+        bank_branch:
+          type: string
+          maxLength: 120
+        bank_account_number:
+          type: string
+          maxLength: 60
+        bank_routing_number:
+          type: string
+          maxLength: 30
+        mfs_number:
+          type: string
+          maxLength: 20
+        pf_enrolled:
+          type: boolean
+        pf_employee_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        pf_employer_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        late_deduction_enabled:
+          type: boolean
+          description: Deduct salary after accumulating configurable late days.
+        late_days_per_absent:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Number of late arrivals treated as 1 absent day deduction (0
+            = disabled).
+        overtime_hourly_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        effective_from:
+          type: string
+          format: date
+        is_active:
+          type: boolean
     PatchedStudentCreateUpdateRequest:
       type: object
       properties:
@@ -33470,6 +35730,18 @@ components:
       - student
       - student_name_en
       - updated_at
+    PaymentMethod5ddEnum:
+      enum:
+      - bank_transfer
+      - cash
+      - cheque
+      - mfs
+      type: string
+      description: |-
+        * `bank_transfer` - Bank Transfer / BEFTN (ব্যাংক)
+        * `cash` - Cash in Hand (নগদ)
+        * `cheque` - Bank Cheque (চেক)
+        * `mfs` - Mobile Financial Service (bKash / Nagad)
     PaymentMethodDd6Enum:
       enum:
       - cash
@@ -33539,6 +35811,376 @@ components:
       - amount
       - idempotency_key
       - student
+    PayrollRun:
+      type: object
+      description: Serializer for monthly PayrollRun batches.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        month:
+          type: integer
+          readOnly: true
+        year:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+          description: e.g. Salary Sheet - July 2026
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PayrollRunStatusEnum'
+          readOnly: true
+        is_locked:
+          type: boolean
+          readOnly: true
+          description: Locks the payroll period against any recalculation or modification.
+        working_days_in_month:
+          type: integer
+          readOnly: true
+          description: Total working days in the month used for pro-rata absence calculations.
+        absence_deduction_basis:
+          allOf:
+          - $ref: '#/components/schemas/AbsenceDeductionBasisEnum'
+          readOnly: true
+        total_gross:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_deductions:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_net_pay:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_employer_pf:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        journal_entry:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        journal_entry_voucher_no:
+          type: string
+          readOnly: true
+          default: ''
+        payslips_count:
+          type: integer
+          readOnly: true
+        prepared_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reviewed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        approved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        notes:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - absence_deduction_basis
+      - approved_at
+      - approved_by
+      - created_at
+      - id
+      - is_locked
+      - journal_entry
+      - journal_entry_voucher_no
+      - month
+      - notes
+      - paid_at
+      - payslips_count
+      - prepared_by
+      - reviewed_at
+      - reviewed_by
+      - status
+      - title
+      - total_deductions
+      - total_employer_pf
+      - total_gross
+      - total_net_pay
+      - updated_at
+      - working_days_in_month
+      - year
+    PayrollRunStatusEnum:
+      enum:
+      - draft
+      - reviewed
+      - approved
+      - paid
+      - locked
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `reviewed` - Reviewed
+        * `approved` - Approved
+        * `paid` - Paid
+        * `locked` - Locked
+    Payslip:
+      type: object
+      description: Serializer for individual employee monthly payslips.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        payroll_run:
+          type: string
+          format: uuid
+          readOnly: true
+        month:
+          type: integer
+          readOnly: true
+        year:
+          type: integer
+          readOnly: true
+        run_status:
+          type: string
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+          readOnly: true
+        staff_employee_id:
+          type: string
+          readOnly: true
+        staff_name_en:
+          type: string
+          readOnly: true
+        staff_name_bn:
+          type: string
+          readOnly: true
+        working_days:
+          type: integer
+          readOnly: true
+        present_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+        late_days:
+          type: integer
+          readOnly: true
+        half_days:
+          type: integer
+          readOnly: true
+        paid_leave_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+        unpaid_leave_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+        absent_days:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,1})?$
+          readOnly: true
+        overtime_hours:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+        basic_salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        overtime_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        bonus_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        gross_earnings:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        absence_deduction_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        pf_employee_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        pf_employer_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        loan_deduction_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_deductions:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        net_payable:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        payment_method:
+          allOf:
+          - $ref: '#/components/schemas/PaymentMethod5ddEnum'
+          readOnly: true
+        is_paid:
+          type: boolean
+          readOnly: true
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        payment_reference:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayslipLine'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - absence_deduction_amount
+      - absent_days
+      - basic_salary
+      - bonus_amount
+      - created_at
+      - gross_earnings
+      - half_days
+      - id
+      - is_paid
+      - late_days
+      - lines
+      - loan_deduction_amount
+      - month
+      - net_payable
+      - notes
+      - overtime_amount
+      - overtime_hours
+      - paid_at
+      - paid_leave_days
+      - payment_method
+      - payment_reference
+      - payroll_run
+      - pf_employee_amount
+      - pf_employer_amount
+      - present_days
+      - run_status
+      - staff
+      - staff_employee_id
+      - staff_name_bn
+      - staff_name_en
+      - total_deductions
+      - unpaid_leave_days
+      - updated_at
+      - working_days
+      - year
+    PayslipLine:
+      type: object
+      description: Serializer for itemized earning/deduction rows inside a Payslip.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        component:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        name_en:
+          type: string
+          readOnly: true
+        name_bn:
+          type: string
+          readOnly: true
+        line_type:
+          allOf:
+          - $ref: '#/components/schemas/LineTypeEnum'
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+      required:
+      - amount
+      - component
+      - id
+      - line_type
+      - name_bn
+      - name_en
+      - notes
     Period:
       type: object
       properties:
@@ -33834,6 +36476,34 @@ components:
           description: Evaluation priority (higher number takes precedence)
       required:
       - policy
+    PostAccountingRequest:
+      type: object
+      description: Input serializer for posting a payroll run to apps.accounting GL.
+      properties:
+        posting_date:
+          type: string
+          format: date
+          nullable: true
+        bank_account_code:
+          type: string
+          minLength: 1
+          default: '1021'
+          maxLength: 50
+        cash_account_code:
+          type: string
+          minLength: 1
+          default: '1010'
+          maxLength: 50
+        salary_expense_code:
+          type: string
+          minLength: 1
+          default: '5010'
+          maxLength: 50
+        liability_account_code:
+          type: string
+          minLength: 1
+          default: '2030'
+          maxLength: 50
     PreviousSchool:
       type: object
       properties:
@@ -35407,6 +38077,214 @@ components:
       - api_key
       - name
       - sender_id
+    SalaryComponent:
+      type: object
+      description: Serializer for institutional earning/deduction salary components.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          description: Short unique code (e.g. BASIC, HRA, MED, CONV, PF, TDS).
+          maxLength: 40
+        name_en:
+          type: string
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        component_type:
+          $ref: '#/components/schemas/ComponentTypeEnum'
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        default_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Fixed BDT amount or percentage value (e.g. 40.00 for 40%).
+        is_taxable:
+          type: boolean
+        is_system:
+          type: boolean
+          readOnly: true
+          description: System-seeded standard component.
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - is_system
+      - name_en
+      - updated_at
+    SalaryComponentRequest:
+      type: object
+      description: Serializer for institutional earning/deduction salary components.
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: Short unique code (e.g. BASIC, HRA, MED, CONV, PF, TDS).
+          maxLength: 40
+        name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        component_type:
+          $ref: '#/components/schemas/ComponentTypeEnum'
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        default_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Fixed BDT amount or percentage value (e.g. 40.00 for 40%).
+        is_taxable:
+          type: boolean
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - code
+      - name_en
+    SalaryStructure:
+      type: object
+      description: Serializer for reusable salary structure templates.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        code:
+          type: string
+          maxLength: 40
+        name:
+          type: string
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        is_active:
+          type: boolean
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalaryStructureLine'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - lines
+      - name
+      - updated_at
+    SalaryStructureLine:
+      type: object
+      description: Serializer for component lines within a SalaryStructure.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        structure:
+          type: string
+          format: uuid
+        component:
+          type: string
+          format: uuid
+        component_code:
+          type: string
+          readOnly: true
+        component_name_en:
+          type: string
+          readOnly: true
+        component_type:
+          type: string
+          readOnly: true
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - component
+      - component_code
+      - component_name_en
+      - component_type
+      - id
+      - structure
+    SalaryStructureLineRequest:
+      type: object
+      description: Serializer for component lines within a SalaryStructure.
+      properties:
+        structure:
+          type: string
+          format: uuid
+        component:
+          type: string
+          format: uuid
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - component
+      - structure
+    SalaryStructureRequest:
+      type: object
+      description: Serializer for reusable salary structure templates.
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 40
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        description:
+          type: string
+        is_active:
+          type: boolean
+      required:
+      - code
+      - name
     ScaleTypeEnum:
       enum:
       - gpa_5
@@ -36170,6 +39048,356 @@ components:
       - id
       - joining_date
       - phone
+    StaffLoan:
+      type: object
+      description: Serializer for salary advances and staff loans.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+        staff_employee_id:
+          type: string
+          readOnly: true
+        staff_name_en:
+          type: string
+          readOnly: true
+        loan_type:
+          $ref: '#/components/schemas/LoanTypeEnum'
+        principal_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        monthly_installment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_recovered:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        remaining_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StaffLoanStatusEnum'
+        disbursed_date:
+          type: string
+          format: date
+        reason:
+          type: string
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - monthly_installment
+      - principal_amount
+      - remaining_balance
+      - staff
+      - staff_employee_id
+      - staff_name_en
+      - total_recovered
+      - updated_at
+    StaffLoanRequest:
+      type: object
+      description: Serializer for salary advances and staff loans.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        loan_type:
+          $ref: '#/components/schemas/LoanTypeEnum'
+        principal_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        monthly_installment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        status:
+          $ref: '#/components/schemas/StaffLoanStatusEnum'
+        disbursed_date:
+          type: string
+          format: date
+        reason:
+          type: string
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - monthly_installment
+      - principal_amount
+      - staff
+    StaffLoanStatusEnum:
+      enum:
+      - active
+      - completed
+      - paused
+      type: string
+      description: |-
+        * `active` - Active
+        * `completed` - Completed
+        * `paused` - Paused
+    StaffSalaryOverride:
+      type: object
+      description: Serializer for per-employee salary component overrides.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        profile:
+          type: string
+          format: uuid
+        component:
+          type: string
+          format: uuid
+        component_code:
+          type: string
+          readOnly: true
+        component_name_en:
+          type: string
+          readOnly: true
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - component
+      - component_code
+      - component_name_en
+      - id
+      - profile
+      - value
+    StaffSalaryOverrideRequest:
+      type: object
+      description: Serializer for per-employee salary component overrides.
+      properties:
+        profile:
+          type: string
+          format: uuid
+        component:
+          type: string
+          format: uuid
+        calculation_type:
+          $ref: '#/components/schemas/CalculationTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - component
+      - profile
+      - value
+    StaffSalaryProfile:
+      type: object
+      description: Serializer for staff salary profile, MPO split, PF, and banking
+        details.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+        staff_employee_id:
+          type: string
+          readOnly: true
+        staff_name_en:
+          type: string
+          readOnly: true
+        staff_name_bn:
+          type: string
+          readOnly: true
+        structure:
+          type: string
+          format: uuid
+          nullable: true
+        structure_name:
+          type: string
+          readOnly: true
+          default: ''
+        basic_salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Monthly basic salary in BDT (মূল বেতন).
+        mpo_portion:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Government MPO disbursed portion for MPO-enlisted teachers.
+        institutional_portion:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: School-funded top-up portion.
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod5ddEnum'
+        bank_name:
+          type: string
+          maxLength: 120
+        bank_branch:
+          type: string
+          maxLength: 120
+        bank_account_number:
+          type: string
+          maxLength: 60
+        bank_routing_number:
+          type: string
+          maxLength: 30
+        mfs_number:
+          type: string
+          maxLength: 20
+        pf_enrolled:
+          type: boolean
+        pf_employee_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        pf_employer_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        late_deduction_enabled:
+          type: boolean
+          description: Deduct salary after accumulating configurable late days.
+        late_days_per_absent:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Number of late arrivals treated as 1 absent day deduction (0
+            = disabled).
+        overtime_hourly_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        effective_from:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffSalaryOverride'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - basic_salary
+      - created_at
+      - id
+      - overrides
+      - staff
+      - staff_employee_id
+      - staff_name_bn
+      - staff_name_en
+      - structure_name
+      - updated_at
+    StaffSalaryProfileRequest:
+      type: object
+      description: Serializer for staff salary profile, MPO split, PF, and banking
+        details.
+      properties:
+        staff:
+          type: string
+          format: uuid
+        structure:
+          type: string
+          format: uuid
+          nullable: true
+        basic_salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Monthly basic salary in BDT (মূল বেতন).
+        mpo_portion:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Government MPO disbursed portion for MPO-enlisted teachers.
+        institutional_portion:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: School-funded top-up portion.
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethod5ddEnum'
+        bank_name:
+          type: string
+          maxLength: 120
+        bank_branch:
+          type: string
+          maxLength: 120
+        bank_account_number:
+          type: string
+          maxLength: 60
+        bank_routing_number:
+          type: string
+          maxLength: 30
+        mfs_number:
+          type: string
+          maxLength: 20
+        pf_enrolled:
+          type: boolean
+        pf_employee_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        pf_employer_percent:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        late_deduction_enabled:
+          type: boolean
+          description: Deduct salary after accumulating configurable late days.
+        late_days_per_absent:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Number of late arrivals treated as 1 absent day deduction (0
+            = disabled).
+        overtime_hourly_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        effective_from:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+      required:
+      - basic_salary
+      - staff
     StaffTypeEnum:
       enum:
       - teacher

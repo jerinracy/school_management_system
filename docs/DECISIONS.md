@@ -402,3 +402,18 @@
   - Automated ledger updates from counter and digital student fee collections.
   - Seamless day-end reconciliation for school cashiers and accountants.
   - Ready-to-audit financial reporting compliant with Bangladeshi institutional accounting practices.
+
+---
+
+## ADR-020: Payroll Management, Attendance Integration, Loan Recovery & GL Posting
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Bangladeshi schools require flexible payroll supporting Basic + % Allowances (HRA, Medical, Conveyance), MPO vs. institutional top-up splits, Provident Fund (employee + employer), Eid/Festival bonuses, salary advances/loans, and attendance-linked deductions.
+- **Decision**:
+  - **Modular Structure & Overrides (`apps/payroll/models.py`)**: Separated `SalaryComponent`, `SalaryStructure` + `SalaryStructureLine`, and `StaffSalaryProfile` + `StaffSalaryOverride` so schools can standardize templates while adjusting individual staff allowances or TDS.
+  - **Attendance & Working-Day Integration (`payroll_calculator.py`)**: Working days default to non-weekend/non-holiday calendar days (`Institution.weekend_days` and `Holiday`); unpaid leave, unexcused absence, half-days, and configurable late-to-absent accumulation (`late_days_per_absent = 3`) deduct pro-rata on Basic (or configurable Gross) salary.
+  - **Period Locking & Atomic Loan Settlement (`payroll_run_service.py`)**: Enforced `draft -> reviewed -> approved -> paid -> locked`, settling active `StaffLoan` balances atomically on disbursement and blocking recalculation once locked.
+  - **General Ledger Integration (`accounting_integration_service.py`)**: Posted balanced double-entry vouchers into `apps/accounting` (Debit `5010` Salary & Employer PF Expense; Credit `1021`/`1010` Net Disbursement + `2030` Withheld PF/TDS/Loan Payables).
+- **Consequences**:
+  - Clean separation between payroll calculation, disbursement approval, and accounting ledger posting, with bilingual PDF payslips and BEFTN XLSX/CSV bank advice exports.

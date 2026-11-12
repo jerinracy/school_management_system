@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 18**: Payroll Management (`apps/payroll`).
+  - Core Models (`apps/payroll/models.py`):
+    - `SalaryComponent`, `SalaryStructure`, `SalaryStructureLine`: Configurable Bangladeshi school earning/deduction components (`FIXED`, `PERCENTAGE_OF_BASIC`, `PERCENTAGE_OF_GROSS`) and reusable grade templates.
+    - `StaffSalaryProfile`, `StaffSalaryOverride`: Employee salary profiles with MPO vs institutional top-up split, confidential BEFTN/MFS banking details, Provident Fund enrollment/percentages, configurable late-to-absent policy (`late_days_per_absent`), overtime hourly rate, and per-employee overrides.
+    - `StaffLoan`: Salary advances and institutional loans with automatic monthly installment recovery and balance settlement.
+    - `PayrollRun`, `Payslip`, `PayslipLine`: Attendance-integrated monthly payroll batches with `draft -> reviewed -> approved -> paid -> locked` workflow, period locking, and General Ledger voucher link (`journal_entry`).
+  - Service Layer (`apps/payroll/services/`):
+    - `salary_service.py`: Idempotent seeders for standard Bangladeshi school salary components (`BASIC`, `HRA`, `MED`, `CONV`, `PF_EMP`, `TDS`, `ABSENCE`, `LOAN_REC`) and structure templates (`TEACHER_STD`, `MPO_TEACHER`, `ADMIN_STAFF`).
+    - `payroll_calculator.py`: Working-day counter respecting `Institution.weekend_days` and `Holiday`, attendance/leave aggregator from `DailyAttendance` and `LeaveRequest`, and itemized payslip breakdown calculator.
+    - `payroll_run_service.py`: Monthly payroll generation, Eid/Festival batch bonus calculation (`apply_bonus_to_run`), 2-stage review/approval, disbursement with atomic `StaffLoan` settlement, and permanent period locking.
+    - `accounting_integration_service.py`: Balanced double-entry GL posting (`post_payroll_to_accounting`) creating and posting `JournalEntry` vouchers in `apps/accounting`.
+    - `payslip_pdf_service.py` & `bank_advice_service.py`: Bilingual Bangla/English Payslip PDF (`Kalpurush.ttf` via `apps.core.pdf.engine`) and BEFTN/Bank Advice `.xlsx` (via `openpyxl`) and `.csv` exports.
+  - REST API & Permissions (`apps/payroll/views.py`, `apps/payroll/permissions.py`, `apps/payroll/urls.py`):
+    - `/api/v1/payroll/` endpoints for components, structures, profiles, overrides, loans, runs (including `generate`, `apply_bonus`, `review`, `approve`, `mark_paid`, `lock`, `post_to_accounting`, `bank_advice`), and payslips (including `my_payslips` self-service and `pdf`).
 - **Task 17**: Basic Accounting & Cashbook (`apps/accounting`).
   - Core Models:
     - `FiscalYear`: Institutional financial cycles (`start_date`, `end_date`, `is_current`, `is_closed`) with single-active-year enforcement per tenant.
