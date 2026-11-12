@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 22**: Hostel Management (`apps/hostel`).
+  - Feature-Flagged Module (`apps/hostel/permissions.py`, `apps/hostel/services/hostel_service.py`):
+    - Enforces `IsHostelFeatureEnabled` per institution via `institution.settings` (`hostel_enabled` / `features.hostel_enabled`), returning `403 Forbidden` when disabled.
+  - Core Models & Services (`apps/hostel/models.py`, `apps/hostel/tasks.py`):
+    - `Hostel`, `Room`, `Bed`, `HostelFeeLink`, `HostelAllocation`: Atomic `select_for_update()` bed allocation and vacate workflows with DB-level bed uniqueness and full allocation history.
+    - `HostelAttendance`, `GatePass`, `MealPlan`, `MealAttendance`, `HostelVisitorLog`: Night roll call / biometric attendance, guardian OTP-confirmed GatePass lifecycle (`confirm-otp`, `approve`, `reject`, `checkout`, `checkin`), and `send_hostel_curfew_alerts` Celery task.
+    - Endpoints mounted under `/api/v1/hostel/`.
 - **Task 21**: Transport Management (`apps/transport`).
   - Core Models (`apps/transport/models.py`):
     - `Vehicle`, `Driver`, `Route`, `RouteStop`: Fleet inventory with fitness/insurance/tax/permit expiry dates, hashed GPS device tokens (`gps_token_hash`), driver profiles linked to `Staff`, and ordered pickup/drop stops.

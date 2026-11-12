@@ -62,6 +62,7 @@ LOCAL_APPS = [
     "apps.homework.apps.HomeworkConfig",
     "apps.library.apps.LibraryConfig",
     "apps.transport.apps.TransportConfig",
+    "apps.hostel.apps.HostelConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

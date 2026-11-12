@@ -458,3 +458,17 @@
   - **Location Retention (`apps/transport/tasks.py`)**: Retain `LiveLocation` pings for `TRANSPORT_LOCATION_RETENTION_DAYS` (default `30` days) and purge older rows via `purge_old_live_locations`.
 - **Consequences**:
   - GPS trackers authenticate without user sessions or plaintext secrets in DB, duplicate scans never double-notify guardians, and GPS storage remains bounded.
+
+---
+
+## ADR-024: Hostel Per-Institution Feature Flag, Bed Uniqueness & Guardian OTP GatePass
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Not all schools operate residential hostels, so the Hostel module must be disabled by default per tenant, enforce strict bed allocation uniqueness while retaining vacate history, and require guardian OTP verification before warden gate-pass approval.
+- **Decision**:
+  - **Per-Tenant Feature Gate (`apps/hostel/permissions.py`)**: `IsHostelFeatureEnabled` reads `institution.settings["hostel_enabled"]` (or `features.hostel_enabled`), defaulting to `False` and returning `403 Forbidden` when off.
+  - **Bed Uniqueness & History (`apps/hostel/models.py`, `apps/hostel/services/hostel_service.py`)**: Partial unique constraints (`unique_active_allocation_per_bed` and `unique_active_hostel_allocation_per_student_session`) paired with `select_for_update()` in `allocate_bed`/`vacate_allocation`.
+  - **Guardian OTP GatePass**: 6-digit OTPs are stored only as SHA-256 hashes with expiry (`guardian_otp_hash`, `guardian_otp_expires_at`) and verified via `hmac.compare_digest` before `approve_gate_pass` is permitted.
+- **Consequences**:
+  - Day-schools incur zero hostel UI/API exposure, bed conflicts are impossible under concurrency, and student exits require verifiable guardian consent.

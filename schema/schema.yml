@@ -17859,6 +17859,1984 @@ paths:
               schema:
                 $ref: '#/components/schemas/SyllabusTopic'
           description: ''
+  /api/v1/hostel/allocations/:
+    get:
+      operationId: hostel_allocations_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Allocations
+      parameters:
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHostelAllocationList'
+          description: ''
+    post:
+      operationId: hostel_allocations_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Allocate Hostel Bed to Student
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelAllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelAllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelAllocationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelAllocation'
+          description: ''
+  /api/v1/hostel/allocations/{id}/:
+    get:
+      operationId: hostel_allocations_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel Allocation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel allocation.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelAllocation'
+          description: ''
+  /api/v1/hostel/allocations/{id}/vacate/:
+    post:
+      operationId: hostel_allocations_vacate_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Vacate Hostel Bed Allocation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel allocation.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VacateAllocationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VacateAllocationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VacateAllocationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelAllocation'
+          description: ''
+  /api/v1/hostel/attendances/:
+    get:
+      operationId: hostel_attendances_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Attendance Records
+      parameters:
+      - in: query
+        name: attendance_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: event_type
+        schema:
+          type: string
+          enum:
+          - biometric_in
+          - biometric_out
+          - night_roll_call
+        description: |-
+          * `night_roll_call` - Night Roll Call
+          * `biometric_in` - Biometric Check-In
+          * `biometric_out` - Biometric Check-Out
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - absent
+          - late
+          - on_gate_pass
+          - present
+        description: |-
+          * `present` - Present
+          * `absent` - Absent
+          * `on_gate_pass` - On Gate Pass
+          * `late` - Late
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHostelAttendanceList'
+          description: ''
+    post:
+      operationId: hostel_attendances_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Record Hostel Night Roll Call / Biometric Event
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelAttendanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelAttendanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelAttendanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelAttendance'
+          description: ''
+  /api/v1/hostel/attendances/{id}/:
+    get:
+      operationId: hostel_attendances_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel Attendance Record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel attendance.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelAttendance'
+          description: ''
+  /api/v1/hostel/beds/:
+    get:
+      operationId: hostel_beds_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Beds
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: room__hostel
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - available
+          - maintenance
+          - occupied
+        description: |-
+          * `available` - Available
+          * `occupied` - Occupied
+          * `maintenance` - Maintenance
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBedList'
+          description: ''
+    post:
+      operationId: hostel_beds_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Hostel Bed
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+  /api/v1/hostel/beds/{id}/:
+    get:
+      operationId: hostel_beds_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel Bed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bed.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+    put:
+      operationId: hostel_beds_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bed.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BedRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+    patch:
+      operationId: hostel_beds_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Hostel Bed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bed.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBedRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBedRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBedRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bed'
+          description: ''
+    delete:
+      operationId: hostel_beds_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Hostel Bed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this bed.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hostel/fee-links/:
+    get:
+      operationId: hostel_fee_links_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Fee Links
+      parameters:
+      - in: query
+        name: fee_head
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHostelFeeLinkList'
+          description: ''
+    post:
+      operationId: hostel_fee_links_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Hostel Fee Link
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelFeeLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelFeeLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelFeeLinkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelFeeLink'
+          description: ''
+  /api/v1/hostel/fee-links/{id}/:
+    get:
+      operationId: hostel_fee_links_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel Fee Link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel fee link.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelFeeLink'
+          description: ''
+    put:
+      operationId: hostel_fee_links_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel fee link.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelFeeLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelFeeLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelFeeLinkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelFeeLink'
+          description: ''
+    patch:
+      operationId: hostel_fee_links_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Hostel Fee Link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel fee link.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelFeeLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelFeeLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelFeeLinkRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelFeeLink'
+          description: ''
+    delete:
+      operationId: hostel_fee_links_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Hostel Fee Link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel fee link.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hostel/gate-passes/:
+    get:
+      operationId: hostel_gate_passes_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Gate Passes
+      parameters:
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - checked_out
+          - guardian_confirmed
+          - overdue
+          - pending_guardian_otp
+          - rejected
+          - returned
+        description: |-
+          * `pending_guardian_otp` - Pending Guardian OTP
+          * `guardian_confirmed` - Guardian Confirmed
+          * `approved` - Approved
+          * `rejected` - Rejected
+          * `checked_out` - Checked Out
+          * `returned` - Returned
+          * `overdue` - Overdue
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGatePassList'
+          description: ''
+    post:
+      operationId: hostel_gate_passes_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Request Gate Pass (Sends Guardian OTP)
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatePassRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GatePassRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GatePassRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/gate-passes/{id}/:
+    get:
+      operationId: hostel_gate_passes_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Gate Pass
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/gate-passes/{id}/approve/:
+    post:
+      operationId: hostel_gate_passes_approve_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Approve Gate Pass
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/gate-passes/{id}/checkin/:
+    post:
+      operationId: hostel_gate_passes_checkin_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Check In Gate Pass
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/gate-passes/{id}/checkout/:
+    post:
+      operationId: hostel_gate_passes_checkout_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Check Out Gate Pass
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/gate-passes/{id}/confirm-otp/:
+    post:
+      operationId: hostel_gate_passes_confirm_otp_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Confirm Gate Pass with Guardian OTP
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatePassOtpConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GatePassOtpConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GatePassOtpConfirmRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/gate-passes/{id}/reject/:
+    post:
+      operationId: hostel_gate_passes_reject_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Reject Gate Pass
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/hostel/hostels/:
+    get:
+      operationId: hostel_hostels_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostels
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: hostel_type
+        schema:
+          type: string
+          enum:
+          - boys
+          - girls
+          - mixed
+        description: |-
+          * `boys` - Boys Hostel
+          * `girls` - Girls Hostel
+          * `mixed` - Mixed Hostel
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHostelList'
+          description: ''
+    post:
+      operationId: hostel_hostels_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Hostel
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+          description: ''
+  /api/v1/hostel/hostels/{id}/:
+    get:
+      operationId: hostel_hostels_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+          description: ''
+    put:
+      operationId: hostel_hostels_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+          description: ''
+    patch:
+      operationId: hostel_hostels_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Hostel
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hostel'
+          description: ''
+    delete:
+      operationId: hostel_hostels_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Hostel
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hostel/meal-attendances/:
+    get:
+      operationId: hostel_meal_attendances_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Meal Attendance
+      parameters:
+      - in: query
+        name: consumed
+        schema:
+          type: boolean
+      - in: query
+        name: meal_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: meal_plan
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMealAttendanceList'
+          description: ''
+    post:
+      operationId: hostel_meal_attendances_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Record Meal Attendance
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealAttendanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MealAttendanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MealAttendanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealAttendance'
+          description: ''
+  /api/v1/hostel/meal-attendances/{id}/:
+    get:
+      operationId: hostel_meal_attendances_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Meal Attendance
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meal attendance.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealAttendance'
+          description: ''
+  /api/v1/hostel/meal-plans/:
+    get:
+      operationId: hostel_meal_plans_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Meal Plans
+      parameters:
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: meal_type
+        schema:
+          type: string
+          enum:
+          - breakfast
+          - dinner
+          - lunch
+          - snacks
+        description: |-
+          * `breakfast` - Breakfast
+          * `lunch` - Lunch
+          * `snacks` - Snacks
+          * `dinner` - Dinner
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMealPlanList'
+          description: ''
+    post:
+      operationId: hostel_meal_plans_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Meal Plan
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealPlan'
+          description: ''
+  /api/v1/hostel/meal-plans/{id}/:
+    get:
+      operationId: hostel_meal_plans_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Meal Plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meal plan.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealPlan'
+          description: ''
+    put:
+      operationId: hostel_meal_plans_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meal plan.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealPlan'
+          description: ''
+    patch:
+      operationId: hostel_meal_plans_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Meal Plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meal plan.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMealPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMealPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMealPlanRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealPlan'
+          description: ''
+    delete:
+      operationId: hostel_meal_plans_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Meal Plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meal plan.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hostel/rooms/:
+    get:
+      operationId: hostel_rooms_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Rooms
+      parameters:
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHostelRoomList'
+          description: ''
+    post:
+      operationId: hostel_rooms_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Hostel Room
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelRoomRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelRoomRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelRoomRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelRoom'
+          description: ''
+  /api/v1/hostel/rooms/{id}/:
+    get:
+      operationId: hostel_rooms_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelRoom'
+          description: ''
+    put:
+      operationId: hostel_rooms_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelRoomRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelRoomRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelRoomRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelRoom'
+          description: ''
+    patch:
+      operationId: hostel_rooms_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Hostel Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelRoomRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelRoomRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelRoomRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelRoom'
+          description: ''
+    delete:
+      operationId: hostel_rooms_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Hostel Room
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this room.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hostel/visitors/:
+    get:
+      operationId: hostel_visitors_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Hostel Visitor Logs
+      parameters:
+      - in: query
+        name: hostel
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHostelVisitorLogList'
+          description: ''
+    post:
+      operationId: hostel_visitors_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Log Hostel Visitor
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HostelVisitorLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HostelVisitorLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HostelVisitorLogRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelVisitorLog'
+          description: ''
+  /api/v1/hostel/visitors/{id}/:
+    get:
+      operationId: hostel_visitors_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Hostel Visitor Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel visitor log.
+        required: true
+      tags:
+      - hostel
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelVisitorLog'
+          description: ''
+    patch:
+      operationId: hostel_visitors_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Hostel Visitor Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this hostel visitor log.
+        required: true
+      tags:
+      - hostel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelVisitorLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelVisitorLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHostelVisitorLogRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostelVisitorLog'
+          description: ''
   /api/v1/institutions/branches/:
     get:
       operationId: institutions_branches_list
@@ -30607,6 +32585,65 @@ components:
         * `pending` - Pending Scan
         * `clean` - Clean
         * `infected` - Quarantined / Infected
+    Bed:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        room:
+          type: string
+          format: uuid
+        bed_number:
+          type: string
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/BedStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bed_number
+      - created_at
+      - id
+      - institution
+      - room
+      - updated_at
+    BedRequest:
+      type: object
+      properties:
+        room:
+          type: string
+          format: uuid
+        bed_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/BedStatusEnum'
+      required:
+      - bed_number
+      - room
+    BedStatusEnum:
+      enum:
+      - available
+      - occupied
+      - maintenance
+      type: string
+      description: |-
+        * `available` - Available
+        * `occupied` - Occupied
+        * `maintenance` - Maintenance
     BiometricConsent:
       type: object
       properties:
@@ -30883,7 +32920,7 @@ components:
           nullable: true
         event_type:
           allOf:
-          - $ref: '#/components/schemas/EventTypeEnum'
+          - $ref: '#/components/schemas/EventType401Enum'
           readOnly: true
         event_ts:
           type: string
@@ -30939,7 +32976,7 @@ components:
           format: uuid
           nullable: true
         event_type:
-          $ref: '#/components/schemas/EventTypeEnum'
+          $ref: '#/components/schemas/EventType401Enum'
         method:
           allOf:
           - $ref: '#/components/schemas/Method00cEnum'
@@ -33198,7 +35235,7 @@ components:
       required:
       - message_bn
       - title
-    EventTypeEnum:
+    EventType401Enum:
       enum:
       - boarded
       - dropped
@@ -34478,6 +36515,153 @@ components:
       - cost
       - liters
       - vehicle
+    GatePass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        hostel:
+          type: string
+          format: uuid
+        hostel_name:
+          type: string
+          readOnly: true
+        allocation:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reason:
+          type: string
+        destination:
+          type: string
+          maxLength: 255
+        expected_out_at:
+          type: string
+          format: date-time
+        expected_return_at:
+          type: string
+          format: date-time
+        actual_out_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        actual_return_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        guardian_confirmed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        approved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/GatePassStatusEnum'
+          readOnly: true
+        curfew_alert_sent:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actual_out_at
+      - actual_return_at
+      - allocation
+      - approved_by
+      - created_at
+      - curfew_alert_sent
+      - expected_out_at
+      - expected_return_at
+      - guardian_confirmed_at
+      - hostel
+      - hostel_name
+      - id
+      - institution
+      - reason
+      - status
+      - student
+      - student_name
+      - updated_at
+    GatePassOtpConfirmRequest:
+      type: object
+      properties:
+        otp:
+          type: string
+          minLength: 4
+          maxLength: 10
+      required:
+      - otp
+    GatePassRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        hostel:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+        destination:
+          type: string
+          maxLength: 255
+        expected_out_at:
+          type: string
+          format: date-time
+        expected_return_at:
+          type: string
+          format: date-time
+      required:
+      - expected_out_at
+      - expected_return_at
+      - hostel
+      - reason
+      - student
+    GatePassStatusEnum:
+      enum:
+      - pending_guardian_otp
+      - guardian_confirmed
+      - approved
+      - rejected
+      - checked_out
+      - returned
+      - overdue
+      type: string
+      description: |-
+        * `pending_guardian_otp` - Pending Guardian OTP
+        * `guardian_confirmed` - Guardian Confirmed
+        * `approved` - Approved
+        * `rejected` - Rejected
+        * `checked_out` - Checked Out
+        * `returned` - Returned
+        * `overdue` - Overdue
     GenderEnum:
       enum:
       - male
@@ -35445,6 +37629,525 @@ components:
         * `late` - Submitted Late
         * `graded` - Graded
         * `returned` - Returned for Revision
+    Hostel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          maxLength: 150
+        code:
+          type: string
+          maxLength: 32
+        hostel_type:
+          $ref: '#/components/schemas/HostelTypeEnum'
+        warden:
+          type: string
+          format: uuid
+          nullable: true
+        curfew_time:
+          type: string
+          format: time
+        address:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - institution
+      - name
+      - updated_at
+    HostelAllocation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        hostel:
+          type: string
+          format: uuid
+          readOnly: true
+        hostel_name:
+          type: string
+          readOnly: true
+        room:
+          type: string
+          format: uuid
+          readOnly: true
+        bed:
+          type: string
+          format: uuid
+        hostel_fee_link:
+          type: string
+          format: uuid
+          nullable: true
+        allocated_date:
+          type: string
+          format: date
+        vacated_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+        remarks:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bed
+      - created_at
+      - hostel
+      - hostel_name
+      - id
+      - institution
+      - is_active
+      - room
+      - session
+      - student
+      - student_name
+      - updated_at
+      - vacated_date
+    HostelAllocationRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        bed:
+          type: string
+          format: uuid
+        hostel_fee_link:
+          type: string
+          format: uuid
+          nullable: true
+        allocated_date:
+          type: string
+          format: date
+        remarks:
+          type: string
+      required:
+      - bed
+      - session
+      - student
+    HostelAttendance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        hostel:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+          readOnly: true
+        attendance_date:
+          type: string
+          format: date
+        event_type:
+          allOf:
+          - $ref: '#/components/schemas/HostelAttendanceEventTypeEnum'
+          default: night_roll_call
+        status:
+          $ref: '#/components/schemas/HostelAttendanceStatusEnum'
+        recorded_at:
+          type: string
+          format: date-time
+        recorded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - hostel
+      - id
+      - institution
+      - recorded_by
+      - student
+      - student_name
+      - updated_at
+    HostelAttendanceEventTypeEnum:
+      enum:
+      - night_roll_call
+      - biometric_in
+      - biometric_out
+      type: string
+      description: |-
+        * `night_roll_call` - Night Roll Call
+        * `biometric_in` - Biometric Check-In
+        * `biometric_out` - Biometric Check-Out
+    HostelAttendanceRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        attendance_date:
+          type: string
+          format: date
+        event_type:
+          allOf:
+          - $ref: '#/components/schemas/HostelAttendanceEventTypeEnum'
+          default: night_roll_call
+        status:
+          $ref: '#/components/schemas/HostelAttendanceStatusEnum'
+        recorded_at:
+          type: string
+          format: date-time
+      required:
+      - hostel
+      - student
+    HostelAttendanceStatusEnum:
+      enum:
+      - present
+      - absent
+      - on_gate_pass
+      - late
+      type: string
+      description: |-
+        * `present` - Present
+        * `absent` - Absent
+        * `on_gate_pass` - On Gate Pass
+        * `late` - Late
+    HostelFeeLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        fee_head:
+          type: string
+          format: uuid
+        hostel:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        effective_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fee_head
+      - id
+      - institution
+      - updated_at
+    HostelFeeLinkRequest:
+      type: object
+      properties:
+        fee_head:
+          type: string
+          format: uuid
+        hostel:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        effective_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - fee_head
+    HostelRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+        hostel_type:
+          $ref: '#/components/schemas/HostelTypeEnum'
+        warden:
+          type: string
+          format: uuid
+          nullable: true
+        curfew_time:
+          type: string
+          format: time
+        address:
+          type: string
+        is_active:
+          type: boolean
+      required:
+      - code
+      - name
+    HostelRoom:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        hostel:
+          type: string
+          format: uuid
+        room_number:
+          type: string
+          maxLength: 32
+        floor:
+          type: string
+          maxLength: 32
+        capacity:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        monthly_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - hostel
+      - id
+      - institution
+      - room_number
+      - updated_at
+    HostelRoomRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        room_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+        floor:
+          type: string
+          maxLength: 32
+        capacity:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        monthly_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+      required:
+      - hostel
+      - room_number
+    HostelTypeEnum:
+      enum:
+      - boys
+      - girls
+      - mixed
+      type: string
+      description: |-
+        * `boys` - Boys Hostel
+        * `girls` - Girls Hostel
+        * `mixed` - Mixed Hostel
+    HostelVisitorLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        hostel:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        visitor_name:
+          type: string
+          maxLength: 150
+        visitor_phone:
+          type: string
+          maxLength: 20
+        relation:
+          type: string
+          maxLength: 64
+        nid_or_id_no:
+          type: string
+          maxLength: 64
+        purpose:
+          type: string
+          maxLength: 255
+        check_in_at:
+          type: string
+          format: date-time
+        check_out_at:
+          type: string
+          format: date-time
+          nullable: true
+        recorded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - hostel
+      - id
+      - institution
+      - recorded_by
+      - student
+      - updated_at
+      - visitor_name
+      - visitor_phone
+    HostelVisitorLogRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        visitor_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        visitor_phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        relation:
+          type: string
+          maxLength: 64
+        nid_or_id_no:
+          type: string
+          maxLength: 64
+        purpose:
+          type: string
+          maxLength: 255
+        check_in_at:
+          type: string
+          format: date-time
+        check_out_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - hostel
+      - student
+      - visitor_name
+      - visitor_phone
     Institution:
       type: object
       description: Serializer for Institution profile read and update.
@@ -37464,6 +40167,145 @@ components:
         * `file` - Document / File
         * `video_link` - Video Link
         * `external_link` - External Reference Link
+    MealAttendance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        meal_plan:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        meal_date:
+          type: string
+          format: date
+        consumed:
+          type: boolean
+        recorded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - meal_plan
+      - recorded_by
+      - student
+      - updated_at
+    MealAttendanceRequest:
+      type: object
+      properties:
+        meal_plan:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        meal_date:
+          type: string
+          format: date
+        consumed:
+          type: boolean
+      required:
+      - meal_plan
+      - student
+    MealPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        hostel:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 120
+        meal_type:
+          $ref: '#/components/schemas/MealTypeEnum'
+        menu_description:
+          type: string
+        unit_cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - hostel
+      - id
+      - institution
+      - meal_type
+      - name
+      - updated_at
+    MealPlanRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        meal_type:
+          $ref: '#/components/schemas/MealTypeEnum'
+        menu_description:
+          type: string
+        unit_cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+      required:
+      - hostel
+      - meal_type
+      - name
+    MealTypeEnum:
+      enum:
+      - breakfast
+      - lunch
+      - snacks
+      - dinner
+      type: string
+      description: |-
+        * `breakfast` - Breakfast
+        * `lunch` - Lunch
+        * `snacks` - Snacks
+        * `dinner` - Dinner
     MediumEnum:
       enum:
       - bangla
@@ -38932,6 +41774,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuthorizedPickup'
+    PaginatedBedList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bed'
     PaginatedBiometricConsentList:
       type: object
       required:
@@ -39737,6 +42602,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FuelLog'
+    PaginatedGatePassList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatePass'
     PaginatedGraceMarkRuleList:
       type: object
       required:
@@ -39921,6 +42809,144 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HomeworkSubmission'
+    PaginatedHostelAllocationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostelAllocation'
+    PaginatedHostelAttendanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostelAttendance'
+    PaginatedHostelFeeLinkList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostelFeeLink'
+    PaginatedHostelList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hostel'
+    PaginatedHostelRoomList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostelRoom'
+    PaginatedHostelVisitorLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostelVisitorLog'
     PaginatedInvoiceList:
       type: object
       required:
@@ -40197,6 +43223,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MarkEntry'
+    PaginatedMealAttendanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MealAttendance'
+    PaginatedMealPlanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MealPlan'
     PaginatedMeritListList:
       type: object
       required:
@@ -42166,6 +45238,18 @@ components:
           type: boolean
         notes:
           type: string
+    PatchedBedRequest:
+      type: object
+      properties:
+        room:
+          type: string
+          format: uuid
+        bed_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+        status:
+          $ref: '#/components/schemas/BedStatusEnum'
     PatchedBiometricConsentRequest:
       type: object
       properties:
@@ -43072,6 +46156,108 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+    PatchedHostelFeeLinkRequest:
+      type: object
+      properties:
+        fee_head:
+          type: string
+          format: uuid
+        hostel:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        effective_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+    PatchedHostelRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+        hostel_type:
+          $ref: '#/components/schemas/HostelTypeEnum'
+        warden:
+          type: string
+          format: uuid
+          nullable: true
+        curfew_time:
+          type: string
+          format: time
+        address:
+          type: string
+        is_active:
+          type: boolean
+    PatchedHostelRoomRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        room_number:
+          type: string
+          minLength: 1
+          maxLength: 32
+        floor:
+          type: string
+          maxLength: 32
+        capacity:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        monthly_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+    PatchedHostelVisitorLogRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        visitor_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        visitor_phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        relation:
+          type: string
+          maxLength: 64
+        nid_or_id_no:
+          type: string
+          maxLength: 64
+        purpose:
+          type: string
+          maxLength: 255
+        check_in_at:
+          type: string
+          format: date-time
+        check_out_at:
+          type: string
+          format: date-time
+          nullable: true
     PatchedInstitutionRequest:
       type: object
       description: Serializer for Institution profile read and update.
@@ -43444,6 +46630,26 @@ components:
           type: string
           format: uuid
           nullable: true
+    PatchedMealPlanRequest:
+      type: object
+      properties:
+        hostel:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        meal_type:
+          $ref: '#/components/schemas/MealTypeEnum'
+        menu_description:
+          type: string
+        unit_cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
     PatchedNoticeRequest:
       type: object
       description: Serializer for School Notice board posts.
@@ -52516,6 +55722,13 @@ components:
         * `student` - Student
         * `staff` - Staff
         * `all` - All
+    VacateAllocationRequest:
+      type: object
+      properties:
+        vacated_date:
+          type: string
+          format: date
+          nullable: true
     Vehicle:
       type: object
       properties:

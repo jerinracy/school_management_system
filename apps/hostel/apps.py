@@ -1,0 +1,9 @@
+from django.apps import AppConfig
+
+
+class HostelConfig(AppConfig):
+    """AppConfig for Hostel Management."""
+
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.hostel"
+    verbose_name = "Hostel Management"
