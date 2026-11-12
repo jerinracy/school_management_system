@@ -152,6 +152,8 @@ class NotificationDeliveryViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewS
             return NotificationDelivery.objects.none()
         qs = NotificationDelivery.objects.all()
         user = self.request.user
+        if not isinstance(user, User):
+            return NotificationDelivery.objects.none()
         if getattr(user, "is_superuser", False):
             return qs
         user_types = getattr(user, "user_types", []) or []
