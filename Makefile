@@ -1,4 +1,4 @@
-.PHONY: install run test lint format typecheck migrate makemigrations schema docker-up docker-down clean
+.PHONY: install run test lint format typecheck migrate makemigrations schema docker-up docker-down clean fe-install fe-dev fe-build fe-lint fe-typecheck fe-test fe-gen-api
 
 PYTHON ?= ./venv/bin/python
 PIP ?= ./venv/bin/pip
@@ -47,3 +47,24 @@ docker-down:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
+
+fe-install:
+	cd frontend && npm install
+
+fe-dev:
+	cd frontend && npm run dev
+
+fe-build:
+	cd frontend && npm run build
+
+fe-lint:
+	cd frontend && npm run lint
+
+fe-typecheck:
+	cd frontend && npm run typecheck
+
+fe-test:
+	cd frontend && npm run test
+
+fe-gen-api:
+	cd frontend && npm run gen:api

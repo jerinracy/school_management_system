@@ -1,0 +1,154 @@
+{
+  "app": {
+    "brandName": "Bidyapith SMS",
+    "brandTag": "Institution Admin",
+    "skipToContent": "Skip to main content",
+    "language": {
+      "label": "Language",
+      "en": "EN",
+      "bn": "বাং",
+      "switchToBangla": "Switch language to Bangla",
+      "switchToEnglish": "Switch language to English"
+    }
+  },
+  "nav": {
+    "overview": "Overview",
+    "students": "Students",
+    "attendance": "Attendance",
+    "exams": "Exams & Results",
+    "fees": "Fees & Accounts",
+    "staff": "Staff & HR",
+    "devices": "Biometric Devices",
+    "settings": "System Health",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "openMenu": "Open navigation menu"
+  },
+  "topbar": {
+    "sessionLabel": "Session 2026",
+    "session2025": "Session 2025",
+    "branchLabel": "Main Campus",
+    "branchMain": "Main Campus",
+    "branchMorning": "Morning Shift Branch",
+    "switchBranch": "Switch Branch",
+    "switchSession": "Academic Session",
+    "lightMode": "Switch to light mode",
+    "darkMode": "Switch to dark mode",
+    "notifications": "Notifications",
+    "userMenu": "User menu",
+    "adminRole": "Administrator",
+    "signOut": "Sign out",
+    "offlineReady": "Offline i18n ready"
+  },
+  "auth": {
+    "signInTitle": "Admin Sign In",
+    "signInSubtitle": "Access your institution's academic and administrative workspace.",
+    "identifierLabel": "Phone or Username",
+    "passwordLabel": "Password",
+    "signInAction": "Sign In"
+  },
+  "ui": {
+    "combobox": {
+      "placeholder": "Select option...",
+      "search": "Search...",
+      "empty": "No matching options."
+    },
+    "datePicker": {
+      "placeholder": "Select date",
+      "selectDate": "Select date",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "dialog": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}–{{end}} of {{total}}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "filterBar": {
+      "searchPlaceholder": "Search records...",
+      "clear": "Clear"
+    },
+    "fileUpload": {
+      "prompt": "Select a file to upload",
+      "hint": "Allowed: {{types}} · Max {{max}} MB",
+      "chooseFile": "Choose File",
+      "remove": "Remove file",
+      "invalidType": "Unsupported file type. Allowed: {{types}}",
+      "tooLarge": "File exceeds {{max}} MB limit."
+    },
+    "print": {
+      "action": "Print (A4)"
+    },
+    "errorPage": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred while loading this view.",
+      "retry": "Try Again"
+    },
+    "table": {
+      "columns": "Columns",
+      "selectAll": "Select all rows",
+      "selectRow": "Select row",
+      "actions": "Actions",
+      "emptyTitle": "No records found",
+      "emptyDescription": "Try adjusting your search or filter criteria."
+    }
+  },
+  "designSystem": {
+    "title": "Design System",
+    "subtitle": "Living style guide for the Bangladeshi School Management Admin Dashboard.",
+    "triggerToast": "Trigger Toast"
+  },
+  "dashboard": {
+    "title": "Institution Overview",
+    "subtitle": "Live system telemetry and operational readiness for the academic workspace.",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "lastChecked": "Last checked",
+    "kpis": {
+      "apiStatus": "API Gateway",
+      "database": "PostgreSQL",
+      "redis": "Redis Cache",
+      "apiVersion": "Contract Version"
+    },
+    "states": {
+      "ok": "Operational",
+      "degraded": "Degraded",
+      "connected": "Connected",
+      "unreachable": "Unreachable",
+      "loading": "Checking backend services...",
+      "errorTitle": "Unable to reach backend API",
+      "errorDetail": "Verify that the Django server is running on port 8000 and /api/v1/health/ is accessible.",
+      "retry": "Retry"
+    },
+    "modules": {
+      "heading": "Configured Modules",
+      "subheading": "Connected to OpenAPI v1 contract",
+      "students": {
+        "title": "Students & Guardians",
+        "desc": "Enrollment, roll registry, promotion & ID cards"
+      },
+      "attendance": {
+        "title": "Biometric Attendance",
+        "desc": "ZKTeco ADMS punches, shift rules & leave requests"
+      },
+      "exams": {
+        "title": "GPA 5.0 Examination",
+        "desc": "Mark entry, tabulation sheets & report cards"
+      },
+      "fees": {
+        "title": "Fees & Accounting",
+        "desc": "bKash, Nagad, SSLCommerz & daily cashbook"
+      }
+    }
+  },
+  "placeholder": {
+    "routeLabel": "Module Workspace",
+    "underConstruction": "This module workspace is wired to the router and ready for implementation in upcoming tasks.",
+    "backToOverview": "Back to Overview"
+  }
+}

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F02**: Design System, Layout & Theming (`frontend/`, `config/urls.py`, `templates/spa_shell.html`).
+  - Added CSS variable design tokens with Light theme default + Dark mode toggle (`ThemeProvider`), self-hosted offline fonts (`@fontsource/inter`, `@fontsource/noto-sans-bengali`), and A4 `@page` print styles.
+  - Added themed shadcn/ui base components (`Button`, `Input`, `Select`, `Combobox`, `DatePicker` with Bangla month/weekday names, `Dialog`, `Drawer`, `Tabs`, `Tooltip`, `Toast`, `Badge`, `Card`, `Table`, `Skeleton`, `Dropdown`, `Checkbox`, `Form`, `Breadcrumbs`, `Pagination`) and composite components (`PageHeader`, `DataTable`, `FilterBar`, `ConfirmDialog`, `StatusChip`, `StatCard`, `EmptyState`, `ErrorBoundary`/`ErrorPage`, `FileUpload`, `PrintLayout`).
+  - Upgraded `AppShell` with permission-driven sidebar navigation (`src/config/navigation.ts`), responsive mobile/tablet drawer, branch/session switchers, theme toggle, notifications, and user menu.
+  - Added root `/` redirect to `/dashboard/` (`config/urls.py`) and `/login` route (`LoginPage`) so unauthenticated visits to `http://127.0.0.1:8000/` show the Login page and authenticated visits show the Dashboard.
+  - Added dev-only living style guide at `/dashboard/_design` and automated `vitest-axe` accessibility tests for `AppShell` and `DataTable`.
+- **Task F01**: Frontend SPA Setup (`frontend/`, `django-vite`).
+  - Scaffolded Vite + React 18 + TypeScript (strict) + Tailwind CSS SPA in `frontend/` served via `django-vite` (`templates/spa_shell.html` updated with `{% vite_react_refresh %}` and `{% vite_asset 'src/main.tsx' %}`).
+  - Configured OpenAPI TypeScript generation (`npm run gen:api` from `schema/schema.yml`) and `openapi-fetch` client (`src/lib/api-client.ts`) wired to `GET /api/v1/health/`.
+  - Implemented compact Educational Admin Dashboard shell (`AppShell`, `KpiCard`, `DashboardHomePage`) with smooth CSS page/data transitions (`prefers-reduced-motion` aware) and instant offline Bangla/English language switching (`react-i18next` + bundled `en.json`/`bn.json` + `scripts/check-i18n.mjs` parity check).
+  - Added ESLint (`typescript-eslint`, `react-hooks`, `jsx-a11y`), Prettier, Vitest + RTL + MSW tests, Playwright skeleton, `Makefile` `fe-*` targets, and `frontend` CI job in `.github/workflows/ci.yml`.
 - **Task 25**: Reporting Engine & Data Exports (`apps/reports`).
   - Role-Based Dashboard KPIs (`apps/reports/services/kpi_service.py`):
     - Cached (`60s` TTL) KPIs for today's student/staff attendance, active online/offline devices, upcoming exams, pending attendance corrections, and role-gated financial totals (today's collections & total outstanding dues).

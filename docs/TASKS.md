@@ -34,3 +34,12 @@ Legend:
 | **Task 24** | Audit Logging & Activity Tracking | DONE | Task 03 | 2026-11-12 |
 | **Task 25** | Reporting Engine & Data Exports | DONE | Task 06, Task 10, Task 13, Task 15 | 2026-11-12 |
 | **Task 26** | Hardening, Backup & Production Readiness | TODO | All Tasks | - |
+
+---
+
+# Frontend Tasks Tracker — Admin Dashboard (`frontend/`)
+
+| Task ID | Task Name | Status | Dependencies | Completed Date |
+|---|---|---|---|---|
+| **Task F01** | Vite + React + django-vite Setup | DONE | Backend Task 01 | 2026-11-12 |
+| **Task F02** | Design System, Layout & Theming | DONE | Task F01 | 2026-11-12 |

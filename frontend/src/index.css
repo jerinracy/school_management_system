@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-canvas: 248 249 250;
+    --bg-surface: 255 255 255;
+    --bg-elevated: 255 255 255;
+    --text-ink: 17 24 39;
+    --text-muted: 75 85 99;
+    --text-subtle: 107 114 128;
+    --border-default: 226 232 240;
+    --border-strong: 203 213 225;
+    --color-primary: 15 92 70;
+    --color-primary-hover: 11 70 53;
+    --color-primary-soft: 236 253 245;
+    --color-primary-border: 167 243 208;
+    --color-amber: 180 83 9;
+    --color-amber-soft: 255 251 235;
+    --color-navy: 30 58 95;
+    --color-navy-soft: 239 246 255;
+  }
+
+  .dark {
+    --bg-canvas: 15 23 42;
+    --bg-surface: 30 41 59;
+    --bg-elevated: 51 65 85;
+    --text-ink: 241 245 249;
+    --text-muted: 203 213 225;
+    --text-subtle: 148 163 184;
+    --border-default: 51 65 85;
+    --border-strong: 71 85 105;
+    --color-primary: 16 185 129;
+    --color-primary-hover: 5 150 105;
+    --color-primary-soft: 6 78 59;
+    --color-primary-border: 4 120 87;
+    --color-amber: 245 158 11;
+    --color-amber-soft: 69 26 3;
+    --color-navy: 96 165 250;
+    --color-navy-soft: 23 37 84;
+  }
+
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    background-color: rgb(var(--bg-canvas));
+    color: rgb(var(--text-ink));
+  }
+
+  html[lang="bn"] body {
+    font-family: "Noto Sans Bengali", "Inter", system-ui, sans-serif;
+    line-height: 1.65;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -44,6 +45,8 @@ urlpatterns = [
     path("iclock/", include("apps.devices.urls_adms")),
     # OpenAPI Schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # Root URL redirects to React Dashboard SPA (which renders Login or Dashboard)
+    path("", RedirectView.as_view(url="/dashboard/", permanent=False), name="root_redirect"),
     # React Dashboard SPA shell catch-all
     path("dashboard/", SpaDashboardView.as_view(), name="dashboard_root"),
     re_path(r"^dashboard/(?:.*)/?$", SpaDashboardView.as_view(), name="dashboard_spa"),
