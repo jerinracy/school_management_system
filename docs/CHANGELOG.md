@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 19**: Homework & Assignment Management (`apps/homework`).
+  - Core Models (`apps/homework/models.py`):
+    - `Homework`, `HomeworkAttachment`: Class/section/subject assignments with due dates, late-submission policy + optional cutoff, max marks, and scanned attachments.
+    - `HomeworkSubmission`, `SubmissionAttachment`: Student submissions with late detection, teacher evaluation/feedback, and one active submission per `(homework, student)`.
+    - `SyllabusTopic`, `LessonPlan`, `StudyMaterial`: Curriculum completion tracking, daily/weekly teacher lesson plans, and published lecture notes/links.
+    - `OnlineClassLink`, `Quiz`, `QuizQuestion`, `QuizOption`, `QuizAttempt`: Scheduled Zoom/Meet classes and objective online quizzes with attempt caps and auto-grading.
+  - Service Layer & Async Tasks (`apps/homework/services/`, `apps/homework/tasks.py`):
+    - `storage_service.py`: Allowlisted file extension/size validation, pluggable AV scanner hook (`HOMEWORK_AV_SCANNER_CALLABLE` + EICAR signature detection), short-lived HMAC signed download tokens for local FS, and S3 presigned URL delegation.
+    - `homework_service.py`: Publishing, late submission enforcement, grading, and `dispatch_event_notification` notifications (`homework_assigned`, `homework_graded`, and idempotent `homework_due_soon` via Celery).
+    - `curriculum_service.py` & `quiz_service.py`: Syllabus progress calculation and objective quiz auto-grading.
+  - REST API & Permissions (`/api/v1/homework/`):
+    - Class/section visibility scoping for students and guardians, hidden quiz answer keys (`is_correct`) for non-managers, and authenticated tenant/owner checks on signed downloads.
 - **Task 18**: Payroll Management (`apps/payroll`).
   - Core Models (`apps/payroll/models.py`):
     - `SalaryComponent`, `SalaryStructure`, `SalaryStructureLine`: Configurable Bangladeshi school earning/deduction components (`FIXED`, `PERCENTAGE_OF_BASIC`, `PERCENTAGE_OF_GROSS`) and reusable grade templates.

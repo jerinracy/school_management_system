@@ -417,3 +417,16 @@
   - **General Ledger Integration (`accounting_integration_service.py`)**: Posted balanced double-entry vouchers into `apps/accounting` (Debit `5010` Salary & Employer PF Expense; Credit `1021`/`1010` Net Disbursement + `2030` Withheld PF/TDS/Loan Payables).
 - **Consequences**:
   - Clean separation between payroll calculation, disbursement approval, and accounting ledger posting, with bilingual PDF payslips and BEFTN XLSX/CSV bank advice exports.
+
+---
+
+## ADR-021: Homework File Upload Validation, AV Scan Hook & Signed Download URL Policy
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Teachers and students exchange PDFs, worksheets, images, and slides in `apps/homework`. Direct unauthenticated `/media/` URLs expose student submissions and copyrighted materials to unauthorized users or path guessing, while production deployments may use either local filesystem storage (dev/small schools) or S3-compatible object storage (`django-storages`).
+- **Decision**:
+  - **Upload Validation & Pluggable AV Scan Hook (`apps/homework/services/storage_service.py`)**: Enforce extension allowlist (`HOMEWORK_ALLOWED_EXTENSIONS`) and max file size (`HOMEWORK_MAX_FILE_SIZE_MB`) prior to disk/object writes, paired with `scan_uploaded_file` supporting `HOMEWORK_AV_SCANNER_CALLABLE` (e.g., ClamAV daemon) and built-in EICAR malware signature rejection.
+  - **Signed Download Policy**: When an S3-compatible backend is active, delegate download URLs to storage presigned URLs (`storage.url`); on local `FileSystemStorage`, generate time-limited HMAC tokens via `TimestampSigner` (`HOMEWORK_SIGNED_URL_TTL_SECONDS`, default `900s`) served by `/api/v1/homework/download/` with `IsAuthenticated`, tenant checks, student/guardian ownership checks for submissions, and `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`.
+- **Consequences**:
+  - Student submissions and school materials remain protected by authentication, tenant scoping, and per-student authorization regardless of storage backend, without requiring extra infrastructure packages in dev/CI.

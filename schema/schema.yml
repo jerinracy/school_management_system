@@ -15664,6 +15664,2201 @@ paths:
           description: All backend systems are operational.
         '503':
           description: One or more dependent systems are degraded.
+  /api/v1/homework/assignments/:
+    get:
+      operationId: homework_assignments_list
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: List homework assignments
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - closed
+          - draft
+          - published
+        description: |-
+          * `draft` - Draft
+          * `published` - Published
+          * `closed` - Closed
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHomeworkList'
+          description: ''
+    post:
+      operationId: homework_assignments_create
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Create homework assignment
+      tags:
+      - Homework - Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Homework'
+          description: ''
+  /api/v1/homework/assignments/{id}/:
+    get:
+      operationId: homework_assignments_retrieve
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Retrieve homework details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Homework'
+          description: ''
+    put:
+      operationId: homework_assignments_update
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Update homework assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Homework'
+          description: ''
+    patch:
+      operationId: homework_assignments_partial_update
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Partial update homework assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHomeworkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHomeworkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHomeworkRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Homework'
+          description: ''
+    delete:
+      operationId: homework_assignments_destroy
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Delete homework assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/assignments/{id}/close/:
+    post:
+      operationId: homework_assignments_close_create
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Close homework assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Homework'
+          description: ''
+  /api/v1/homework/assignments/{id}/publish/:
+    post:
+      operationId: homework_assignments_publish_create
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Publish homework and trigger notifications
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Homework'
+          description: ''
+  /api/v1/homework/assignments/{id}/submissions/:
+    get:
+      operationId: homework_assignments_submissions_list
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: List submissions for a homework assignment
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - closed
+          - draft
+          - published
+        description: |-
+          * `draft` - Draft
+          * `published` - Published
+          * `closed` - Closed
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Assignments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHomeworkSubmissionList'
+          description: ''
+  /api/v1/homework/assignments/{id}/submit/:
+    post:
+      operationId: homework_assignments_submit_create
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Submit student work (text/files) for homework
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      tags:
+      - Homework - Assignments
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmitHomeworkInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubmitHomeworkInputRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitHomeworkInputRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeworkSubmission'
+          description: ''
+  /api/v1/homework/assignments/{id}/upload_attachment/:
+    post:
+      operationId: homework_assignments_upload_attachment_create
+      description: Manage homework assignments, attachments, publishing, closing,
+        and submissions.
+      summary: Upload file attachment to homework
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - closed
+          - draft
+          - published
+        description: |-
+          * `draft` - Draft
+          * `published` - Published
+          * `closed` - Closed
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Assignments
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HomeworkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHomeworkAttachmentList'
+          description: ''
+  /api/v1/homework/download/:
+    get:
+      operationId: homework_download_retrieve
+      description: Serve stored homework, submission, or material files using a verified
+        HMAC token.
+      summary: Download attachment via signed URL token
+      parameters:
+      - in: query
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - Homework - Downloads
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/homework/lesson-plans/:
+    get:
+      operationId: homework_lesson_plans_list
+      description: Teacher lesson plan CRUD.
+      summary: List lesson plans
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - delivered
+          - draft
+        description: |-
+          * `draft` - Draft
+          * `approved` - Approved
+          * `delivered` - Delivered
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Curriculum
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLessonPlanList'
+          description: ''
+    post:
+      operationId: homework_lesson_plans_create
+      description: Teacher lesson plan CRUD.
+      summary: Create lesson plan
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LessonPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LessonPlanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonPlan'
+          description: ''
+  /api/v1/homework/lesson-plans/{id}/:
+    get:
+      operationId: homework_lesson_plans_retrieve
+      description: Teacher lesson plan CRUD.
+      summary: Retrieve lesson plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Lesson Plan.
+        required: true
+      tags:
+      - Homework - Curriculum
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonPlan'
+          description: ''
+    put:
+      operationId: homework_lesson_plans_update
+      description: Teacher lesson plan CRUD.
+      summary: Update lesson plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Lesson Plan.
+        required: true
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LessonPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LessonPlanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonPlan'
+          description: ''
+    patch:
+      operationId: homework_lesson_plans_partial_update
+      description: Teacher lesson plan CRUD.
+      summary: Partial update lesson plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Lesson Plan.
+        required: true
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonPlanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonPlanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonPlanRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonPlan'
+          description: ''
+    delete:
+      operationId: homework_lesson_plans_destroy
+      description: Teacher lesson plan CRUD.
+      summary: Delete lesson plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Lesson Plan.
+        required: true
+      tags:
+      - Homework - Curriculum
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/materials/:
+    get:
+      operationId: homework_materials_list
+      description: Downloadable lecture notes and reference links scoped by class/section.
+      summary: List study materials
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: material_type
+        schema:
+          type: string
+          enum:
+          - external_link
+          - file
+          - video_link
+        description: |-
+          * `file` - Document / File
+          * `video_link` - Video Link
+          * `external_link` - External Reference Link
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Materials
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudyMaterialList'
+          description: ''
+    post:
+      operationId: homework_materials_create
+      description: Downloadable lecture notes and reference links scoped by class/section.
+      summary: Upload study material
+      tags:
+      - Homework - Materials
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterial'
+          description: ''
+  /api/v1/homework/materials/{id}/:
+    get:
+      operationId: homework_materials_retrieve
+      description: Downloadable lecture notes and reference links scoped by class/section.
+      summary: Retrieve study material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Study Material.
+        required: true
+      tags:
+      - Homework - Materials
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterial'
+          description: ''
+    put:
+      operationId: homework_materials_update
+      description: Downloadable lecture notes and reference links scoped by class/section.
+      summary: Update study material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Study Material.
+        required: true
+      tags:
+      - Homework - Materials
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyMaterialRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterial'
+          description: ''
+    patch:
+      operationId: homework_materials_partial_update
+      description: Downloadable lecture notes and reference links scoped by class/section.
+      summary: Partial update study material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Study Material.
+        required: true
+      tags:
+      - Homework - Materials
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudyMaterialRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudyMaterialRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudyMaterialRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyMaterial'
+          description: ''
+    delete:
+      operationId: homework_materials_destroy
+      description: Downloadable lecture notes and reference links scoped by class/section.
+      summary: Delete study material
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Study Material.
+        required: true
+      tags:
+      - Homework - Materials
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/online-classes/:
+    get:
+      operationId: homework_online_classes_list
+      description: Scheduled Zoom/Meet links filtered by class and section.
+      summary: List online class links
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - completed
+          - live
+          - scheduled
+        description: |-
+          * `scheduled` - Scheduled
+          * `live` - Live Now
+          * `completed` - Completed
+          * `cancelled` - Cancelled
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Online Classes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOnlineClassLinkList'
+          description: ''
+    post:
+      operationId: homework_online_classes_create
+      description: Scheduled Zoom/Meet links filtered by class and section.
+      summary: Schedule online class
+      tags:
+      - Homework - Online Classes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineClassLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OnlineClassLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnlineClassLinkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineClassLink'
+          description: ''
+  /api/v1/homework/online-classes/{id}/:
+    get:
+      operationId: homework_online_classes_retrieve
+      description: Scheduled Zoom/Meet links filtered by class and section.
+      summary: Retrieve online class link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Online Class Link.
+        required: true
+      tags:
+      - Homework - Online Classes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineClassLink'
+          description: ''
+    put:
+      operationId: homework_online_classes_update
+      description: Scheduled Zoom/Meet links filtered by class and section.
+      summary: Update online class
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Online Class Link.
+        required: true
+      tags:
+      - Homework - Online Classes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineClassLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OnlineClassLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnlineClassLinkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineClassLink'
+          description: ''
+    patch:
+      operationId: homework_online_classes_partial_update
+      description: Scheduled Zoom/Meet links filtered by class and section.
+      summary: Partial update online class
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Online Class Link.
+        required: true
+      tags:
+      - Homework - Online Classes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOnlineClassLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOnlineClassLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOnlineClassLinkRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineClassLink'
+          description: ''
+    delete:
+      operationId: homework_online_classes_destroy
+      description: Scheduled Zoom/Meet links filtered by class and section.
+      summary: Delete online class
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Online Class Link.
+        required: true
+      tags:
+      - Homework - Online Classes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/quiz-options/:
+    get:
+      operationId: homework_quiz_options_list
+      description: CRUD for QuizOptions.
+      summary: List quiz options
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: question
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuizOptionList'
+          description: ''
+    post:
+      operationId: homework_quiz_options_create
+      description: CRUD for QuizOptions.
+      summary: Create quiz option
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizOptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizOptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizOptionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizOption'
+          description: ''
+  /api/v1/homework/quiz-options/{id}/:
+    get:
+      operationId: homework_quiz_options_retrieve
+      description: CRUD for QuizOptions.
+      summary: Retrieve quiz option
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Option.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizOption'
+          description: ''
+    put:
+      operationId: homework_quiz_options_update
+      description: CRUD for QuizOptions.
+      summary: Update quiz option
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Option.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizOptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizOptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizOptionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizOption'
+          description: ''
+    patch:
+      operationId: homework_quiz_options_partial_update
+      description: CRUD for QuizOptions.
+      summary: Partial update quiz option
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Option.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizOptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizOptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizOptionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizOption'
+          description: ''
+    delete:
+      operationId: homework_quiz_options_destroy
+      description: CRUD for QuizOptions.
+      summary: Delete quiz option
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Option.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/quiz-questions/:
+    get:
+      operationId: homework_quiz_questions_list
+      description: CRUD for QuizQuestions, keeping Quiz.total_marks synchronized.
+      summary: List quiz questions
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: quiz
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuizQuestionList'
+          description: ''
+    post:
+      operationId: homework_quiz_questions_create
+      description: CRUD for QuizQuestions, keeping Quiz.total_marks synchronized.
+      summary: Create quiz question
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizQuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizQuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizQuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizQuestion'
+          description: ''
+  /api/v1/homework/quiz-questions/{id}/:
+    get:
+      operationId: homework_quiz_questions_retrieve
+      description: CRUD for QuizQuestions, keeping Quiz.total_marks synchronized.
+      summary: Retrieve quiz question
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Question.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizQuestion'
+          description: ''
+    put:
+      operationId: homework_quiz_questions_update
+      description: CRUD for QuizQuestions, keeping Quiz.total_marks synchronized.
+      summary: Update quiz question
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Question.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizQuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizQuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizQuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizQuestion'
+          description: ''
+    patch:
+      operationId: homework_quiz_questions_partial_update
+      description: CRUD for QuizQuestions, keeping Quiz.total_marks synchronized.
+      summary: Partial update quiz question
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Question.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizQuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizQuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizQuestionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizQuestion'
+          description: ''
+    delete:
+      operationId: homework_quiz_questions_destroy
+      description: CRUD for QuizQuestions, keeping Quiz.total_marks synchronized.
+      summary: Delete quiz question
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz Question.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/quizzes/:
+    get:
+      operationId: homework_quizzes_list
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: List quizzes
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuizList'
+          description: ''
+    post:
+      operationId: homework_quizzes_create
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Create quiz
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+          description: ''
+  /api/v1/homework/quizzes/{id}/:
+    get:
+      operationId: homework_quizzes_retrieve
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Retrieve quiz details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+          description: ''
+    put:
+      operationId: homework_quizzes_update
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Update quiz
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+          description: ''
+    patch:
+      operationId: homework_quizzes_partial_update
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Partial update quiz
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuizRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+          description: ''
+    delete:
+      operationId: homework_quizzes_destroy
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Delete quiz
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/quizzes/{id}/my_attempts/:
+    get:
+      operationId: homework_quizzes_my_attempts_list
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: List current student's or ward's quiz attempts
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuizAttemptList'
+          description: ''
+  /api/v1/homework/quizzes/{id}/start_attempt/:
+    post:
+      operationId: homework_quizzes_start_attempt_create
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Start or resume a quiz attempt
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      tags:
+      - Homework - Quizzes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttempt'
+          description: ''
+  /api/v1/homework/quizzes/{id}/submit_attempt/:
+    post:
+      operationId: homework_quizzes_submit_attempt_create
+      description: Online quiz management plus student attempt & auto-grading endpoints.
+      summary: Submit answers and auto-grade quiz attempt
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Quiz.
+        required: true
+      tags:
+      - Homework - Quizzes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitQuizAttemptRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubmitQuizAttemptRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmitQuizAttemptRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttempt'
+          description: ''
+  /api/v1/homework/submissions/:
+    get:
+      operationId: homework_submissions_list
+      description: View submissions (teacher/student/guardian scoped) and grade student
+        work.
+      summary: List homework submissions
+      parameters:
+      - in: query
+        name: homework
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_late
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - graded
+          - late
+          - returned
+          - submitted
+        description: |-
+          * `submitted` - Submitted
+          * `late` - Submitted Late
+          * `graded` - Graded
+          * `returned` - Returned for Revision
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Submissions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHomeworkSubmissionList'
+          description: ''
+  /api/v1/homework/submissions/{id}/:
+    get:
+      operationId: homework_submissions_retrieve
+      description: View submissions (teacher/student/guardian scoped) and grade student
+        work.
+      summary: Retrieve submission details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework Submission.
+        required: true
+      tags:
+      - Homework - Submissions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeworkSubmission'
+          description: ''
+  /api/v1/homework/submissions/{id}/grade/:
+    post:
+      operationId: homework_submissions_grade_create
+      description: View submissions (teacher/student/guardian scoped) and grade student
+        work.
+      summary: Grade or return a student's homework submission
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Homework Submission.
+        required: true
+      tags:
+      - Homework - Submissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeSubmissionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GradeSubmissionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GradeSubmissionInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeworkSubmission'
+          description: ''
+  /api/v1/homework/syllabus-topics/:
+    get:
+      operationId: homework_syllabus_topics_list
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: List syllabus topics
+      parameters:
+      - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - completed
+          - in_progress
+          - not_started
+        description: |-
+          * `not_started` - Not Started
+          * `in_progress` - In Progress
+          * `completed` - Completed
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: term
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Homework - Curriculum
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSyllabusTopicList'
+          description: ''
+    post:
+      operationId: homework_syllabus_topics_create
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: Create syllabus topic
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyllabusTopicRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SyllabusTopicRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SyllabusTopicRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyllabusTopic'
+          description: ''
+  /api/v1/homework/syllabus-topics/{id}/:
+    get:
+      operationId: homework_syllabus_topics_retrieve
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: Retrieve syllabus topic
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Syllabus Topic.
+        required: true
+      tags:
+      - Homework - Curriculum
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyllabusTopic'
+          description: ''
+    put:
+      operationId: homework_syllabus_topics_update
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: Update syllabus topic
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Syllabus Topic.
+        required: true
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyllabusTopicRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SyllabusTopicRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SyllabusTopicRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyllabusTopic'
+          description: ''
+    patch:
+      operationId: homework_syllabus_topics_partial_update
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: Partial update syllabus topic
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Syllabus Topic.
+        required: true
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSyllabusTopicRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSyllabusTopicRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSyllabusTopicRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyllabusTopic'
+          description: ''
+    delete:
+      operationId: homework_syllabus_topics_destroy
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: Delete syllabus topic
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Syllabus Topic.
+        required: true
+      tags:
+      - Homework - Curriculum
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/homework/syllabus-topics/{id}/update_progress/:
+    post:
+      operationId: homework_syllabus_topics_update_progress_create
+      description: CRUD and progress tracking for curriculum syllabus topics.
+      summary: Update syllabus topic completion percentage
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Syllabus Topic.
+        required: true
+      tags:
+      - Homework - Curriculum
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSyllabusProgressRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateSyllabusProgressRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateSyllabusProgressRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyllabusTopic'
+          description: ''
   /api/v1/institutions/branches/:
     get:
       operationId: institutions_branches_list
@@ -22965,7 +25160,7 @@ components:
           description: 'e.g. {''min_age_years'': 10, ''max_age_years'': 12, ''min_gpa'':
             3.50}'
         status:
-          $ref: '#/components/schemas/AdmissionCircularStatusEnum'
+          $ref: '#/components/schemas/Status2f7Enum'
         applications_count:
           type: integer
           readOnly: true
@@ -23068,23 +25263,13 @@ components:
           description: 'e.g. {''min_age_years'': 10, ''max_age_years'': 12, ''min_gpa'':
             3.50}'
         status:
-          $ref: '#/components/schemas/AdmissionCircularStatusEnum'
+          $ref: '#/components/schemas/Status2f7Enum'
       required:
       - class_level
       - form_close_date
       - form_open_date
       - session
       - title
-    AdmissionCircularStatusEnum:
-      enum:
-      - draft
-      - published
-      - closed
-      type: string
-      description: |-
-        * `draft` - Draft
-        * `published` - Published
-        * `closed` - Closed
     AdmissionTest:
       type: object
       properties:
@@ -24444,6 +26629,16 @@ components:
       - phone
       - relation
       - student
+    AvScanStatusEnum:
+      enum:
+      - pending
+      - clean
+      - infected
+      type: string
+      description: |-
+        * `pending` - Pending Scan
+        * `clean` - Clean
+        * `infected` - Quarantined / Infected
     BiometricConsent:
       type: object
       properties:
@@ -27568,6 +29763,31 @@ components:
           type: boolean
       required:
       - exam
+    GradeSubmissionInputRequest:
+      type: object
+      description: Input serializer for grading/returning a HomeworkSubmission.
+      properties:
+        marks_obtained:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        feedback:
+          type: string
+          default: ''
+        status:
+          allOf:
+          - $ref: '#/components/schemas/GradeSubmissionInputStatusEnum'
+          default: graded
+      required:
+      - marks_obtained
+    GradeSubmissionInputStatusEnum:
+      enum:
+      - graded
+      - returned
+      type: string
+      description: |-
+        * `graded` - Graded
+        * `returned` - Returned for Revision
     GradeTier:
       type: object
       properties:
@@ -28068,6 +30288,297 @@ components:
         * `govt` - Government Public Holiday
         * `institutional` - Institutional Holiday
         * `emergency` - Emergency Closure
+    Homework:
+      type: object
+      description: Serializer for Homework assignments.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        class_level_name:
+          type: string
+          readOnly: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+          description: Null applies to all sections of the selected class level.
+        section_name:
+          type: string
+          readOnly: true
+          default: All Sections
+        subject:
+          type: string
+          format: uuid
+        subject_name:
+          type: string
+          readOnly: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        teacher_name:
+          type: string
+          readOnly: true
+          default: ''
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        instructions:
+          type: string
+        assigned_at:
+          type: string
+          format: date-time
+        due_at:
+          type: string
+          format: date-time
+        allow_late_submission:
+          type: boolean
+        late_submission_cutoff_at:
+          type: string
+          format: date-time
+          nullable: true
+        max_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status2f7Enum'
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeworkAttachment'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attachments
+      - class_level
+      - class_level_name
+      - created_at
+      - due_at
+      - id
+      - published_at
+      - section_name
+      - session
+      - status
+      - subject
+      - subject_name
+      - teacher_name
+      - title
+      - updated_at
+    HomeworkAttachment:
+      type: object
+      description: Serializer for homework prompt files with short-lived signed download
+        URLs.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        original_filename:
+          type: string
+          readOnly: true
+        content_type:
+          type: string
+          readOnly: true
+        file_size_bytes:
+          type: integer
+          readOnly: true
+        av_scan_status:
+          allOf:
+          - $ref: '#/components/schemas/AvScanStatusEnum'
+          readOnly: true
+        download_url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - av_scan_status
+      - content_type
+      - created_at
+      - download_url
+      - file_size_bytes
+      - id
+      - original_filename
+    HomeworkRequest:
+      type: object
+      description: Serializer for Homework assignments.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+          description: Null applies to all sections of the selected class level.
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        instructions:
+          type: string
+        assigned_at:
+          type: string
+          format: date-time
+        due_at:
+          type: string
+          format: date-time
+        allow_late_submission:
+          type: boolean
+        late_submission_cutoff_at:
+          type: string
+          format: date-time
+          nullable: true
+        max_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+      required:
+      - class_level
+      - due_at
+      - session
+      - subject
+      - title
+    HomeworkSubmission:
+      type: object
+      description: Serializer for student HomeworkSubmissions and teacher evaluation.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        homework:
+          type: string
+          format: uuid
+          readOnly: true
+        homework_title:
+          type: string
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        text_response:
+          type: string
+          readOnly: true
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_late:
+          type: boolean
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/HomeworkSubmissionStatusEnum'
+          readOnly: true
+        marks_obtained:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        feedback:
+          type: string
+          readOnly: true
+        graded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        graded_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmissionAttachment'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attachments
+      - created_at
+      - feedback
+      - graded_at
+      - graded_by
+      - homework
+      - homework_title
+      - id
+      - is_late
+      - marks_obtained
+      - status
+      - student
+      - student_code
+      - student_name
+      - submitted_at
+      - text_response
+      - updated_at
+    HomeworkSubmissionStatusEnum:
+      enum:
+      - submitted
+      - late
+      - graded
+      - returned
+      type: string
+      description: |-
+        * `submitted` - Submitted
+        * `late` - Submitted Late
+        * `graded` - Graded
+        * `returned` - Returned for Revision
     Institution:
       type: object
       description: Serializer for Institution profile read and update.
@@ -29296,6 +31807,122 @@ components:
       required:
       - code
       - name
+    LessonPlan:
+      type: object
+      description: Serializer for teacher LessonPlans.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        syllabus_topic:
+          type: string
+          format: uuid
+          nullable: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        lesson_date:
+          type: string
+          format: date
+        objectives:
+          type: string
+        activities:
+          type: string
+        homework_note:
+          type: string
+        status:
+          $ref: '#/components/schemas/LessonPlanStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - created_at
+      - id
+      - lesson_date
+      - session
+      - subject
+      - title
+      - updated_at
+    LessonPlanRequest:
+      type: object
+      description: Serializer for teacher LessonPlans.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        syllabus_topic:
+          type: string
+          format: uuid
+          nullable: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        lesson_date:
+          type: string
+          format: date
+        objectives:
+          type: string
+        activities:
+          type: string
+        homework_note:
+          type: string
+        status:
+          $ref: '#/components/schemas/LessonPlanStatusEnum'
+      required:
+      - class_level
+      - lesson_date
+      - session
+      - subject
+      - title
+    LessonPlanStatusEnum:
+      enum:
+      - draft
+      - approved
+      - delivered
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `approved` - Approved
+        * `delivered` - Delivered
     LineTypeEnum:
       enum:
       - earning
@@ -29566,6 +32193,16 @@ components:
           type: string
           default: ''
           maxLength: 100
+    MaterialTypeEnum:
+      enum:
+      - file
+      - video_link
+      - external_link
+      type: string
+      description: |-
+        * `file` - Document / File
+        * `video_link` - Video Link
+        * `external_link` - External Reference Link
     MediumEnum:
       enum:
       - bangla
@@ -30456,6 +33093,136 @@ components:
       required:
       - code
       - phone
+    OnlineClassLink:
+      type: object
+      description: Serializer for Zoom/Google Meet OnlineClassLinks.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        platform:
+          type: string
+          maxLength: 30
+        meeting_url:
+          type: string
+          format: uri
+          maxLength: 200
+        meeting_passcode:
+          type: string
+          maxLength: 64
+        scheduled_start:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/OnlineClassLinkStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - created_at
+      - id
+      - meeting_url
+      - scheduled_start
+      - session
+      - subject
+      - title
+      - updated_at
+    OnlineClassLinkRequest:
+      type: object
+      description: Serializer for Zoom/Google Meet OnlineClassLinks.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        platform:
+          type: string
+          minLength: 1
+          maxLength: 30
+        meeting_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        meeting_passcode:
+          type: string
+          maxLength: 64
+        scheduled_start:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/OnlineClassLinkStatusEnum'
+      required:
+      - class_level
+      - meeting_url
+      - scheduled_start
+      - session
+      - subject
+      - title
+    OnlineClassLinkStatusEnum:
+      enum:
+      - scheduled
+      - live
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `scheduled` - Scheduled
+        * `live` - Live Now
+        * `completed` - Completed
+        * `cancelled` - Cancelled
     OnlinePaymentInitiatePaymentMethodEnum:
       enum:
       - bkash
@@ -31611,6 +34378,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Holiday'
+    PaginatedHomeworkAttachmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeworkAttachment'
+    PaginatedHomeworkList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Homework'
+    PaginatedHomeworkSubmissionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeworkSubmission'
     PaginatedInvoiceList:
       type: object
       required:
@@ -31726,6 +34562,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LeaveType'
+    PaginatedLessonPlanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonPlan'
     PaginatedLotteryDrawList:
       type: object
       required:
@@ -31933,6 +34792,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/NotificationTemplate'
+    PaginatedOnlineClassLinkList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnlineClassLink'
     PaginatedPaymentList:
       type: object
       required:
@@ -32094,6 +34976,98 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PromotionBatch'
+    PaginatedQuizAttemptList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAttempt'
+    PaginatedQuizList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quiz'
+    PaginatedQuizOptionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizOption'
+    PaginatedQuizQuestionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizQuestion'
     PaginatedQuotaRuleList:
       type: object
       required:
@@ -32692,6 +35666,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentWaiver'
+    PaginatedStudyMaterialList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyMaterial'
     PaginatedSubjectList:
       type: object
       required:
@@ -32761,6 +35758,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubstituteAssignment'
+    PaginatedSyllabusTopicList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyllabusTopic'
     PaginatedTabulationSheetList:
       type: object
       required:
@@ -33083,7 +36103,7 @@ components:
           description: 'e.g. {''min_age_years'': 10, ''max_age_years'': 12, ''min_gpa'':
             3.50}'
         status:
-          $ref: '#/components/schemas/AdmissionCircularStatusEnum'
+          $ref: '#/components/schemas/Status2f7Enum'
     PatchedAdmissionTestRequest:
       type: object
       properties:
@@ -34092,6 +37112,52 @@ components:
             format: uuid
         description:
           type: string
+    PatchedHomeworkRequest:
+      type: object
+      description: Serializer for Homework assignments.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+          description: Null applies to all sections of the selected class level.
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        instructions:
+          type: string
+        assigned_at:
+          type: string
+          format: date-time
+        due_at:
+          type: string
+          format: date-time
+        allow_late_submission:
+          type: boolean
+        late_submission_cutoff_at:
+          type: string
+          format: date-time
+          nullable: true
+        max_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
     PatchedInstitutionRequest:
       type: object
       description: Serializer for Institution profile read and update.
@@ -34310,6 +37376,46 @@ components:
           minimum: 0
         gender_restriction:
           $ref: '#/components/schemas/GenderRestrictionEnum'
+    PatchedLessonPlanRequest:
+      type: object
+      description: Serializer for teacher LessonPlans.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        syllabus_topic:
+          type: string
+          format: uuid
+          nullable: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        lesson_date:
+          type: string
+          format: date
+        objectives:
+          type: string
+        activities:
+          type: string
+        homework_note:
+          type: string
+        status:
+          $ref: '#/components/schemas/LessonPlanStatusEnum'
     PatchedMarkEntryRequest:
       type: object
       properties:
@@ -34443,6 +37549,52 @@ components:
             'date']
         is_active:
           type: boolean
+    PatchedOnlineClassLinkRequest:
+      type: object
+      description: Serializer for Zoom/Google Meet OnlineClassLinks.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        platform:
+          type: string
+          minLength: 1
+          maxLength: 30
+        meeting_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        meeting_passcode:
+          type: string
+          maxLength: 64
+        scheduled_start:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/OnlineClassLinkStatusEnum'
     PatchedPaymentRequest:
       type: object
       properties:
@@ -34568,6 +37720,90 @@ components:
           maximum: 2147483647
           minimum: 0
           description: Evaluation priority (higher number takes precedence)
+    PatchedQuizOptionRequest:
+      type: object
+      description: Serializer for quiz question options hiding `is_correct` from non-managers.
+      properties:
+        question:
+          type: string
+          format: uuid
+        option_text:
+          type: string
+          minLength: 1
+          maxLength: 500
+        is_correct:
+          type: boolean
+        order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+    PatchedQuizQuestionRequest:
+      type: object
+      description: Serializer for quiz questions with nested options.
+      properties:
+        quiz:
+          type: string
+          format: uuid
+        question_text:
+          type: string
+          minLength: 1
+        question_type:
+          $ref: '#/components/schemas/QuestionTypeEnum'
+        marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+    PatchedQuizRequest:
+      type: object
+      description: Serializer for lite online Quizzes.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_attempts:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        is_published:
+          type: boolean
     PatchedQuotaRuleRequest:
       type: object
       properties:
@@ -35294,6 +38530,43 @@ components:
           type: string
           format: date
           nullable: true
+    PatchedStudyMaterialRequest:
+      type: object
+      description: Serializer for StudyMaterials with validated uploads and signed
+        download URLs.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        material_type:
+          $ref: '#/components/schemas/MaterialTypeEnum'
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+          nullable: true
+        external_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_published:
+          type: boolean
     PatchedSubjectRequest:
       type: object
       properties:
@@ -35347,6 +38620,46 @@ components:
         reason:
           type: string
           maxLength: 255
+    PatchedSyllabusTopicRequest:
+      type: object
+      description: Serializer for curriculum SyllabusTopics.
+      properties:
+        session:
+          type: string
+          format: uuid
+        term:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        estimated_periods:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/SyllabusTopicStatusEnum'
+        completion_percentage:
+          type: integer
+          maximum: 100
+          minimum: 0
     PatchedTabulationSheetRequest:
       type: object
       properties:
@@ -36845,6 +40158,308 @@ components:
         * `login` - login
         * `password_reset` - password_reset
         * `verify` - verify
+    QuestionTypeEnum:
+      enum:
+      - mcq
+      - true_false
+      type: string
+      description: |-
+        * `mcq` - Multiple Choice (MCQ)
+        * `true_false` - True / False
+    Quiz:
+      type: object
+      description: Serializer for lite online Quizzes.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_attempts:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        total_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+        pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        is_published:
+          type: boolean
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizQuestion'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - created_at
+      - ends_at
+      - id
+      - questions
+      - session
+      - starts_at
+      - subject
+      - title
+      - total_marks
+      - updated_at
+    QuizAttempt:
+      type: object
+      description: Serializer for student QuizAttempts and auto-graded scores.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        quiz:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+        attempt_number:
+          type: integer
+          readOnly: true
+          default: 1
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        answers_json:
+          readOnly: true
+        score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/QuizAttemptStatusEnum'
+          readOnly: true
+      required:
+      - answers_json
+      - attempt_number
+      - id
+      - quiz
+      - score
+      - started_at
+      - status
+      - student
+      - submitted_at
+    QuizAttemptStatusEnum:
+      enum:
+      - in_progress
+      - submitted
+      - graded
+      type: string
+      description: |-
+        * `in_progress` - In Progress
+        * `submitted` - Submitted
+        * `graded` - Auto-Graded
+    QuizOption:
+      type: object
+      description: Serializer for quiz question options hiding `is_correct` from non-managers.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        question:
+          type: string
+          format: uuid
+        option_text:
+          type: string
+          maxLength: 500
+        is_correct:
+          type: boolean
+        order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+      required:
+      - id
+      - option_text
+      - question
+    QuizOptionRequest:
+      type: object
+      description: Serializer for quiz question options hiding `is_correct` from non-managers.
+      properties:
+        question:
+          type: string
+          format: uuid
+        option_text:
+          type: string
+          minLength: 1
+          maxLength: 500
+        is_correct:
+          type: boolean
+        order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+      required:
+      - option_text
+      - question
+    QuizQuestion:
+      type: object
+      description: Serializer for quiz questions with nested options.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        quiz:
+          type: string
+          format: uuid
+        question_text:
+          type: string
+        question_type:
+          $ref: '#/components/schemas/QuestionTypeEnum'
+        marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizOption'
+          readOnly: true
+      required:
+      - id
+      - options
+      - question_text
+      - quiz
+    QuizQuestionRequest:
+      type: object
+      description: Serializer for quiz questions with nested options.
+      properties:
+        quiz:
+          type: string
+          format: uuid
+        question_text:
+          type: string
+          minLength: 1
+        question_type:
+          $ref: '#/components/schemas/QuestionTypeEnum'
+        marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - question_text
+      - quiz
+    QuizRequest:
+      type: object
+      description: Serializer for lite online Quizzes.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_attempts:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        pass_marks:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+        is_published:
+          type: boolean
+      required:
+      - class_level
+      - ends_at
+      - session
+      - starts_at
+      - subject
+      - title
     QuotaRule:
       type: object
       properties:
@@ -39414,6 +43029,16 @@ components:
         * `driver` - Driver (চালক)
         * `security` - Security (নিরাপত্তা কর্মী)
         * `other` - Other (অন্যান্য)
+    Status2f7Enum:
+      enum:
+      - draft
+      - published
+      - closed
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+        * `closed` - Closed
     Status31cEnum:
       enum:
       - active
@@ -40575,6 +44200,116 @@ components:
       required:
       - discount_value
       - student
+    StudyMaterial:
+      type: object
+      description: Serializer for StudyMaterials with validated uploads and signed
+        download URLs.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        material_type:
+          $ref: '#/components/schemas/MaterialTypeEnum'
+        external_url:
+          type: string
+          format: uri
+          maxLength: 200
+        original_filename:
+          type: string
+          readOnly: true
+        file_size_bytes:
+          type: integer
+          readOnly: true
+        av_scan_status:
+          allOf:
+          - $ref: '#/components/schemas/AvScanStatusEnum'
+          readOnly: true
+        is_published:
+          type: boolean
+        download_url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - av_scan_status
+      - class_level
+      - created_at
+      - download_url
+      - file_size_bytes
+      - id
+      - original_filename
+      - session
+      - subject
+      - title
+      - updated_at
+    StudyMaterialRequest:
+      type: object
+      description: Serializer for StudyMaterials with validated uploads and signed
+        download URLs.
+      properties:
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        material_type:
+          $ref: '#/components/schemas/MaterialTypeEnum'
+        file:
+          type: string
+          format: binary
+          writeOnly: true
+          nullable: true
+        external_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_published:
+          type: boolean
+      required:
+      - class_level
+      - session
+      - subject
+      - title
     Subject:
       type: object
       properties:
@@ -40785,6 +44520,68 @@ components:
       description: |-
         * `student` - Student
         * `staff` - Staff
+    SubmissionAttachment:
+      type: object
+      description: Serializer for student submission files with signed download URLs.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        original_filename:
+          type: string
+          readOnly: true
+        content_type:
+          type: string
+          readOnly: true
+        file_size_bytes:
+          type: integer
+          readOnly: true
+        av_scan_status:
+          allOf:
+          - $ref: '#/components/schemas/AvScanStatusEnum'
+          readOnly: true
+        download_url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - av_scan_status
+      - content_type
+      - created_at
+      - download_url
+      - file_size_bytes
+      - id
+      - original_filename
+    SubmitHomeworkInputRequest:
+      type: object
+      description: Input serializer for submitting homework via text and/or uploaded
+        files.
+      properties:
+        text_response:
+          type: string
+          default: ''
+        student:
+          type: string
+          format: uuid
+    SubmitQuizAttemptRequest:
+      type: object
+      description: Input serializer for submitting answers for an active QuizAttempt.
+      properties:
+        attempt_id:
+          type: string
+          format: uuid
+        answers:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+      required:
+      - answers
+      - attempt_id
     SubstituteAssignment:
       type: object
       properties:
@@ -40908,6 +44705,126 @@ components:
         * `maintenance_expense` - Repairs & Maintenance
         * `admin_expense` - Administrative & Office Expense
         * `other_expense` - Other Expense
+    SyllabusTopic:
+      type: object
+      description: Serializer for curriculum SyllabusTopics.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        term:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        estimated_periods:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/SyllabusTopicStatusEnum'
+        completion_percentage:
+          type: integer
+          maximum: 100
+          minimum: 0
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level
+      - completed_at
+      - created_at
+      - id
+      - session
+      - subject
+      - title
+      - updated_at
+    SyllabusTopicRequest:
+      type: object
+      description: Serializer for curriculum SyllabusTopics.
+      properties:
+        session:
+          type: string
+          format: uuid
+        term:
+          type: string
+          format: uuid
+          nullable: true
+        class_level:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        estimated_periods:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/SyllabusTopicStatusEnum'
+        completion_percentage:
+          type: integer
+          maximum: 100
+          minimum: 0
+      required:
+      - class_level
+      - session
+      - subject
+      - title
+    SyllabusTopicStatusEnum:
+      enum:
+      - not_started
+      - in_progress
+      - completed
+      type: string
+      description: |-
+        * `not_started` - Not Started
+        * `in_progress` - In Progress
+        * `completed` - Completed
     TabulationGenerateFileFormatEnum:
       enum:
       - xlsx
@@ -41489,6 +45406,16 @@ components:
           format: uuid
       required:
       - student_id
+    UpdateSyllabusProgressRequest:
+      type: object
+      description: Input serializer for updating SyllabusTopic completion percentage.
+      properties:
+        completion_percentage:
+          type: integer
+          maximum: 100
+          minimum: 0
+      required:
+      - completion_percentage
     User:
       type: object
       description: Serializer for User details.

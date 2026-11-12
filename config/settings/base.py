@@ -59,6 +59,7 @@ LOCAL_APPS = [
     "apps.communications.apps.CommunicationsConfig",
     "apps.accounting.apps.AccountingConfig",
     "apps.payroll.apps.PayrollConfig",
+    "apps.homework.apps.HomeworkConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -171,6 +172,22 @@ STORAGES = {
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Homework & Learning File Upload / Signed URL Configuration
+HOMEWORK_MAX_FILE_SIZE_MB = env.int("HOMEWORK_MAX_FILE_SIZE_MB", default=10)
+HOMEWORK_SIGNED_URL_TTL_SECONDS = env.int("HOMEWORK_SIGNED_URL_TTL_SECONDS", default=900)
+HOMEWORK_ALLOWED_EXTENSIONS = [
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".ppt",
+    ".pptx",
+    ".txt",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".zip",
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
