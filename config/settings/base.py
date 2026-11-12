@@ -80,6 +80,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "apps.audit.middleware.AuditContextMiddleware",
+    "apps.core.middleware.AdminSecurityMiddleware",
+    "apps.core.middleware.SecurityHeadersMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -224,7 +226,10 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+        "apps.core.permissions.AdminSecurityPermission",
+    ),
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_FILTER_BACKENDS": (
@@ -371,3 +376,12 @@ LOGGING = {
 
 # Transport GPS live location retention policy (days)
 TRANSPORT_LOCATION_RETENTION_DAYS = env.int("TRANSPORT_LOCATION_RETENTION_DAYS", default=30)
+
+# Security Hardening, Encryption & Backup Settings
+ENFORCE_ADMIN_2FA = env.bool("ENFORCE_ADMIN_2FA", default=False)
+ADMIN_ALLOWED_IPS = env.list("ADMIN_ALLOWED_IPS", default=[])
+FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS", default=[])
+REQUIRE_EXPLICIT_ENCRYPTION_KEYS = env.bool("REQUIRE_EXPLICIT_ENCRYPTION_KEYS", default=False)
+CONTENT_SECURITY_POLICY = env("CONTENT_SECURITY_POLICY", default="")
+BACKUP_DIR = env("BACKUP_DIR", default=str(BASE_DIR / "backups"))
+BACKUP_RETENTION_DAYS = env.int("BACKUP_RETENTION_DAYS", default=30)

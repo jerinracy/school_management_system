@@ -6,13 +6,16 @@ from typing import Any
 from django.conf import settings
 from django.db import connection
 from django.views.generic import TemplateView
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from redis import Redis
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.core.permissions import AdminSecurityPermission
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +76,31 @@ class HealthCheckView(APIView):
             status_code = status.HTTP_200_OK
 
         return Response(checks, status=status_code)
+
+
+class MetricsView(APIView):
+    """Operational metrics endpoint for platform admins & monitoring probes."""
+
+    permission_classes = [IsAuthenticated, IsAdminUser, AdminSecurityPermission]
+
+    @extend_schema(
+        summary="System Operational Metrics",
+        responses={200: OpenApiTypes.OBJECT},
+        tags=["System"],
+    )
+    def get(self, request: Request) -> Response:
+        from apps.accounts.models import User
+        from apps.institutions.models import Institution
+
+        return Response(
+            {
+                "active_institutions": Institution.objects.filter(is_active=True).count(),
+                "active_users": User.objects.filter(is_active=True).count(),
+                "debug": bool(settings.DEBUG),
+                "enforce_admin_2fa": bool(getattr(settings, "ENFORCE_ADMIN_2FA", False)),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class SpaDashboardView(TemplateView):

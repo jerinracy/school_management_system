@@ -17,9 +17,23 @@ SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31536000)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
+ENFORCE_ADMIN_2FA = env.bool("ENFORCE_ADMIN_2FA", default=True)
+REQUIRE_EXPLICIT_ENCRYPTION_KEYS = env.bool("REQUIRE_EXPLICIT_ENCRYPTION_KEYS", default=True)
+
+# Optional SQL / Slow-Query Logging
+if env.bool("LOG_SQL_QUERIES", default=False):
+    LOGGING["loggers"]["django.db.backends"] = {  # type: ignore[index]  # noqa: F405
+        "handlers": ["console"],
+        "level": "DEBUG",
+        "propagate": False,
+    }
 
 # Sentry error tracking
 SENTRY_DSN = env("SENTRY_DSN", default="")

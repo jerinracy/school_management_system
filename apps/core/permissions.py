@@ -2,9 +2,23 @@
 
 from typing import Any
 
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
+
+from apps.core.middleware import check_admin_security
+
+
+class AdminSecurityPermission(BasePermission):
+    """DRF permission enforcing Admin 2FA and IP allowlist for JWT/API requests."""
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        violation = check_admin_security(request._request, getattr(request, "user", None))
+        if violation is not None:
+            code, message = violation
+            raise PermissionDenied(detail=message, code=code)
+        return True
 
 
 class DenyAll(BasePermission):

@@ -24960,6 +24960,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Reservation'
           description: ''
+  /api/v1/metrics/:
+    get:
+      operationId: metrics_retrieve
+      description: Operational metrics endpoint for platform admins & monitoring probes.
+      summary: System Operational Metrics
+      tags:
+      - System
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/payroll/components/:
     get:
       operationId: payroll_components_list
