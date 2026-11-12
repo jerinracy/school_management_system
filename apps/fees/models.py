@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from django.db import models
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.core.models import SoftDeleteMixin, TenantOwnedModel
@@ -72,6 +73,40 @@ class InvoiceType(models.TextChoices):
     ADMISSION = "admission", "Admission & Initial Enrollment"
     SESSION = "session", "Annual Session Charge"
     CUSTOM = "custom", "Custom / Miscellaneous"
+
+
+class PaymentMethod(models.TextChoices):
+    CASH = "cash", "Cash (Counter) / নগদ গ্রহণ"
+    BANK = "bank", "Bank Deposit / ব্যাংক জমা"
+    BKASH = "bkash", "bKash / বিকাশ"
+    NAGAD = "nagad", "Nagad / নগদ"
+    ROCKET = "rocket", "Rocket / রকেট"
+    SSLCOMMERZ = "sslcommerz", "SSLCommerz"
+    AAMARPAY = "aamarpay", "aamarPay"
+    CARD = "card", "Debit/Credit Card / কার্ড"
+    ADVANCE = "advance", "Advance Balance / অগ্রিম সমন্বয়"
+
+
+class PaymentStatus(models.TextChoices):
+    INITIATED = "initiated", "Initiated"
+    PENDING = "pending", "Pending Verification"
+    SUCCESSFUL = "successful", "Successful"
+    FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"
+    REFUNDED = "refunded", "Refunded"
+
+
+class RefundStatus(models.TextChoices):
+    PENDING = "pending", "Pending Approval"
+    APPROVED = "approved", "Approved"
+    PROCESSED = "processed", "Processed"
+    REJECTED = "rejected", "Rejected"
+
+
+class AdvanceTransactionType(models.TextChoices):
+    CREDIT_DEPOSIT = "credit_deposit", "Advance Deposit / Credit"
+    DEBIT_INVOICE = "debit_invoice", "Invoice Payment / Debit"
+    REFUND = "refund", "Refund"
 
 
 class FeeHead(TenantOwnedModel, SoftDeleteMixin):
@@ -520,3 +555,229 @@ class InvoiceSequence(TenantOwnedModel):
 
     def __str__(self) -> str:
         return f"{self.institution.name} {self.year}: #{self.last_number}"
+
+
+class Payment(TenantOwnedModel, SoftDeleteMixin):
+    """Payment transaction record for tuition, exams, or counter collections."""
+
+    student = models.ForeignKey(
+        "students.Student", on_delete=models.CASCADE, related_name="payments"
+    )
+    invoice = models.ForeignKey(
+        Invoice, on_delete=models.SET_NULL, null=True, blank=True, related_name="payments"
+    )
+    payment_method = models.CharField(
+        max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.CASH, db_index=True
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2, help_text="Total payment in BDT.")
+    status = models.CharField(
+        max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.INITIATED, db_index=True
+    )
+    transaction_id = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="Gateway TrxID or Bank Slip ID.",
+    )
+    gateway_order_id = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="Internal / Gateway session order ID.",
+    )
+    idempotency_key = models.CharField(
+        max_length=100, db_index=True, help_text="Client/caller deduplication key."
+    )
+    payment_date = models.DateTimeField(default=timezone.now)
+    received_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="collected_payments"
+    )
+    gateway_payload = models.JSONField(
+        default=dict, blank=True, help_text="Raw callback/IPN response data."
+    )
+    notes = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-payment_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["institution", "idempotency_key"],
+                condition=models.Q(is_deleted=False),
+                name="unique_payment_idempotency_per_institution",
+            ),
+            models.CheckConstraint(
+                check=models.Q(amount__gte=Decimal("0.00")),
+                name="payment_amount_non_negative",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["institution", "student", "status"]),
+            models.Index(fields=["institution", "payment_date"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.payment_method.upper()} ৳{self.amount} - {self.student.student_id} [{self.status}]"
+
+
+class PaymentAllocation(TenantOwnedModel):
+    """Line-item allocation distributing a payment across invoice fee items."""
+
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="allocations")
+    invoice = models.ForeignKey(
+        Invoice, on_delete=models.CASCADE, related_name="payment_allocations"
+    )
+    invoice_line = models.ForeignKey(
+        InvoiceLine,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payment_allocations",
+    )
+    allocated_amount = models.DecimalField(max_digits=12, decimal_places=2)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(allocated_amount__gte=Decimal("0.00")),
+                name="payment_allocation_amount_non_negative",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["payment", "invoice"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Allocation: ৳{self.allocated_amount} to {self.invoice.invoice_number}"
+
+
+class MoneyReceipt(TenantOwnedModel, SoftDeleteMixin):
+    """Official immutable payment receipt issued upon successful collection."""
+
+    receipt_number = models.CharField(
+        max_length=32, db_index=True, help_text="Sequential number: REC-2026-000001"
+    )
+    payment = models.OneToOneField(Payment, on_delete=models.PROTECT, related_name="receipt")
+    student = models.ForeignKey(
+        "students.Student", on_delete=models.PROTECT, related_name="money_receipts"
+    )
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    issued_at = models.DateTimeField(default=timezone.now)
+    issued_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="issued_receipts"
+    )
+    pdf_receipt = models.FileField(upload_to="fees/receipts/%Y/%m/", null=True, blank=True)
+    is_cancelled = models.BooleanField(default=False)
+    cancellation_reason = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-issued_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["institution", "receipt_number"],
+                condition=models.Q(is_deleted=False),
+                name="unique_receipt_number_per_institution",
+            ),
+            models.CheckConstraint(
+                check=models.Q(total_amount__gte=Decimal("0.00")),
+                name="money_receipt_amount_non_negative",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["institution", "student", "issued_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.receipt_number} - {self.student.student_id} (৳{self.total_amount})"
+
+
+class ReceiptSequence(TenantOwnedModel):
+    """Institutional gap-free sequential money receipt counter."""
+
+    year = models.PositiveSmallIntegerField()
+    last_number = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["institution", "year"],
+                name="unique_receipt_sequence_per_institution_year",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.institution.name} Receipts {self.year}: #{self.last_number}"
+
+
+class AdvanceBalance(TenantOwnedModel):
+    """Student advance/credit balance ledger for overpayments and advance deposits."""
+
+    student = models.OneToOneField(
+        "students.Student", on_delete=models.CASCADE, related_name="advance_balance"
+    )
+    current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(current_balance__gte=Decimal("0.00")),
+                name="advance_balance_non_negative",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.student.student_id}: ৳{self.current_balance} in advance"
+
+
+class AdvanceTransaction(TenantOwnedModel):
+    """Audit log of credits and debits to a student's advance balance."""
+
+    advance_balance = models.ForeignKey(
+        AdvanceBalance, on_delete=models.CASCADE, related_name="transactions"
+    )
+    payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True, blank=True)
+    invoice = models.ForeignKey(Invoice, on_delete=models.SET_NULL, null=True, blank=True)
+    amount = models.DecimalField(
+        max_digits=12, decimal_places=2, help_text="Positive = credit, negative = debit."
+    )
+    balance_after = models.DecimalField(max_digits=12, decimal_places=2)
+    transaction_type = models.CharField(max_length=30, choices=AdvanceTransactionType.choices)
+    description = models.CharField(max_length=255, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class Refund(TenantOwnedModel, SoftDeleteMixin):
+    """Formal refund request and approval lifecycle."""
+
+    payment = models.ForeignKey(Payment, on_delete=models.PROTECT, related_name="refunds")
+    student = models.ForeignKey(
+        "students.Student", on_delete=models.CASCADE, related_name="refunds"
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    reason = models.TextField()
+    status = models.CharField(
+        max_length=20, choices=RefundStatus.choices, default=RefundStatus.PENDING, db_index=True
+    )
+    requested_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="requested_refunds"
+    )
+    approved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_refunds"
+    )
+    processed_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gte=Decimal("0.00")),
+                name="refund_amount_non_negative",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Refund ৳{self.amount} for {self.payment} [{self.status}]"

@@ -12,6 +12,8 @@ CanViewFees = HasModulePermission("fees.view")
 CanManageFees = HasModulePermission("fees.manage")
 CanGenerateInvoices = HasModulePermission("fees.generate_invoice")
 CanApproveWaiver = HasModulePermission("fees.approve_waiver")
+CanCollectPayment = HasModulePermission("fees.collect_payment")
+CanRefundPayment = HasModulePermission("fees.refund")
 
 
 class CanViewInvoiceDetail(BasePermission):

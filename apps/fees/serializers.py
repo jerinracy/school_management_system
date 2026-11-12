@@ -1,8 +1,12 @@
 """DRF Serializers for fee management, invoicing, waivers, and fines."""
 
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from apps.fees.models import (
+    AdvanceBalance,
+    AdvanceTransaction,
     FeeHead,
     FeeStructure,
     FeeStructureItem,
@@ -10,6 +14,11 @@ from apps.fees.models import (
     Invoice,
     InvoiceLine,
     InvoiceType,
+    MoneyReceipt,
+    Payment,
+    PaymentAllocation,
+    PaymentMethod,
+    Refund,
     StudentFeeAssignment,
     StudentWaiver,
     WaiverRule,
@@ -350,3 +359,257 @@ class DueListItemSerializer(serializers.Serializer):
     unpaid_invoice_count = serializers.IntegerField()
     total_due_amount = serializers.DecimalField(max_digits=12, decimal_places=2)
     oldest_overdue_date = serializers.DateField(allow_null=True)
+
+
+class PaymentAllocationSerializer(serializers.ModelSerializer):
+    fee_head_name = serializers.CharField(
+        source="invoice_line.fee_head.name_en", read_only=True, default=""
+    )
+
+    class Meta:
+        model = PaymentAllocation
+        fields = [
+            "id",
+            "invoice",
+            "invoice_line",
+            "fee_head_name",
+            "allocated_amount",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class MoneyReceiptSerializer(serializers.ModelSerializer):
+    student_name_en = serializers.CharField(source="student.name_en", read_only=True)
+    student_name_bn = serializers.CharField(source="student.name_bn", read_only=True, default="")
+    issued_by_name = serializers.CharField(
+        source="issued_by.get_full_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = MoneyReceipt
+        fields = [
+            "id",
+            "institution",
+            "receipt_number",
+            "payment",
+            "student",
+            "student_name_en",
+            "student_name_bn",
+            "total_amount",
+            "issued_at",
+            "issued_by",
+            "issued_by_name",
+            "pdf_receipt",
+            "is_cancelled",
+            "cancellation_reason",
+            "created_at",
+        ]
+        read_only_fields = ["id", "institution", "pdf_receipt", "created_at"]
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    student_name_en = serializers.CharField(source="student.name_en", read_only=True)
+    invoice_number = serializers.CharField(
+        source="invoice.invoice_number", read_only=True, default=None
+    )
+    received_by_name = serializers.CharField(
+        source="received_by.get_full_name", read_only=True, default=None
+    )
+    receipt_number = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Payment
+        fields = [
+            "id",
+            "institution",
+            "student",
+            "student_name_en",
+            "invoice",
+            "invoice_number",
+            "payment_method",
+            "amount",
+            "status",
+            "transaction_id",
+            "gateway_order_id",
+            "idempotency_key",
+            "payment_date",
+            "received_by",
+            "received_by_name",
+            "gateway_payload",
+            "notes",
+            "receipt_number",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "institution", "created_at", "updated_at"]
+
+    def get_receipt_number(self, obj: Payment) -> str | None:
+        receipt = getattr(obj, "receipt", None)
+        return receipt.receipt_number if receipt else None
+
+
+class PaymentDetailSerializer(PaymentSerializer):
+    allocations = PaymentAllocationSerializer(many=True, read_only=True)
+    receipt = MoneyReceiptSerializer(read_only=True)
+
+    class Meta(PaymentSerializer.Meta):
+        fields = PaymentSerializer.Meta.fields + ["allocations", "receipt"]
+
+
+class CounterPaymentSerializer(serializers.Serializer):
+    student_id = serializers.UUIDField(required=True)
+    invoice_id = serializers.UUIDField(required=False, allow_null=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
+    payment_method = serializers.ChoiceField(
+        choices=[
+            PaymentMethod.CASH,
+            PaymentMethod.BANK,
+            PaymentMethod.CARD,
+            PaymentMethod.BKASH,
+            PaymentMethod.NAGAD,
+            PaymentMethod.ROCKET,
+        ],
+        default=PaymentMethod.CASH,
+    )
+    idempotency_key = serializers.CharField(required=False, allow_blank=True, default="")
+    bank_name = serializers.CharField(required=False, allow_blank=True, default="")
+    cheque_no = serializers.CharField(required=False, allow_blank=True, default="")
+    cheque_date = serializers.DateField(required=False, allow_null=True)
+    pos_approval_code = serializers.CharField(required=False, allow_blank=True, default="")
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class OnlinePaymentInitiateSerializer(serializers.Serializer):
+    invoice_id = serializers.UUIDField(required=True)
+    payment_method = serializers.ChoiceField(
+        choices=[
+            PaymentMethod.BKASH,
+            PaymentMethod.NAGAD,
+            PaymentMethod.SSLCOMMERZ,
+            PaymentMethod.AAMARPAY,
+        ]
+    )
+    success_url = serializers.URLField(required=False, allow_blank=True, default="")
+    fail_url = serializers.URLField(required=False, allow_blank=True, default="")
+    cancel_url = serializers.URLField(required=False, allow_blank=True, default="")
+
+
+class OnlinePaymentInitiateResponseSerializer(serializers.Serializer):
+    payment_id = serializers.CharField()
+    gateway_url = serializers.URLField()
+    session_id = serializers.CharField()
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
+class OnlinePaymentVerifySerializer(serializers.Serializer):
+    payment_id = serializers.UUIDField(required=True)
+    val_id = serializers.CharField(required=False, allow_blank=True, default="")
+    payment_id_gateway = serializers.CharField(required=False, allow_blank=True, default="")
+    payment_ref_id = serializers.CharField(required=False, allow_blank=True, default="")
+    merchant_trans_id = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class AdvanceTransactionSerializer(serializers.ModelSerializer):
+    invoice_number = serializers.CharField(
+        source="invoice.invoice_number", read_only=True, default=None
+    )
+
+    class Meta:
+        model = AdvanceTransaction
+        fields = [
+            "id",
+            "advance_balance",
+            "payment",
+            "invoice",
+            "invoice_number",
+            "amount",
+            "balance_after",
+            "transaction_type",
+            "description",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class AdvanceBalanceSerializer(serializers.ModelSerializer):
+    student_name_en = serializers.CharField(source="student.name_en", read_only=True)
+    student_name_bn = serializers.CharField(source="student.name_bn", read_only=True, default="")
+    transactions = AdvanceTransactionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = AdvanceBalance
+        fields = [
+            "id",
+            "institution",
+            "student",
+            "student_name_en",
+            "student_name_bn",
+            "current_balance",
+            "transactions",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "institution", "current_balance", "transactions", "updated_at"]
+
+
+class ApplyAdvanceSerializer(serializers.Serializer):
+    invoice_id = serializers.UUIDField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
+
+
+class RefundSerializer(serializers.ModelSerializer):
+    student_name_en = serializers.CharField(source="student.name_en", read_only=True)
+    requested_by_name = serializers.CharField(
+        source="requested_by.get_full_name", read_only=True, default=None
+    )
+    approved_by_name = serializers.CharField(
+        source="approved_by.get_full_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = Refund
+        fields = [
+            "id",
+            "institution",
+            "payment",
+            "student",
+            "student_name_en",
+            "amount",
+            "reason",
+            "status",
+            "requested_by",
+            "requested_by_name",
+            "approved_by",
+            "approved_by_name",
+            "processed_at",
+            "rejection_reason",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "institution",
+            "status",
+            "requested_by",
+            "approved_by",
+            "processed_at",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class RefundCreateSerializer(serializers.Serializer):
+    payment_id = serializers.UUIDField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
+    reason = serializers.CharField(required=True, min_length=3)
+
+
+class RefundRejectSerializer(serializers.Serializer):
+    rejection_reason = serializers.CharField(required=True, min_length=3)
+
+
+class DailyCollectionReportSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    total_collected = serializers.DecimalField(max_digits=12, decimal_places=2)
+    payment_count = serializers.IntegerField()
+    by_method = serializers.DictField()

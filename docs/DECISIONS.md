@@ -292,3 +292,39 @@
   - Provides institutional cashiers and accountants with complete, automated monthly billing.
   - Guarantees financial auditability and monetary integrity.
   - Ready for online payment collection and gateway settlement in Task 15.
+
+---
+
+## ADR-017: Multi-Gateway Aggregation, Idempotent Counter Collection, Money Receipts & Advance Balances
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Bangladeshi schools receive tuition and fee payments through two primary avenues:
+    1. **Counter / In-Person Collections**: Cash, direct bank deposits, physical cheques, or point-of-sale (POS) terminal card swipes handled by institutional cashiers.
+    2. **Online Payment Gateways**: Mobile Financial Services (MFS: bKash tokenized checkout, Nagad merchant payment, Rocket) and Payment Aggregators (SSLCommerz hosted checkout, aamarPay).
+  - Key requirements include:
+    - Absolute idempotency and race condition safety during high-volume collection periods.
+    - Zero tolerance for floating-point inaccuracies in currency calculations (strictly `Decimal(12, 2)`).
+    - Sequential, gap-free, audit-compliant Money Receipts (`REC-2026-000001`) with bilingual Bengali/English PDF generation.
+    - Automatic handling of overpayments as student Advance Balances (`AdvanceBalance` ledger) rather than untracked surpluses.
+    - Strict, multi-step Refund lifecycles (`pending` $\to$ `approved` $\to$ `processed` / `rejected`) that unwind invoice line-item allocations and restore outstanding balances.
+- **Decision**:
+  - **Gateway Adapter Architecture (`apps/fees/gateways/`)**:
+    - Defined an extensible abstract base `PaymentGatewayAdapter` with methods `create_session`, `verify`, and `validate_ipn`.
+    - Concrete implementations: `SSLCommerzAdapter`, `BKashAdapter` (tokenized checkout), `NagadAdapter`, and `AamarPayAdapter` with provider factory `get_gateway_adapter()`.
+    - Client redirects are never trusted for payment completion; verification is performed strictly via server-to-server validation APIs (`complete_online_payment`).
+  - **Financial Atomicity & Concurrency Safety (`payment_service.py`)**:
+    - All payment allocations lock invoices and sequences with `select_for_update()` inside `transaction.atomic()` blocks.
+    - Overpayments automatically divert surplus funds to student `AdvanceBalance` with audit transactions (`credit_deposit`).
+    - Advance balances can be applied to settle outstanding invoice dues with `apply_advance_to_invoice`.
+  - **Gap-Free Money Receipt Sequencing (`receipt_service.py`)**:
+    - `ReceiptSequence` maintains institutional atomic counters guaranteeing sequential receipt numbering (`REC-{year}-{seq:06d}`).
+    - ReportLab generates bilingual A4 receipts with embedded TrueType `Kalpurush.ttf` fonts.
+  - **Two-Stage Refund Lifecycle (`refund_service.py`)**:
+    - Refunds require administrative approval before processing. Processing atomically unwinds line-item allocations, restores invoice due amounts, and debits student advance balances if surplus was credited.
+  - **Background Payment Reconciliation (`tasks.py`)**:
+    - Celery task `reconcile_pending_payments_task` runs periodically to query gateway APIs for orphaned or abandoned checkout sessions, settling verified transactions or expiring stale pending payments.
+- **Consequences**:
+  - Institutional cashiers and parents gain instantaneous payment settlement across cash, bank, bKash, Nagad, SSLCommerz, and aamarPay.
+  - Complete financial auditability with non-negative constraints and immutable receipts.
+  - Establishes foundational double-entry ledger feeds for Basic Accounting (Task 17).

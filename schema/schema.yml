@@ -9728,6 +9728,107 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/fees/advance-balances/:
+    get:
+      operationId: fees_advance_balances_list
+      description: Student advance balances and credit ledgers.
+      summary: List student advance balances
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdvanceBalanceList'
+          description: ''
+  /api/v1/fees/advance-balances/{id}/:
+    get:
+      operationId: fees_advance_balances_retrieve
+      description: Student advance balances and credit ledgers.
+      summary: Retrieve student advance balance and transaction ledger
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advance balance.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvanceBalance'
+          description: ''
+  /api/v1/fees/advance-balances/{id}/apply/:
+    post:
+      operationId: fees_advance_balances_apply_create
+      description: Student advance balances and credit ledgers.
+      summary: Apply available advance balance to pay an invoice
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this advance balance.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyAdvanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplyAdvanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplyAdvanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvanceBalance'
+          description: ''
   /api/v1/fees/assignments/:
     get:
       operationId: fees_assignments_list
@@ -10765,6 +10866,772 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvoiceDetail'
+          description: ''
+  /api/v1/fees/payments/:
+    get:
+      operationId: fees_payments_list
+      description: Payment records for counter collections and online gateways.
+      summary: List all payments
+      parameters:
+      - in: query
+        name: invoice
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+          enum:
+          - aamarpay
+          - advance
+          - bank
+          - bkash
+          - card
+          - cash
+          - nagad
+          - rocket
+          - sslcommerz
+        description: |-
+          * `cash` - Cash (Counter) / নগদ গ্রহণ
+          * `bank` - Bank Deposit / ব্যাংক জমা
+          * `bkash` - bKash / বিকাশ
+          * `nagad` - Nagad / নগদ
+          * `rocket` - Rocket / রকেট
+          * `sslcommerz` - SSLCommerz
+          * `aamarpay` - aamarPay
+          * `card` - Debit/Credit Card / কার্ড
+          * `advance` - Advance Balance / অগ্রিম সমন্বয়
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - failed
+          - initiated
+          - pending
+          - refunded
+          - successful
+        description: |-
+          * `initiated` - Initiated
+          * `pending` - Pending Verification
+          * `successful` - Successful
+          * `failed` - Failed
+          * `cancelled` - Cancelled
+          * `refunded` - Refunded
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentList'
+          description: ''
+    post:
+      operationId: fees_payments_create
+      description: Payment records for counter collections and online gateways.
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/fees/payments/{id}/:
+    get:
+      operationId: fees_payments_retrieve
+      description: Payment records for counter collections and online gateways.
+      summary: Retrieve payment details including line item allocations
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentDetail'
+          description: ''
+    put:
+      operationId: fees_payments_update
+      description: Payment records for counter collections and online gateways.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    patch:
+      operationId: fees_payments_partial_update
+      description: Payment records for counter collections and online gateways.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+    delete:
+      operationId: fees_payments_destroy
+      description: Payment records for counter collections and online gateways.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/payments/counter/:
+    post:
+      operationId: fees_payments_counter_create
+      description: Payment records for counter collections and online gateways.
+      summary: Record a manual counter payment (Cash, Bank, Cheque, POS)
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CounterPaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CounterPaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CounterPaymentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentDetail'
+          description: ''
+  /api/v1/fees/payments/daily-collection/:
+    get:
+      operationId: fees_payments_daily_collection_retrieve
+      description: Payment records for counter collections and online gateways.
+      summary: Daily collection report grouped by payment method
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: YYYY-MM-DD (defaults to today)
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyCollectionReport'
+          description: ''
+  /api/v1/fees/payments/initiate-online/:
+    post:
+      operationId: fees_payments_initiate_online_create
+      description: Payment records for counter collections and online gateways.
+      summary: Initiate an online payment session (bKash, Nagad, SSLCommerz, aamarPay)
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentInitiateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentInitiateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentInitiateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlinePaymentInitiateResponse'
+          description: ''
+  /api/v1/fees/payments/verify/:
+    post:
+      operationId: fees_payments_verify_create
+      description: Payment records for counter collections and online gateways.
+      summary: Verify and finalize an online payment transaction
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OnlinePaymentVerifyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentDetail'
+          description: ''
+  /api/v1/fees/payments/webhook/{gateway}/:
+    post:
+      operationId: fees_payments_webhook_create
+      description: Payment records for counter collections and online gateways.
+      summary: Public gateway webhook / IPN callback
+      parameters:
+      - in: path
+        name: gateway
+        schema:
+          type: string
+        description: Gateway identifier (sslcommerz, bkash, nagad, aamarpay)
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/fees/receipts/:
+    get:
+      operationId: fees_receipts_list
+      description: Official issued money receipts.
+      summary: List all issued money receipts
+      parameters:
+      - in: query
+        name: is_cancelled
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMoneyReceiptList'
+          description: ''
+  /api/v1/fees/receipts/{id}/:
+    get:
+      operationId: fees_receipts_retrieve
+      description: Official issued money receipts.
+      summary: Retrieve money receipt details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this money receipt.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoneyReceipt'
+          description: ''
+  /api/v1/fees/receipts/{id}/pdf/:
+    get:
+      operationId: fees_receipts_pdf_retrieve
+      description: Official issued money receipts.
+      summary: Download or view Money Receipt PDF
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this money receipt.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoneyReceipt'
+          description: ''
+  /api/v1/fees/refunds/:
+    get:
+      operationId: fees_refunds_list
+      description: Refund requests, approval, and processing workflow.
+      summary: List all refund requests
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - pending
+          - processed
+          - rejected
+        description: |-
+          * `pending` - Pending Approval
+          * `approved` - Approved
+          * `processed` - Processed
+          * `rejected` - Rejected
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRefundList'
+          description: ''
+    post:
+      operationId: fees_refunds_create
+      description: Refund requests, approval, and processing workflow.
+      summary: Submit a refund request for a completed payment
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+          description: ''
+  /api/v1/fees/refunds/{id}/:
+    get:
+      operationId: fees_refunds_retrieve
+      description: Refund requests, approval, and processing workflow.
+      summary: Retrieve refund request details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+          description: ''
+    put:
+      operationId: fees_refunds_update
+      description: Refund requests, approval, and processing workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+          description: ''
+    patch:
+      operationId: fees_refunds_partial_update
+      description: Refund requests, approval, and processing workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRefundRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRefundRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRefundRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+          description: ''
+    delete:
+      operationId: fees_refunds_destroy
+      description: Refund requests, approval, and processing workflow.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/fees/refunds/{id}/approve/:
+    post:
+      operationId: fees_refunds_approve_create
+      description: Refund requests, approval, and processing workflow.
+      summary: Approve a pending refund request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+          description: ''
+  /api/v1/fees/refunds/{id}/process/:
+    post:
+      operationId: fees_refunds_process_create
+      description: Refund requests, approval, and processing workflow.
+      summary: Execute and process an approved refund (unwinding invoice allocations)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
+          description: ''
+  /api/v1/fees/refunds/{id}/reject/:
+    post:
+      operationId: fees_refunds_reject_create
+      description: Refund requests, approval, and processing workflow.
+      summary: Reject a pending refund request
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this refund.
+        required: true
+      tags:
+      - fees
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRejectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefundRejectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefundRejectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Refund'
           description: ''
   /api/v1/fees/structures/:
     get:
@@ -18052,6 +18919,107 @@ components:
       - student_id
       - student_name_bn
       - student_name_en
+    AdvanceBalance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+        student_name_bn:
+          type: string
+          readOnly: true
+          default: ''
+        current_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdvanceTransaction'
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - current_balance
+      - id
+      - institution
+      - student
+      - student_name_bn
+      - student_name_en
+      - transactions
+      - updated_at
+    AdvanceTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        advance_balance:
+          type: string
+          format: uuid
+          readOnly: true
+        payment:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        invoice:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        invoice_number:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+          description: Positive = credit, negative = debit.
+        balance_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        transaction_type:
+          allOf:
+          - $ref: '#/components/schemas/TransactionTypeEnum'
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - advance_balance
+      - amount
+      - balance_after
+      - created_at
+      - description
+      - id
+      - invoice
+      - invoice_number
+      - payment
+      - transaction_type
     Application:
       type: object
       properties:
@@ -18335,7 +19303,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         payment_method:
-          $ref: '#/components/schemas/PaymentMethodEnum'
+          $ref: '#/components/schemas/ApplicationPaymentPaymentMethodEnum'
         payment_method_display:
           type: string
           readOnly: true
@@ -18363,6 +19331,20 @@ components:
       - payment_method_display
       - status_display
       - transaction_id
+    ApplicationPaymentPaymentMethodEnum:
+      enum:
+      - bkash
+      - nagad
+      - rocket
+      - bank
+      - cash
+      type: string
+      description: |-
+        * `bkash` - bKash
+        * `nagad` - Nagad
+        * `rocket` - Rocket
+        * `bank` - Bank Transfer
+        * `cash` - Cash at School Counter
     ApplicationPaymentRequest:
       type: object
       properties:
@@ -18374,7 +19356,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         payment_method:
-          $ref: '#/components/schemas/PaymentMethodEnum'
+          $ref: '#/components/schemas/ApplicationPaymentPaymentMethodEnum'
         transaction_id:
           type: string
           minLength: 1
@@ -18510,6 +19492,19 @@ components:
           default: ''
       required:
       - new_status
+    ApplyAdvanceRequest:
+      type: object
+      properties:
+        invoice_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - invoice_id
     ApprovalStatusEnum:
       enum:
       - pending
@@ -19661,6 +20656,62 @@ components:
       required:
       - source_session_id
       - target_session_id
+    CounterPaymentPaymentMethodEnum:
+      enum:
+      - cash
+      - bank
+      - card
+      - bkash
+      - nagad
+      - rocket
+      type: string
+      description: |-
+        * `cash` - cash
+        * `bank` - bank
+        * `card` - card
+        * `bkash` - bkash
+        * `nagad` - nagad
+        * `rocket` - rocket
+    CounterPaymentRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        invoice_id:
+          type: string
+          format: uuid
+          nullable: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_method:
+          allOf:
+          - $ref: '#/components/schemas/CounterPaymentPaymentMethodEnum'
+          default: cash
+        idempotency_key:
+          type: string
+          default: ''
+        bank_name:
+          type: string
+          default: ''
+        cheque_no:
+          type: string
+          default: ''
+        cheque_date:
+          type: string
+          format: date
+          nullable: true
+        pos_approval_code:
+          type: string
+          default: ''
+        notes:
+          type: string
+          default: ''
+      required:
+      - amount
+      - student_id
     CumulativeCalculateRequest:
       type: object
       properties:
@@ -19879,6 +20930,26 @@ components:
       - total_minutes
       - updated_at
       - user_type
+    DailyCollectionReport:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        total_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_count:
+          type: integer
+        by_method:
+          type: object
+          additionalProperties: {}
+      required:
+      - by_method
+      - date
+      - payment_count
+      - total_collected
     Department:
       type: object
       description: Department master data serializer.
@@ -23657,6 +24728,73 @@ components:
       - timestamp
       - user
       - user_name
+    MoneyReceipt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        receipt_number:
+          type: string
+          description: 'Sequential number: REC-2026-000001'
+          maxLength: 32
+        payment:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+        student_name_bn:
+          type: string
+          readOnly: true
+          default: ''
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        issued_at:
+          type: string
+          format: date-time
+        issued_by:
+          type: string
+          format: uuid
+          nullable: true
+        issued_by_name:
+          type: string
+          readOnly: true
+        pdf_receipt:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        is_cancelled:
+          type: boolean
+        cancellation_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - issued_by_name
+      - payment
+      - pdf_receipt
+      - receipt_number
+      - student
+      - student_name_bn
+      - student_name_en
+      - total_amount
     MpoStatusEnum:
       enum:
       - non_mpo
@@ -23801,6 +24939,80 @@ components:
       required:
       - code
       - phone
+    OnlinePaymentInitiatePaymentMethodEnum:
+      enum:
+      - bkash
+      - nagad
+      - sslcommerz
+      - aamarpay
+      type: string
+      description: |-
+        * `bkash` - bkash
+        * `nagad` - nagad
+        * `sslcommerz` - sslcommerz
+        * `aamarpay` - aamarpay
+    OnlinePaymentInitiateRequest:
+      type: object
+      properties:
+        invoice_id:
+          type: string
+          format: uuid
+        payment_method:
+          $ref: '#/components/schemas/OnlinePaymentInitiatePaymentMethodEnum'
+        success_url:
+          type: string
+          format: uri
+          default: ''
+        fail_url:
+          type: string
+          format: uri
+          default: ''
+        cancel_url:
+          type: string
+          format: uri
+          default: ''
+      required:
+      - invoice_id
+      - payment_method
+    OnlinePaymentInitiateResponse:
+      type: object
+      properties:
+        payment_id:
+          type: string
+        gateway_url:
+          type: string
+          format: uri
+        session_id:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - gateway_url
+      - payment_id
+      - session_id
+    OnlinePaymentVerifyRequest:
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        val_id:
+          type: string
+          default: ''
+        payment_id_gateway:
+          type: string
+          default: ''
+        payment_ref_id:
+          type: string
+          default: ''
+        merchant_trans_id:
+          type: string
+          default: ''
+      required:
+      - payment_id
     PaginatedAcademicSessionList:
       type: object
       required:
@@ -23916,6 +25128,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdmitCard'
+    PaginatedAdvanceBalanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdvanceBalance'
     PaginatedApplicationDocumentList:
       type: object
       required:
@@ -24905,6 +26140,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MobileCheckin'
+    PaginatedMoneyReceiptList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MoneyReceipt'
     PaginatedMyChildrenList:
       type: object
       required:
@@ -24928,6 +26186,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MyChildren'
+    PaginatedPaymentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
     PaginatedPeriodAttendanceList:
       type: object
       required:
@@ -25089,6 +26370,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReScrutinyRequest'
+    PaginatedRefundList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Refund'
     PaginatedReportCardList:
       type: object
       required:
@@ -25850,7 +27154,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         payment_method:
-          $ref: '#/components/schemas/PaymentMethodEnum'
+          $ref: '#/components/schemas/ApplicationPaymentPaymentMethodEnum'
         transaction_id:
           type: string
           minLength: 1
@@ -26978,6 +28282,49 @@ components:
           type: string
           format: uuid
           nullable: true
+    PatchedPaymentRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        invoice:
+          type: string
+          format: uuid
+          nullable: true
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodDd6Enum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Total payment in BDT.
+        status:
+          $ref: '#/components/schemas/Status5f7Enum'
+        transaction_id:
+          type: string
+          description: Gateway TrxID or Bank Slip ID.
+          maxLength: 100
+        gateway_order_id:
+          type: string
+          description: Internal / Gateway session order ID.
+          maxLength: 100
+        idempotency_key:
+          type: string
+          minLength: 1
+          description: Client/caller deduplication key.
+          maxLength: 100
+        payment_date:
+          type: string
+          format: date-time
+        received_by:
+          type: string
+          format: uuid
+          nullable: true
+        gateway_payload:
+          description: Raw callback/IPN response data.
+        notes:
+          type: string
     PatchedPeriodAttendanceRequest:
       type: object
       properties:
@@ -27140,6 +28487,24 @@ components:
           type: string
           format: date-time
           nullable: true
+    PatchedRefundRequest:
+      type: object
+      properties:
+        payment:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reason:
+          type: string
+          minLength: 1
+        rejection_reason:
+          type: string
     PatchedReportCardRequest:
       type: object
       properties:
@@ -27753,20 +29118,288 @@ components:
           type: boolean
         description:
           type: string
-    PaymentMethodEnum:
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+        invoice:
+          type: string
+          format: uuid
+          nullable: true
+        invoice_number:
+          type: string
+          readOnly: true
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodDd6Enum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Total payment in BDT.
+        status:
+          $ref: '#/components/schemas/Status5f7Enum'
+        transaction_id:
+          type: string
+          description: Gateway TrxID or Bank Slip ID.
+          maxLength: 100
+        gateway_order_id:
+          type: string
+          description: Internal / Gateway session order ID.
+          maxLength: 100
+        idempotency_key:
+          type: string
+          description: Client/caller deduplication key.
+          maxLength: 100
+        payment_date:
+          type: string
+          format: date-time
+        received_by:
+          type: string
+          format: uuid
+          nullable: true
+        received_by_name:
+          type: string
+          readOnly: true
+        gateway_payload:
+          description: Raw callback/IPN response data.
+        notes:
+          type: string
+        receipt_number:
+          type: string
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - id
+      - idempotency_key
+      - institution
+      - invoice_number
+      - receipt_number
+      - received_by_name
+      - student
+      - student_name_en
+      - updated_at
+    PaymentAllocation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        invoice:
+          type: string
+          format: uuid
+          readOnly: true
+        invoice_line:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        fee_head_name:
+          type: string
+          readOnly: true
+          default: ''
+        allocated_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - allocated_amount
+      - created_at
+      - fee_head_name
+      - id
+      - invoice
+      - invoice_line
+    PaymentDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+        invoice:
+          type: string
+          format: uuid
+          nullable: true
+        invoice_number:
+          type: string
+          readOnly: true
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodDd6Enum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Total payment in BDT.
+        status:
+          $ref: '#/components/schemas/Status5f7Enum'
+        transaction_id:
+          type: string
+          description: Gateway TrxID or Bank Slip ID.
+          maxLength: 100
+        gateway_order_id:
+          type: string
+          description: Internal / Gateway session order ID.
+          maxLength: 100
+        idempotency_key:
+          type: string
+          description: Client/caller deduplication key.
+          maxLength: 100
+        payment_date:
+          type: string
+          format: date-time
+        received_by:
+          type: string
+          format: uuid
+          nullable: true
+        received_by_name:
+          type: string
+          readOnly: true
+        gateway_payload:
+          description: Raw callback/IPN response data.
+        notes:
+          type: string
+        receipt_number:
+          type: string
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentAllocation'
+          readOnly: true
+        receipt:
+          allOf:
+          - $ref: '#/components/schemas/MoneyReceipt'
+          readOnly: true
+      required:
+      - allocations
+      - amount
+      - created_at
+      - id
+      - idempotency_key
+      - institution
+      - invoice_number
+      - receipt
+      - receipt_number
+      - received_by_name
+      - student
+      - student_name_en
+      - updated_at
+    PaymentMethodDd6Enum:
       enum:
+      - cash
+      - bank
       - bkash
       - nagad
       - rocket
-      - bank
-      - cash
+      - sslcommerz
+      - aamarpay
+      - card
+      - advance
       type: string
       description: |-
-        * `bkash` - bKash
-        * `nagad` - Nagad
-        * `rocket` - Rocket
-        * `bank` - Bank Transfer
-        * `cash` - Cash at School Counter
+        * `cash` - Cash (Counter) / নগদ গ্রহণ
+        * `bank` - Bank Deposit / ব্যাংক জমা
+        * `bkash` - bKash / বিকাশ
+        * `nagad` - Nagad / নগদ
+        * `rocket` - Rocket / রকেট
+        * `sslcommerz` - SSLCommerz
+        * `aamarpay` - aamarPay
+        * `card` - Debit/Credit Card / কার্ড
+        * `advance` - Advance Balance / অগ্রিম সমন্বয়
+    PaymentRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        invoice:
+          type: string
+          format: uuid
+          nullable: true
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodDd6Enum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Total payment in BDT.
+        status:
+          $ref: '#/components/schemas/Status5f7Enum'
+        transaction_id:
+          type: string
+          description: Gateway TrxID or Bank Slip ID.
+          maxLength: 100
+        gateway_order_id:
+          type: string
+          description: Internal / Gateway session order ID.
+          maxLength: 100
+        idempotency_key:
+          type: string
+          minLength: 1
+          description: Client/caller deduplication key.
+          maxLength: 100
+        payment_date:
+          type: string
+          format: date-time
+        received_by:
+          type: string
+          format: uuid
+          nullable: true
+        gateway_payload:
+          description: Raw callback/IPN response data.
+        notes:
+          type: string
+      required:
+      - amount
+      - idempotency_key
+      - student
     Period:
       type: object
       properties:
@@ -28740,6 +30373,143 @@ components:
         * `monthly` - Monthly
         * `termly` - Termly / Per Exam
         * `annually` - Annually
+    Refund:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        payment:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reason:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/RefundStatusEnum'
+          readOnly: true
+        requested_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        requested_by_name:
+          type: string
+          readOnly: true
+        approved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        approved_by_name:
+          type: string
+          readOnly: true
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rejection_reason:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - approved_by
+      - approved_by_name
+      - created_at
+      - id
+      - institution
+      - payment
+      - processed_at
+      - reason
+      - requested_by
+      - requested_by_name
+      - status
+      - student
+      - student_name_en
+      - updated_at
+    RefundCreateRequest:
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reason:
+          type: string
+          minLength: 3
+      required:
+      - amount
+      - payment_id
+      - reason
+    RefundRejectRequest:
+      type: object
+      properties:
+        rejection_reason:
+          type: string
+          minLength: 3
+      required:
+      - rejection_reason
+    RefundRequest:
+      type: object
+      properties:
+        payment:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reason:
+          type: string
+          minLength: 1
+        rejection_reason:
+          type: string
+      required:
+      - amount
+      - payment
+      - reason
+      - student
+    RefundStatusEnum:
+      enum:
+      - pending
+      - approved
+      - processed
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending Approval
+        * `approved` - Approved
+        * `processed` - Processed
+        * `rejected` - Rejected
     RelationDefaultEnum:
       enum:
       - father
@@ -30112,6 +31882,22 @@ components:
         * `resigned` - Resigned
         * `terminated` - Terminated
         * `retired` - Retired
+    Status5f7Enum:
+      enum:
+      - initiated
+      - pending
+      - successful
+      - failed
+      - cancelled
+      - refunded
+      type: string
+      description: |-
+        * `initiated` - Initiated
+        * `pending` - Pending Verification
+        * `successful` - Successful
+        * `failed` - Failed
+        * `cancelled` - Cancelled
+        * `refunded` - Refunded
     Status970Enum:
       enum:
       - pending
@@ -31995,6 +33781,16 @@ components:
           minLength: 1
       required:
       - refresh
+    TransactionTypeEnum:
+      enum:
+      - credit_deposit
+      - debit_invoice
+      - refund
+      type: string
+      description: |-
+        * `credit_deposit` - Advance Deposit / Credit
+        * `debit_invoice` - Invoice Payment / Debit
+        * `refund` - Refund
     TransferCertificate:
       type: object
       properties:

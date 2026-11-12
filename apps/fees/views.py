@@ -4,21 +4,26 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from django.db.models import Count, Sum
 from django.http import HttpResponse
+from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import filters, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.academics.models import ClassLevel
 from apps.accounts.models import User
+from apps.fees.gateways import get_gateway_adapter
 from apps.fees.models import (
+    AdvanceBalance,
     FeeHead,
     FeeStructure,
     FeeStructureItem,
@@ -26,6 +31,11 @@ from apps.fees.models import (
     Invoice,
     InvoiceStatus,
     InvoiceType,
+    MoneyReceipt,
+    Payment,
+    PaymentMethod,
+    PaymentStatus,
+    Refund,
     StudentFeeAssignment,
     StudentWaiver,
     WaiverRule,
@@ -38,6 +48,10 @@ from apps.fees.permissions import (
     CanViewInvoiceDetail,
 )
 from apps.fees.serializers import (
+    AdvanceBalanceSerializer,
+    ApplyAdvanceSerializer,
+    CounterPaymentSerializer,
+    DailyCollectionReportSerializer,
     DueListItemSerializer,
     FeeHeadSerializer,
     FeeStructureItemSerializer,
@@ -51,20 +65,38 @@ from apps.fees.serializers import (
     InvoiceDetailSerializer,
     InvoiceSerializer,
     InvoiceSingleGenerateSerializer,
+    MoneyReceiptSerializer,
+    OnlinePaymentInitiateResponseSerializer,
+    OnlinePaymentInitiateSerializer,
+    OnlinePaymentVerifySerializer,
+    PaymentDetailSerializer,
+    PaymentSerializer,
+    RefundCreateSerializer,
+    RefundRejectSerializer,
+    RefundSerializer,
     StudentFeeAssignmentSerializer,
     StudentWaiverSerializer,
     WaiverRejectSerializer,
     WaiverRuleSerializer,
 )
 from apps.fees.services import (
+    apply_advance_to_invoice,
+    approve_refund,
     approve_student_waiver,
     cancel_invoice,
+    complete_online_payment,
     generate_bulk_invoices,
     generate_invoice_pdf,
+    generate_money_receipt_pdf,
     generate_single_student_invoice,
+    initiate_online_payment,
     issue_invoice,
     preview_bulk_invoices,
+    process_refund,
+    record_counter_payment,
+    reject_refund,
     reject_student_waiver,
+    request_refund,
 )
 from apps.institutions.models import AcademicSession
 from apps.students.models import Student
@@ -540,3 +572,427 @@ class DueListView(APIView):
                 student_map[sid]["oldest_overdue_date"] = inv.due_date
 
         return Response(list(student_map.values()), status=status.HTTP_200_OK)
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List all payments"),
+    retrieve=extend_schema(summary="Retrieve payment details including line item allocations"),
+)
+class PaymentViewSet(viewsets.ModelViewSet):
+    """Payment records for counter collections and online gateways."""
+
+    queryset = (
+        Payment.objects.filter(is_deleted=False)
+        .select_related("student", "invoice", "received_by", "receipt")
+        .prefetch_related("allocations__invoice_line__fee_head")
+    )
+    serializer_class = PaymentSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["payment_method", "status", "student", "invoice"]
+    search_fields = [
+        "transaction_id",
+        "gateway_order_id",
+        "student__student_id",
+        "student__name_en",
+        "idempotency_key",
+    ]
+    ordering_fields = ["payment_date", "amount", "created_at"]
+
+    def get_serializer_class(self) -> Any:
+        if self.action == "retrieve":
+            return PaymentDetailSerializer
+        return PaymentSerializer
+
+    def get_permissions(self) -> list[Any]:
+        if self.action == "webhook":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self) -> Any:
+        user = self.request.user
+        qs = super().get_queryset()
+        if not user or not user.is_authenticated:
+            return qs.none()
+        if user.is_superuser or CanViewFees().has_permission(self.request, self):
+            return qs
+        stu_profile = getattr(user, "student_profile", None)
+        if stu_profile:
+            return qs.filter(student_id=stu_profile.id)
+        guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
+        if guardians:
+            wards = []
+            for g in guardians:
+                if hasattr(g, "students"):
+                    wards.extend(list(g.students.values_list("id", flat=True)))
+            return qs.filter(student_id__in=wards)
+        return qs.none()
+
+    @extend_schema(
+        summary="Record a manual counter payment (Cash, Bank, Cheque, POS)",
+        request=CounterPaymentSerializer,
+        responses={201: PaymentDetailSerializer},
+    )
+    @action(detail=False, methods=["post"], url_path="counter")
+    def counter(self, request: Request) -> Response:
+        assert isinstance(request.user, User)
+        ser = CounterPaymentSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        student = Student.objects.get(id=d["student_id"])
+        invoice = None
+        if d.get("invoice_id"):
+            invoice = Invoice.objects.get(id=d["invoice_id"])
+
+        payment = record_counter_payment(
+            institution=student.institution,
+            collected_by=request.user,
+            student=student,
+            amount=d["amount"],
+            payment_method=d.get("payment_method", PaymentMethod.CASH),
+            invoice=invoice,
+            idempotency_key=d.get("idempotency_key") or None,
+            bank_name=d.get("bank_name", ""),
+            cheque_no=d.get("cheque_no", ""),
+            cheque_date=d.get("cheque_date"),
+            pos_approval_code=d.get("pos_approval_code", ""),
+            notes=d.get("notes", ""),
+        )
+        return Response(PaymentDetailSerializer(payment).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="Initiate an online payment session (bKash, Nagad, SSLCommerz, aamarPay)",
+        request=OnlinePaymentInitiateSerializer,
+        responses={200: OnlinePaymentInitiateResponseSerializer},
+    )
+    @action(detail=False, methods=["post"], url_path="initiate-online")
+    def initiate_online(self, request: Request) -> Response:
+        assert isinstance(request.user, User)
+        ser = OnlinePaymentInitiateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        invoice = Invoice.objects.get(id=d["invoice_id"])
+        urls = {
+            "success_url": d.get("success_url", ""),
+            "fail_url": d.get("fail_url", ""),
+            "cancel_url": d.get("cancel_url", ""),
+        }
+        res = initiate_online_payment(
+            invoice=invoice,
+            payment_method=d["payment_method"],
+            urls=urls,
+            payer_user=request.user,
+        )
+        return Response(
+            OnlinePaymentInitiateResponseSerializer(res).data, status=status.HTTP_200_OK
+        )
+
+    @extend_schema(
+        summary="Verify and finalize an online payment transaction",
+        request=OnlinePaymentVerifySerializer,
+        responses={200: PaymentDetailSerializer},
+    )
+    @action(detail=False, methods=["post"], url_path="verify")
+    def verify(self, request: Request) -> Response:
+        ser = OnlinePaymentVerifySerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        payment = Payment.objects.get(id=d["payment_id"])
+        completed_payment = complete_online_payment(payment, verification_params=d)
+        return Response(PaymentDetailSerializer(completed_payment).data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Public gateway webhook / IPN callback",
+        parameters=[
+            OpenApiParameter(
+                name="gateway",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Gateway identifier (sslcommerz, bkash, nagad, aamarpay)",
+            )
+        ],
+        request=None,
+        responses={200: OpenApiTypes.OBJECT},
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path=r"webhook/(?P<gateway>[^/.]+)",
+        permission_classes=[AllowAny],
+    )
+    def webhook(self, request: Request, gateway: str | None = None) -> Response:
+        if not gateway:
+            return Response({"error": "Gateway not specified"}, status=status.HTTP_400_BAD_REQUEST)
+
+        adapter = get_gateway_adapter(gateway)
+        if not adapter.validate_ipn_signature(request.data):
+            return Response({"error": "Invalid signature"}, status=status.HTTP_400_BAD_REQUEST)
+
+        tran_id = (
+            request.data.get("tran_id")
+            or request.data.get("mer_txnid")
+            or request.data.get("paymentID")
+            or request.data.get("order_id")
+        )
+        payment = None
+        if tran_id:
+            payment = Payment.objects.filter(
+                gateway_order_id=tran_id,
+                status__in=[PaymentStatus.INITIATED, PaymentStatus.PENDING],
+            ).first()
+
+        if not payment:
+            return Response({"status": "ignored"}, status=status.HTTP_200_OK)
+
+        complete_online_payment(payment, verification_params=request.data)
+        return Response({"status": "accepted"}, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Daily collection report grouped by payment method",
+        parameters=[
+            OpenApiParameter(name="date", type=str, description="YYYY-MM-DD (defaults to today)"),
+        ],
+        responses={200: DailyCollectionReportSerializer},
+    )
+    @action(detail=False, methods=["get"], url_path="daily-collection")
+    def daily_collection(self, request: Request) -> Response:
+        date_str = request.query_params.get("date")
+        target_date = parse_date(date_str) if date_str else timezone.now().date()
+        if not target_date:
+            target_date = timezone.now().date()
+
+        qs = self.get_queryset().filter(
+            status=PaymentStatus.SUCCESSFUL,
+            payment_date__date=target_date,
+        )
+
+        total_collected = qs.aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+        payment_count = qs.count()
+
+        by_method_qs = (
+            qs.values("payment_method")
+            .annotate(total=Sum("amount"), count=Count("id"))
+            .order_by("payment_method")
+        )
+        by_method = {
+            item["payment_method"]: {
+                "total": str(item["total"]),
+                "count": item["count"],
+            }
+            for item in by_method_qs
+        }
+
+        report_data = {
+            "date": target_date,
+            "total_collected": total_collected,
+            "payment_count": payment_count,
+            "by_method": by_method,
+        }
+        return Response(
+            DailyCollectionReportSerializer(report_data).data, status=status.HTTP_200_OK
+        )
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List all issued money receipts"),
+    retrieve=extend_schema(summary="Retrieve money receipt details"),
+)
+class MoneyReceiptViewSet(viewsets.ReadOnlyModelViewSet):
+    """Official issued money receipts."""
+
+    queryset = MoneyReceipt.objects.filter(is_deleted=False).select_related(
+        "student", "payment", "issued_by"
+    )
+    serializer_class = MoneyReceiptSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["student", "is_cancelled"]
+    search_fields = ["receipt_number", "student__student_id", "student__name_en"]
+    ordering_fields = ["issued_at", "total_amount"]
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated()]
+
+    def get_queryset(self) -> Any:
+        user = self.request.user
+        qs = super().get_queryset()
+        if not user or not user.is_authenticated:
+            return qs.none()
+        if user.is_superuser or CanViewFees().has_permission(self.request, self):
+            return qs
+        stu_profile = getattr(user, "student_profile", None)
+        if stu_profile:
+            return qs.filter(student_id=stu_profile.id)
+        guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
+        if guardians:
+            wards = []
+            for g in guardians:
+                if hasattr(g, "students"):
+                    wards.extend(list(g.students.values_list("id", flat=True)))
+            return qs.filter(student_id__in=wards)
+        return qs.none()
+
+    @extend_schema(summary="Download or view Money Receipt PDF")
+    @action(detail=True, methods=["get"], url_path="pdf")
+    def pdf(self, request: Request, pk: str | None = None) -> HttpResponse:
+        receipt = self.get_object()
+        pdf_bytes = generate_money_receipt_pdf(receipt)
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="{receipt.receipt_number}.pdf"'
+        return response
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List student advance balances"),
+    retrieve=extend_schema(summary="Retrieve student advance balance and transaction ledger"),
+)
+class AdvanceBalanceViewSet(viewsets.ReadOnlyModelViewSet):
+    """Student advance balances and credit ledgers."""
+
+    queryset = AdvanceBalance.objects.select_related("student").prefetch_related("transactions")
+    serializer_class = AdvanceBalanceSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["student__student_id", "student__name_en"]
+    ordering_fields = ["current_balance", "updated_at"]
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated()]
+
+    def get_queryset(self) -> Any:
+        user = self.request.user
+        qs = super().get_queryset()
+        if not user or not user.is_authenticated:
+            return qs.none()
+        if user.is_superuser or CanViewFees().has_permission(self.request, self):
+            return qs
+        stu_profile = getattr(user, "student_profile", None)
+        if stu_profile:
+            return qs.filter(student_id=stu_profile.id)
+        guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
+        if guardians:
+            wards = []
+            for g in guardians:
+                if hasattr(g, "students"):
+                    wards.extend(list(g.students.values_list("id", flat=True)))
+            return qs.filter(student_id__in=wards)
+        return qs.none()
+
+    @extend_schema(
+        summary="Apply available advance balance to pay an invoice",
+        request=ApplyAdvanceSerializer,
+        responses={200: AdvanceBalanceSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="apply")
+    def apply_to_invoice(self, request: Request, pk: str | None = None) -> Response:
+        advance = self.get_object()
+        ser = ApplyAdvanceSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        invoice = Invoice.objects.get(id=d["invoice_id"])
+        apply_advance_to_invoice(
+            student=advance.student,
+            invoice=invoice,
+            amount=d["amount"],
+        )
+        advance.refresh_from_db()
+        return Response(AdvanceBalanceSerializer(advance).data, status=status.HTTP_200_OK)
+
+
+@extend_schema_view(
+    list=extend_schema(summary="List all refund requests"),
+    retrieve=extend_schema(summary="Retrieve refund request details"),
+)
+class RefundViewSet(viewsets.ModelViewSet):
+    """Refund requests, approval, and processing workflow."""
+
+    queryset = Refund.objects.filter(is_deleted=False).select_related(
+        "payment", "student", "requested_by", "approved_by"
+    )
+    serializer_class = RefundSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ["status", "student", "payment"]
+    search_fields = ["student__student_id", "payment__transaction_id", "reason"]
+    ordering_fields = ["created_at", "amount"]
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated()]
+
+    def get_queryset(self) -> Any:
+        user = self.request.user
+        qs = super().get_queryset()
+        if not user or not user.is_authenticated:
+            return qs.none()
+        if user.is_superuser or CanViewFees().has_permission(self.request, self):
+            return qs
+        stu_profile = getattr(user, "student_profile", None)
+        if stu_profile:
+            return qs.filter(student_id=stu_profile.id)
+        guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
+        if guardians:
+            wards = []
+            for g in guardians:
+                if hasattr(g, "students"):
+                    wards.extend(list(g.students.values_list("id", flat=True)))
+            return qs.filter(student_id__in=wards)
+        return qs.none()
+
+    @extend_schema(
+        summary="Submit a refund request for a completed payment",
+        request=RefundCreateSerializer,
+        responses={201: RefundSerializer},
+    )
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        assert isinstance(request.user, User)
+        ser = RefundCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        payment = Payment.objects.get(id=d["payment_id"])
+        refund = request_refund(
+            payment=payment,
+            amount=d["amount"],
+            reason=d["reason"],
+            requested_by=request.user,
+        )
+        return Response(RefundSerializer(refund).data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(summary="Approve a pending refund request", responses={200: RefundSerializer})
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request: Request, pk: str | None = None) -> Response:
+        assert isinstance(request.user, User)
+        refund = self.get_object()
+        approved = approve_refund(refund=refund, approved_by=request.user)
+        return Response(RefundSerializer(approved).data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Reject a pending refund request",
+        request=RefundRejectSerializer,
+        responses={200: RefundSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request: Request, pk: str | None = None) -> Response:
+        assert isinstance(request.user, User)
+        refund = self.get_object()
+        ser = RefundRejectSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        d = ser.validated_data
+
+        rejected = reject_refund(
+            refund=refund,
+            rejected_by=request.user,
+            rejection_reason=d["rejection_reason"],
+        )
+        return Response(RefundSerializer(rejected).data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Execute and process an approved refund (unwinding invoice allocations)",
+        responses={200: RefundSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="process")
+    def process(self, request: Request, pk: str | None = None) -> Response:
+        assert isinstance(request.user, User)
+        refund = self.get_object()
+        processed = process_refund(refund=refund, processed_by=request.user)
+        return Response(RefundSerializer(processed).data, status=status.HTTP_200_OK)

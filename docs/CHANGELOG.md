@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 15**: Payment Collection & Gateways (bKash, Nagad, SSLCommerz, aamarPay) (`apps/fees`).
+  - Core Models:
+    - `Payment`: Financial transaction ledger recording amount in BDT (৳), payment method (`cash`, `bank`, `bkash`, `nagad`, `rocket`, `sslcommerz`, `aamarpay`, `card`, `advance`), payment status (`initiated`, `pending`, `successful`, `failed`, `cancelled`, `refunded`), gateway order ID, transaction ID, client deduplication `idempotency_key`, collected/received by user, and callback payload metadata.
+    - `PaymentAllocation`: Granular line-item distribution linking a single payment to specific invoice fee heads (`InvoiceLine`) with non-negative constraints.
+    - `MoneyReceipt`: Immutable official cash/digital money receipt issuing human-readable sequential receipts (`REC-2026-000001` gap-free per institution), linked to `Payment` and `Student` with bilingual ReportLab PDF download support.
+    - `ReceiptSequence`: Concurrency-safe atomic gap-free receipt number counter per institution and year.
+    - `AdvanceBalance`: Student credit and overpayment ledger (`current_balance`) tracking surplus fee collection.
+    - `AdvanceTransaction`: Audit trail tracking credits (`credit_deposit`), debits to settle invoices (`debit_invoice`), and refunds.
+    - `Refund`: Formal refund request and approval workflow (`pending` $\to$ `approved` $\to$ `processed` / `rejected`) unwinding invoice allocations, student advance balances, and updating invoice paid/due balances atomically.
+  - Gateway Adapters (`apps/fees/gateways/`):
+    - Abstract base class `PaymentGatewayAdapter` defining `create_session`, `verify`, `validate_ipn`, and `validate_ipn_signature`.
+    - `SSLCommerzAdapter`: Full hosted checkout integration, redirect session initiation, and server-to-server transaction validation API (`validator/api/validationserverAPI.php`) with IPN check.
+    - `BKashAdapter`: Tokenized Checkout API integration (`/tokenized/checkout/create`, `/execute`, `/query`) with sandbox/production fallback.
+    - `NagadAdapter`: Merchant checkout session initialization and verification.
+    - `AamarPayAdapter`: Redirect checkout session creation and transaction verification tracking.
+    - `gateway_factory.py`: Adapter provider factory lookup (`get_gateway_adapter`).
+  - Service Layer (`apps/fees/services/`):
+    - `receipt_service.py`: Gap-free receipt numbering (`get_next_receipt_number`), ReportLab PDF receipt generator with embedded TrueType `Kalpurush.ttf` typography (`generate_money_receipt_pdf`, `create_or_update_receipt_pdf`).
+    - `payment_service.py`: In-person counter collection (`record_counter_payment`), online session creation (`initiate_online_payment`), verification and atomic invoice line allocation (`complete_online_payment`), student advance balance management (`credit_student_advance`, `debit_student_advance`, `apply_advance_to_invoice`).
+    - `refund_service.py`: Refund lifecycle services (`request_refund`, `approve_refund`, `reject_refund`, `process_refund`) reversing invoice paid amounts, restoring due amounts, and unwinding line item allocations.
+  - Background Async Tasks (`apps/fees/tasks.py`):
+    - `reconcile_pending_payments_task`: Celery worker task querying gateway transaction verification for abandoned or pending payments older than 15 minutes, finalizing successful transactions, and expiring stale unverified payments.
+  - REST API ViewSets & Routes (`apps/fees/views.py` & `apps/fees/urls.py`):
+    - `/api/v1/fees/payments/`: Payment listing and details with line allocations; custom actions for `counter` collection, `initiate-online` checkout session, `verify` gateway verification, public `webhook/{gateway}/` IPN callback, and `daily-collection` summary report.
+    - `/api/v1/fees/receipts/`: Money receipt viewing and action `pdf` returning binary PDF file download.
+    - `/api/v1/fees/advance-balances/`: Advance balance ledger inspection and action `apply` to settle invoices with credit.
+    - `/api/v1/fees/refunds/`: Refund request submission, `approve`, `reject`, and `process` actions.
 - **Task 14**: Fee Structure & Invoice Generation (`apps/fees`).
   - Core Models:
     - `FeeHead`: Institutional fee categories (Tuition `মাসিক বেতন`, Admission `ভর্তি ফি`, Exam `পরীক্ষার ফি`, Session Charge `সেশন চার্জ`, Lab, Library, Transport, Hostel, Sports, Late Fine) with recurrence (`one_time`, `monthly`, `termly`, `annually`), opt-in/mandatory flags, and accounting general ledger codes.

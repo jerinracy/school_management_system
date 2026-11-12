@@ -22,7 +22,7 @@ Legend:
 | **Task 12** | Grading Engine (GPA 5.0, BD National Curriculum) | DONE | Task 11 | 2026-11-11 |
 | **Task 13** | Report Card Generation & Tabulation Sheet | DONE | Task 12 | 2026-11-11 |
 | **Task 14** | Fee Structure & Invoice Generation | DONE | Task 06 | 2026-11-11 |
-| **Task 15** | Payment Collection & Gateways (bKash, Nagad, SSLCommerz) | TODO | Task 14 | - |
+| **Task 15** | Payment Collection & Gateways (bKash, Nagad, SSLCommerz) | DONE | Task 14 | 2026-11-12 |
 | **Task 16** | SMS Gateway Integration & Communication Suite | TODO | Task 03, Task 07 | - |
 | **Task 17** | Basic Accounting & Cashbook | TODO | Task 15 | - |
 | **Task 18** | Payroll Management | TODO | Task 08, Task 10, Task 17 | - |

@@ -4,11 +4,15 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.fees.views import (
+    AdvanceBalanceViewSet,
     DueListView,
     FeeHeadViewSet,
     FeeStructureViewSet,
     FineRuleViewSet,
     InvoiceViewSet,
+    MoneyReceiptViewSet,
+    PaymentViewSet,
+    RefundViewSet,
     StudentFeeAssignmentViewSet,
     StudentWaiverViewSet,
     WaiverRuleViewSet,
@@ -24,6 +28,10 @@ router.register(r"waiver-rules", WaiverRuleViewSet, basename="waiver-rule")
 router.register(r"student-waivers", StudentWaiverViewSet, basename="student-waiver")
 router.register(r"fine-rules", FineRuleViewSet, basename="fine-rule")
 router.register(r"invoices", InvoiceViewSet, basename="invoice")
+router.register(r"payments", PaymentViewSet, basename="payment")
+router.register(r"receipts", MoneyReceiptViewSet, basename="money-receipt")
+router.register(r"advance-balances", AdvanceBalanceViewSet, basename="advance-balance")
+router.register(r"refunds", RefundViewSet, basename="refund")
 
 urlpatterns = [
     path("", include(router.urls)),
