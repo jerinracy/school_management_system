@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 16**: SMS Gateway Integration & Communication Suite (`apps/communications`).
+  - Core Models:
+    - `SMSGatewayConfig`: Tenant-configurable credentials for Bangladeshi SMS providers (SSL Wireless, Greenweb, Onnorokom, Teletalk) and mock console, tracking masking status, sender ID, rate limits, per-segment cost, and account balance in BDT (৳).
+    - `SMSBalanceLog`: Transactional and periodic balance sync audit logs tracking balance changes (`check`, `recharge`, `deduction`, `manual_adjustment`).
+    - `NotificationTemplate`: Bilingual notification templates with variable substitution (`{{student_name}}`, `{{date}}`, `{{amount}}`, etc.) supporting `body_template_en` and `body_template_bn` with unique active code per institution.
+    - `NotificationEvent`: Business event triggers emitted by attendance, fees, examinations, and notices (`event_type`, `source_module`, `reference_id`, `payload`).
+    - `NotificationDelivery`: Per-recipient outbound delivery logs across channels (`sms`, `push`, `email`, `in_app`) tracking delivery status (`queued`, `sent`, `delivered`, `failed`), provider message IDs, segment counts, cost in BDT, and read timestamps.
+    - `DeviceToken`: Mobile device FCM push token registrations for guardians, teachers, and students (`platform`, `token`, `device_id`, `is_active`).
+    - `NotificationPreference`: User channel preferences (`enable_sms`, `enable_push`, `enable_email`, `enable_in_app`), preferred language (`bn` vs `en`), and customizable quiet hours (`quiet_hours_start` to `quiet_hours_end` in Asia/Dhaka time).
+    - `Notice`: Notice board posts with role- and class-level audience targeting (`all`, `students`, `guardians`, `teachers`, `staff`, `specific_class`), pinning, publish/expiry dates, and file attachments.
+    - `ChatThread` & `ChatMessage`: 1-on-1 dialogue between teachers and student guardians with read status receipts, activity timestamps, and moderation flags.
+    - `EmergencyAlert`: Instant campus-wide emergency broadcasts (lockdown, cyclone/severe weather, unexpected closure) overriding quiet hours and dispatching across SMS and Push.
+  - Gateway Adapters (`apps/communications/gateways/`):
+    - Abstract base class `SMSGatewayAdapter` and character segmentation engine:
+      - Standard GSM 7-bit (English): 160 characters for 1 segment, 153 characters/segment for multi-part messages.
+      - Bengali Unicode (UCS-2): 70 characters for 1 segment, 67 characters/segment for multi-part messages.
+    - `SSLWirelessAdapter`: JSON/REST integration with Bangladesh's SSL Wireless API v3.
+    - `GreenwebAdapter`: REST integration with Greenweb Bangladesh SMS Gateway.
+    - `OnnorokomAdapter` & `TeletalkAdapter`: Support for Onnorokom SMS and Teletalk govt gateway.
+    - `ConsoleMockAdapter`: Deterministic local development & testing simulator.
+    - `gateway_factory.py`: Provider adapter lookup (`get_gateway_adapter`).
+  - Service Layer (`apps/communications/services/`):
+    - `sms_service.py`: Phone normalization (`+8801XXXXXXXXX`), gateway resolution, segment counting, delivery creation, and safe balance deduction.
+    - `push_service.py`: FCM mobile push dispatcher with token invalidation handling.
+    - `notification_service.py`: Central notification dispatcher resolving audience, checking quiet hours in `Asia/Dhaka`, rendering templates, and managing delivery records.
+    - `notice_service.py`: Notice publication and audience visibility resolution.
+    - `chat_service.py`: Teacher-guardian thread initialization and message exchange.
+  - Background Async Tasks (`apps/communications/tasks.py`):
+    - `send_notification_batch_task`: Async worker for queued notification batch delivery.
+    - `sync_sms_balances_task`: Periodic balance refresh across active SMS gateways.
+    - `cleanup_expired_notices_task`: Periodic maintenance for notice board expiration.
+  - REST API ViewSets & Routes (`apps/communications/views.py` & `apps/communications/urls.py`):
+    - `/api/v1/communications/gateways/`: SMS gateway configurations with custom actions `check-balance` and `send-test`.
+    - `/api/v1/communications/templates/`: Bilingual notification templates with `preview` action.
+    - `/api/v1/communications/deliveries/`: Delivery audit history.
+    - `/api/v1/communications/device-tokens/`: Register and unregister FCM push tokens.
+    - `/api/v1/communications/preferences/me/`: Current user notification and quiet hours preferences.
+    - `/api/v1/communications/notices/`: Notice board with audience filtering and `pin`/`unpin` actions.
+    - `/api/v1/communications/chat/threads/`: Teacher-guardian chat threads, `messages`, and `mark-read`.
+    - `/api/v1/communications/emergency-alerts/`: Campus emergency broadcast dispatcher.
 - **Task 15**: Payment Collection & Gateways (bKash, Nagad, SSLCommerz, aamarPay) (`apps/fees`).
   - Core Models:
     - `Payment`: Financial transaction ledger recording amount in BDT (৳), payment method (`cash`, `bank`, `bkash`, `nagad`, `rocket`, `sslcommerz`, `aamarpay`, `card`, `advance`), payment status (`initiated`, `pending`, `successful`, `failed`, `cancelled`, `refunded`), gateway order ID, transaction ID, client deduplication `idempotency_key`, collected/received by user, and callback payload metadata.

@@ -328,3 +328,44 @@
   - Institutional cashiers and parents gain instantaneous payment settlement across cash, bank, bKash, Nagad, SSLCommerz, and aamarPay.
   - Complete financial auditability with non-negative constraints and immutable receipts.
   - Establishes foundational double-entry ledger feeds for Basic Accounting (Task 17).
+
+---
+
+## ADR-018: Multi-Tenant SMS Gateway Integration, Bengali Unicode Segmentation, and Centralized Communication Suite
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Educational institutions in Bangladesh rely heavily on multi-channel notifications (SMS, mobile app push notifications, notice board bulletins, and teacher-guardian chat).
+  - Key challenges:
+    1. **Bengali Character Encoding & Segmentation**:
+       - Standard GSM 7-bit ASCII messages allow 160 characters per segment (153 for multi-part).
+       - Bengali text (Unicode / UCS-2) is constrained to 70 characters per segment (67 for multi-part). A failure to accurately detect Unicode characters or calculate segments results in unexpected cost spikes.
+    2. **Multi-Gateway Redundancy & Cost Management**:
+       - Institutions purchase SMS credits from various Bangladeshi telecommunication aggregators (SSL Wireless, Greenweb, Onnorokom, Teletalk).
+       - Each provider charges distinct per-segment rates (৳0.30 - ৳0.65) and requires real-time balance tracking, masked BTRC brand sender IDs, and rate limiting.
+    3. **Guardian Privacy & Quiet Hours Compliance**:
+       - Parents must not be disturbed by non-emergency alerts late at night (e.g. 10 PM - 7 AM in `Asia/Dhaka`).
+       - Critical emergency broadcasts (natural disaster, campus closures) must bypass quiet hours restrictions.
+- **Decision**:
+  - **Segmentation Engine (`apps/communications/gateways/base.py`)**:
+    - Implemented `calculate_sms_segments()` and `is_unicode_text()` to detect non-GSM characters.
+    - Automatic segment calculation dynamically drives cost computation in BDT (`cost_bdt`) and prevents unexpected billing spikes.
+  - **Pluggable SMS Gateway Adapters (`apps/communications/gateways/`)**:
+    - Built `SMSGatewayAdapter` abstract base class with concrete adapters:
+      - `SSLWirelessAdapter` for SSL Wireless v3 REST API.
+      - `GreenwebAdapter` for Greenweb Bangladesh SMS Gateway.
+      - `OnnorokomAdapter` & `TeletalkAdapter` for national SMS providers.
+      - `ConsoleMockAdapter` for deterministic local development and automated testing.
+    - Factory pattern `get_gateway_adapter()` resolves active tenant default configurations.
+  - **Bilingual Notification Templates & Dispatcher (`notification_service.py`)**:
+    - Created `NotificationTemplate` with dual-language templates (`body_template_en`, `body_template_bn`) and regex variable substitution (`{{student_name}}`, `{{date}}`, etc.).
+    - Centralized dispatcher evaluates user `NotificationPreference` and local time in `Asia/Dhaka` against quiet hours window before routing to `SMS`, `Push` (FCM via `DeviceToken`), or `In-App`.
+  - **Emergency Broadcasts (`EmergencyAlertViewSet`)**:
+    - Dedicated model and API endpoint overriding quiet hours and broadcasting simultaneous SMS and Push to all institutional stakeholders.
+  - **Teacher ↔ Guardian Dialogue & Notice Board (`notice_service.py`, `chat_service.py`)**:
+    - Notice boards with granular audience resolution (all, students, guardians, specific class/section).
+    - 1-on-1 thread-based messaging between staff and guardians with unread message tracking and moderation flagging.
+- **Consequences**:
+  - Seamless notification dispatching across Bangladesh SMS aggregators and mobile push notifications.
+  - Transparent per-message segment count and cost auditability.
+  - Clean foundation for downstream event triggers from Attendance (Tasks 10/11), Exams (Task 13), and Fees (Task 14/15).

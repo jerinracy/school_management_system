@@ -6221,6 +6221,1378 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserRole'
           description: ''
+  /api/v1/communications/chat/threads/:
+    get:
+      operationId: communications_chat_threads_list
+      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      summary: List Teacher-Guardian Chat Threads
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChatThreadList'
+          description: ''
+    post:
+      operationId: communications_chat_threads_create
+      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      summary: Initiate Chat Thread
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatThread'
+          description: ''
+  /api/v1/communications/chat/threads/{id}/:
+    get:
+      operationId: communications_chat_threads_retrieve
+      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      summary: Retrieve Chat Thread Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Chat Thread.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatThread'
+          description: ''
+  /api/v1/communications/chat/threads/{id}/mark-read/:
+    post:
+      operationId: communications_chat_threads_mark_read_create
+      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      summary: Mark Thread Messages as Read
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Chat Thread.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatThread'
+          description: ''
+  /api/v1/communications/chat/threads/{id}/messages/:
+    get:
+      operationId: communications_chat_threads_messages_list
+      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      summary: List or Send Messages in Thread
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Chat Thread.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChatMessageList'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+          description: ''
+    post:
+      operationId: communications_chat_threads_messages_create
+      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      summary: List or Send Messages in Thread
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Chat Thread.
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChatMessageList'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+          description: ''
+  /api/v1/communications/deliveries/:
+    get:
+      operationId: communications_deliveries_list
+      description: Audit log of outbound notifications across SMS, Push, and In-App.
+      summary: List Notification Deliveries
+      parameters:
+      - in: query
+        name: channel
+        schema:
+          type: string
+          enum:
+          - all
+          - email
+          - in_app
+          - push
+          - sms
+        description: |-
+          * `sms` - SMS
+          * `push` - Push Notification
+          * `email` - Email
+          * `in_app` - In-App Notice
+          * `all` - All Channels
+      - in: query
+        name: language
+        schema:
+          type: string
+          enum:
+          - bn
+          - en
+        description: |-
+          * `bn` - Bangla
+          * `en` - English
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: recipient_phone
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - delivered
+          - failed
+          - queued
+          - sent
+        description: |-
+          * `queued` - Queued
+          * `sent` - Sent
+          * `delivered` - Delivered
+          * `failed` - Failed
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationDeliveryList'
+          description: ''
+  /api/v1/communications/deliveries/{id}/:
+    get:
+      operationId: communications_deliveries_retrieve
+      description: Audit log of outbound notifications across SMS, Push, and In-App.
+      summary: Retrieve Notification Delivery Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notification Delivery.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDelivery'
+          description: ''
+  /api/v1/communications/device-tokens/:
+    get:
+      operationId: communications_device_tokens_list
+      description: Register and deregister device FCM push tokens.
+      summary: List Device Tokens
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceTokenList'
+          description: ''
+    post:
+      operationId: communications_device_tokens_create
+      description: Register and deregister device FCM push tokens.
+      summary: Register FCM Device Token
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceToken'
+          description: ''
+  /api/v1/communications/device-tokens/{id}/:
+    get:
+      operationId: communications_device_tokens_retrieve
+      description: Register and deregister device FCM push tokens.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device Token.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceToken'
+          description: ''
+    delete:
+      operationId: communications_device_tokens_destroy
+      description: Register and deregister device FCM push tokens.
+      summary: Delete FCM Device Token
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Device Token.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/communications/emergency-alerts/:
+    get:
+      operationId: communications_emergency_alerts_list
+      description: Trigger and audit campus emergency broadcasts overriding quiet
+        hours.
+      summary: List Emergency Broadcast Alerts
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEmergencyAlertList'
+          description: ''
+    post:
+      operationId: communications_emergency_alerts_create
+      description: Trigger and audit campus emergency broadcasts overriding quiet
+        hours.
+      summary: Broadcast Emergency Alert
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyAlertRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmergencyAlertRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmergencyAlertRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyAlert'
+          description: ''
+  /api/v1/communications/emergency-alerts/{id}/:
+    get:
+      operationId: communications_emergency_alerts_retrieve
+      description: Trigger and audit campus emergency broadcasts overriding quiet
+        hours.
+      summary: Retrieve Emergency Alert Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Emergency Alert.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmergencyAlert'
+          description: ''
+  /api/v1/communications/gateways/:
+    get:
+      operationId: communications_gateways_list
+      description: Manage SMS gateway providers and credentials.
+      summary: List SMS Gateways
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSMSGatewayConfigList'
+          description: ''
+    post:
+      operationId: communications_gateways_create
+      description: Manage SMS gateway providers and credentials.
+      summary: Configure New SMS Gateway
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMSGatewayConfig'
+          description: ''
+  /api/v1/communications/gateways/{id}/:
+    get:
+      operationId: communications_gateways_retrieve
+      description: Manage SMS gateway providers and credentials.
+      summary: Retrieve SMS Gateway Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this SMS Gateway Config.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMSGatewayConfig'
+          description: ''
+    put:
+      operationId: communications_gateways_update
+      description: Manage SMS gateway providers and credentials.
+      summary: Update SMS Gateway Configuration
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this SMS Gateway Config.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMSGatewayConfig'
+          description: ''
+    patch:
+      operationId: communications_gateways_partial_update
+      description: Manage SMS gateway providers and credentials.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this SMS Gateway Config.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSMSGatewayConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSMSGatewayConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSMSGatewayConfigRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMSGatewayConfig'
+          description: ''
+    delete:
+      operationId: communications_gateways_destroy
+      description: Manage SMS gateway providers and credentials.
+      summary: Delete SMS Gateway
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this SMS Gateway Config.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/communications/gateways/{id}/check-balance/:
+    post:
+      operationId: communications_gateways_check_balance_create
+      description: Manage SMS gateway providers and credentials.
+      summary: Check Gateway Remote Balance
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this SMS Gateway Config.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SMSGatewayConfigRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Balance fetched successfully.
+  /api/v1/communications/gateways/send-test/:
+    post:
+      operationId: communications_gateways_send_test_create
+      description: Manage SMS gateway providers and credentials.
+      summary: Send Test SMS
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendDirectSMSRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendDirectSMSRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendDirectSMSRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDelivery'
+          description: ''
+  /api/v1/communications/notices/:
+    get:
+      operationId: communications_notices_list
+      description: Notice board management with audience targeting.
+      summary: List Notices
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - academic
+          - emergency
+          - exam
+          - fee
+          - general
+          - holiday
+        description: |-
+          * `general` - General Announcement
+          * `academic` - Academic
+          * `exam` - Examination
+          * `fee` - Fee & Payment
+          * `holiday` - Holiday
+          * `emergency` - Emergency
+      - in: query
+        name: is_pinned
+        schema:
+          type: boolean
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: target_audience
+        schema:
+          type: string
+          enum:
+          - all
+          - guardians
+          - specific_class
+          - staff
+          - students
+          - teachers
+        description: |-
+          * `all` - Entire School
+          * `students` - All Students
+          * `guardians` - All Guardians
+          * `teachers` - All Teachers
+          * `staff` - All Staff
+          * `specific_class` - Specific Class / Section
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoticeList'
+          description: ''
+    post:
+      operationId: communications_notices_create
+      description: Notice board management with audience targeting.
+      summary: Publish Notice
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+          description: ''
+  /api/v1/communications/notices/{id}/:
+    get:
+      operationId: communications_notices_retrieve
+      description: Notice board management with audience targeting.
+      summary: Retrieve Notice Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+          description: ''
+    put:
+      operationId: communications_notices_update
+      description: Notice board management with audience targeting.
+      summary: Update Notice
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+          description: ''
+    patch:
+      operationId: communications_notices_partial_update
+      description: Notice board management with audience targeting.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNoticeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNoticeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNoticeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+          description: ''
+    delete:
+      operationId: communications_notices_destroy
+      description: Notice board management with audience targeting.
+      summary: Delete Notice
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/communications/notices/{id}/pin/:
+    post:
+      operationId: communications_notices_pin_create
+      description: Notice board management with audience targeting.
+      summary: Pin Notice to Top
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+          description: ''
+  /api/v1/communications/notices/{id}/unpin/:
+    post:
+      operationId: communications_notices_unpin_create
+      description: Notice board management with audience targeting.
+      summary: Unpin Notice from Top
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notice'
+          description: ''
+  /api/v1/communications/preferences/me/:
+    get:
+      operationId: communications_preferences_me_retrieve
+      description: Retrieve and update current user's notification preferences.
+      summary: Get Current User Preferences
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+    patch:
+      operationId: communications_preferences_me_partial_update
+      description: Retrieve and update current user's notification preferences.
+      summary: Update Current User Preferences
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferenceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferenceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferenceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+  /api/v1/communications/templates/:
+    get:
+      operationId: communications_templates_list
+      description: Manage bilingual notification message templates.
+      summary: List Notification Templates
+      parameters:
+      - in: query
+        name: channel
+        schema:
+          type: string
+          enum:
+          - all
+          - email
+          - in_app
+          - push
+          - sms
+        description: |-
+          * `sms` - SMS
+          * `push` - Push Notification
+          * `email` - Email
+          * `in_app` - In-App Notice
+          * `all` - All Channels
+      - in: query
+        name: code
+        schema:
+          type: string
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationTemplateList'
+          description: ''
+    post:
+      operationId: communications_templates_create
+      description: Manage bilingual notification message templates.
+      summary: Create Notification Template
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplate'
+          description: ''
+  /api/v1/communications/templates/{id}/:
+    get:
+      operationId: communications_templates_retrieve
+      description: Manage bilingual notification message templates.
+      summary: Retrieve Notification Template
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notification Template.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplate'
+          description: ''
+    put:
+      operationId: communications_templates_update
+      description: Manage bilingual notification message templates.
+      summary: Update Notification Template
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notification Template.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplate'
+          description: ''
+    patch:
+      operationId: communications_templates_partial_update
+      description: Manage bilingual notification message templates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notification Template.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationTemplateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplate'
+          description: ''
+    delete:
+      operationId: communications_templates_destroy
+      description: Manage bilingual notification message templates.
+      summary: Delete Notification Template
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notification Template.
+        required: true
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/communications/templates/{id}/preview/:
+    post:
+      operationId: communications_templates_preview_create
+      description: Manage bilingual notification message templates.
+      summary: Preview Rendered Template
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notification Template.
+        required: true
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplatePreviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplatePreviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplatePreviewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Rendered template preview.
   /api/v1/devices/commands/:
     get:
       operationId: devices_commands_list
@@ -20390,22 +21762,159 @@ components:
           default: true
       required:
       - file
-    CategoryEnum:
+    ChannelEnum:
       enum:
-      - sibling
-      - merit
-      - poor_fund
-      - quota
-      - staff_child
-      - special
+      - sms
+      - push
+      - email
+      - in_app
+      - all
       type: string
       description: |-
-        * `sibling` - Sibling Concession (সহোদর সুবিধা)
-        * `merit` - Merit / Academic Scholarship (মেধাবৃত্তি)
-        * `poor_fund` - Poor Fund / Zakat / Financial Need (দরিদ্র তহবিল)
-        * `quota` - Freedom Fighter / Special Quota (মুক্তিযোদ্ধা/বিশেষ কোটা)
-        * `staff_child` - Staff / Teacher Child (শিক্ষক সন্তান সুবিধা)
-        * `special` - Discretionary / Special (বিশেষ বিবেচনা)
+        * `sms` - SMS
+        * `push` - Push Notification
+        * `email` - Email
+        * `in_app` - In-App Notice
+        * `all` - All Channels
+    ChatMessage:
+      type: object
+      description: Serializer for chat messages within a thread.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        thread:
+          type: string
+          format: uuid
+        sender:
+          type: string
+          format: uuid
+          readOnly: true
+        sender_name:
+          type: string
+          readOnly: true
+        content:
+          type: string
+        is_read:
+          type: boolean
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_flagged_for_moderation:
+          type: boolean
+        moderation_note:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - content
+      - created_at
+      - id
+      - is_read
+      - read_at
+      - sender
+      - sender_name
+      - thread
+    ChatMessageRequest:
+      type: object
+      description: Serializer for chat messages within a thread.
+      properties:
+        thread:
+          type: string
+          format: uuid
+        content:
+          type: string
+          minLength: 1
+        is_flagged_for_moderation:
+          type: boolean
+        moderation_note:
+          type: string
+          maxLength: 255
+      required:
+      - content
+      - thread
+    ChatThread:
+      type: object
+      description: Serializer for Teacher ↔ Guardian chat threads.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        teacher:
+          type: string
+          format: uuid
+        teacher_name:
+          type: string
+          readOnly: true
+        guardian:
+          type: string
+          format: uuid
+        guardian_name:
+          type: string
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        student_name:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          maxLength: 200
+        is_closed:
+          type: boolean
+        last_message_at:
+          type: string
+          format: date-time
+          readOnly: true
+        unread_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - guardian
+      - guardian_name
+      - id
+      - last_message_at
+      - student_name
+      - teacher
+      - teacher_name
+      - unread_count
+    ChatThreadRequest:
+      type: object
+      description: Serializer for Teacher ↔ Guardian chat threads.
+      properties:
+        teacher:
+          type: string
+          format: uuid
+        guardian:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          maxLength: 200
+        is_closed:
+          type: boolean
+      required:
+      - guardian
+      - teacher
     ClassLevel:
       type: object
       properties:
@@ -21247,7 +22756,7 @@ components:
         description:
           type: string
         target_audience:
-          $ref: '#/components/schemas/TargetAudienceEnum'
+          $ref: '#/components/schemas/DeviceGroupTargetAudienceEnum'
         members_count:
           type: integer
           readOnly: true
@@ -21277,9 +22786,21 @@ components:
         description:
           type: string
         target_audience:
-          $ref: '#/components/schemas/TargetAudienceEnum'
+          $ref: '#/components/schemas/DeviceGroupTargetAudienceEnum'
       required:
       - name
+    DeviceGroupTargetAudienceEnum:
+      enum:
+      - all
+      - students
+      - staff
+      - drivers
+      type: string
+      description: |-
+        * `all` - All
+        * `students` - Students
+        * `staff` - Staff
+        * `drivers` - Drivers
     DeviceRequest:
       type: object
       description: Serializer for hardware terminal devices.
@@ -21361,6 +22882,64 @@ components:
         * `online` - Online
         * `offline` - Offline
         * `maintenance` - Maintenance
+    DeviceToken:
+      type: object
+      description: Serializer for user device push registration.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        token:
+          type: string
+          description: FCM registration token string
+        device_id:
+          type: string
+          maxLength: 150
+        platform:
+          $ref: '#/components/schemas/DeviceTokenPlatformEnum'
+        is_active:
+          type: boolean
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - last_seen_at
+      - token
+      - user
+    DeviceTokenPlatformEnum:
+      enum:
+      - android
+      - ios
+      - web
+      type: string
+      description: |-
+        * `android` - Android
+        * `ios` - iOS
+        * `web` - Web
+    DeviceTokenRequest:
+      type: object
+      description: Serializer for user device push registration.
+      properties:
+        token:
+          type: string
+          minLength: 1
+          description: FCM registration token string
+        device_id:
+          type: string
+          maxLength: 150
+        platform:
+          $ref: '#/components/schemas/DeviceTokenPlatformEnum'
+        is_active:
+          type: boolean
+      required:
+      - token
     DeviceUserMap:
       type: object
       properties:
@@ -21500,6 +23079,75 @@ components:
       - student_name_en
       - total_due_amount
       - unpaid_invoice_count
+    EmergencyAlert:
+      type: object
+      description: Serializer for campus-wide emergency broadcasts.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        message_bn:
+          type: string
+        message_en:
+          type: string
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        channels:
+          description: List of broadcast channels, e.g. ['sms', 'push', 'in_app']
+        sent_by:
+          type: string
+          format: uuid
+          readOnly: true
+        sent_by_name:
+          type: string
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+        total_recipients:
+          type: integer
+          readOnly: true
+        successful_deliveries:
+          type: integer
+          readOnly: true
+        failed_deliveries:
+          type: integer
+          readOnly: true
+      required:
+      - failed_deliveries
+      - id
+      - message_bn
+      - sent_at
+      - sent_by
+      - sent_by_name
+      - successful_deliveries
+      - title
+      - total_recipients
+    EmergencyAlertRequest:
+      type: object
+      description: Serializer for campus-wide emergency broadcasts.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        message_bn:
+          type: string
+          minLength: 1
+        message_en:
+          type: string
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        channels:
+          description: List of broadcast channels, e.g. ['sms', 'push', 'in_app']
+      required:
+      - message_bn
+      - title
     Exam:
       type: object
       properties:
@@ -23847,6 +25495,14 @@ components:
         * `admission` - Admission & Initial Enrollment
         * `session` - Annual Session Charge
         * `custom` - Custom / Miscellaneous
+    Language633Enum:
+      enum:
+      - bn
+      - en
+      type: string
+      description: |-
+        * `bn` - Bangla
+        * `en` - English
     LanguagePreferenceEnum:
       enum:
       - bn
@@ -24257,7 +25913,7 @@ components:
           default: ''
         platform:
           allOf:
-          - $ref: '#/components/schemas/PlatformEnum'
+          - $ref: '#/components/schemas/PlatformA93Enum'
           default: web
         app_version:
           type: string
@@ -24900,6 +26556,402 @@ components:
         * `waitlisted` - Waitlisted
         * `rejected` - Rejected
         * `withdrawn` - Withdrawn
+    Notice:
+      type: object
+      description: Serializer for School Notice board posts.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title_en:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        content_en:
+          type: string
+        content_bn:
+          type: string
+        category:
+          $ref: '#/components/schemas/NoticeCategoryEnum'
+        target_audience:
+          $ref: '#/components/schemas/NoticeTargetAudienceEnum'
+        target_class_level:
+          type: string
+          format: uuid
+          nullable: true
+        class_level_name:
+          type: string
+          readOnly: true
+        target_section:
+          type: string
+          format: uuid
+          nullable: true
+        section_name:
+          type: string
+          readOnly: true
+        is_pinned:
+          type: boolean
+          description: Pin to the top of notice boards
+        is_published:
+          type: boolean
+        publish_date:
+          type: string
+          format: date-time
+        expiry_date:
+          type: string
+          format: date-time
+          nullable: true
+        attachment:
+          type: string
+          format: uri
+          nullable: true
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - class_level_name
+      - content_en
+      - created_at
+      - created_by
+      - created_by_name
+      - id
+      - section_name
+      - title_en
+      - updated_at
+    NoticeCategoryEnum:
+      enum:
+      - general
+      - academic
+      - exam
+      - fee
+      - holiday
+      - emergency
+      type: string
+      description: |-
+        * `general` - General Announcement
+        * `academic` - Academic
+        * `exam` - Examination
+        * `fee` - Fee & Payment
+        * `holiday` - Holiday
+        * `emergency` - Emergency
+    NoticeRequest:
+      type: object
+      description: Serializer for School Notice board posts.
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        content_en:
+          type: string
+          minLength: 1
+        content_bn:
+          type: string
+        category:
+          $ref: '#/components/schemas/NoticeCategoryEnum'
+        target_audience:
+          $ref: '#/components/schemas/NoticeTargetAudienceEnum'
+        target_class_level:
+          type: string
+          format: uuid
+          nullable: true
+        target_section:
+          type: string
+          format: uuid
+          nullable: true
+        is_pinned:
+          type: boolean
+          description: Pin to the top of notice boards
+        is_published:
+          type: boolean
+        publish_date:
+          type: string
+          format: date-time
+        expiry_date:
+          type: string
+          format: date-time
+          nullable: true
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+      required:
+      - content_en
+      - title_en
+    NoticeTargetAudienceEnum:
+      enum:
+      - all
+      - students
+      - guardians
+      - teachers
+      - staff
+      - specific_class
+      type: string
+      description: |-
+        * `all` - Entire School
+        * `students` - All Students
+        * `guardians` - All Guardians
+        * `teachers` - All Teachers
+        * `staff` - All Staff
+        * `specific_class` - Specific Class / Section
+    NotificationDelivery:
+      type: object
+      description: Serializer for notification audit and delivery history.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        event:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        recipient_user:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        recipient_name:
+          type: string
+          readOnly: true
+        recipient_phone:
+          type: string
+          readOnly: true
+        recipient_email:
+          type: string
+          format: email
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        content:
+          type: string
+          readOnly: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/Language633Enum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/NotificationDeliveryStatusEnum'
+          readOnly: true
+        gateway_config:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        provider_message_id:
+          type: string
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+        segment_count:
+          type: integer
+          readOnly: true
+        cost_bdt:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,4})?$
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - channel
+      - content
+      - cost_bdt
+      - created_at
+      - delivered_at
+      - error_message
+      - event
+      - gateway_config
+      - id
+      - language
+      - provider_message_id
+      - read_at
+      - recipient_email
+      - recipient_name
+      - recipient_phone
+      - recipient_user
+      - segment_count
+      - sent_at
+      - status
+      - title
+    NotificationDeliveryStatusEnum:
+      enum:
+      - queued
+      - sent
+      - delivered
+      - failed
+      type: string
+      description: |-
+        * `queued` - Queued
+        * `sent` - Sent
+        * `delivered` - Delivered
+        * `failed` - Failed
+    NotificationPreference:
+      type: object
+      description: User notification preference settings.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        enable_sms:
+          type: boolean
+        enable_push:
+          type: boolean
+        enable_email:
+          type: boolean
+        enable_in_app:
+          type: boolean
+        quiet_hours_enabled:
+          type: boolean
+          description: If True, suppress non-emergency notifications during night
+            hours
+        quiet_hours_start:
+          type: string
+          format: time
+          nullable: true
+        quiet_hours_end:
+          type: string
+          format: time
+          nullable: true
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+      required:
+      - id
+      - user
+    NotificationTemplate:
+      type: object
+      description: Serializer for bilingual notification templates.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        code:
+          type: string
+          description: Unique event code, e.g. attendance_absent, fee_due, otp_verification
+          maxLength: 60
+        channel:
+          $ref: '#/components/schemas/ChannelEnum'
+        subject_template:
+          type: string
+          description: Optional subject line template for push/email
+          maxLength: 255
+        body_template_en:
+          type: string
+          description: English message body with {{variables}}
+        body_template_bn:
+          type: string
+          description: Bengali message body with {{variables}}
+        variables_schema:
+          description: List of accepted placeholder keys, e.g. ['student_name', 'amount',
+            'date']
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body_template_bn
+      - body_template_en
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    NotificationTemplateRequest:
+      type: object
+      description: Serializer for bilingual notification templates.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        code:
+          type: string
+          minLength: 1
+          description: Unique event code, e.g. attendance_absent, fee_due, otp_verification
+          maxLength: 60
+        channel:
+          $ref: '#/components/schemas/ChannelEnum'
+        subject_template:
+          type: string
+          description: Optional subject line template for push/email
+          maxLength: 255
+        body_template_en:
+          type: string
+          minLength: 1
+          description: English message body with {{variables}}
+        body_template_bn:
+          type: string
+          minLength: 1
+          description: Bengali message body with {{variables}}
+        variables_schema:
+          description: List of accepted placeholder keys, e.g. ['student_name', 'amount',
+            'date']
+        is_active:
+          type: boolean
+      required:
+      - body_template_bn
+      - body_template_en
+      - code
+      - name
     OTPRequestRequest:
       type: object
       description: Serializer for requesting phone OTP.
@@ -24934,7 +26986,7 @@ components:
           default: ''
         platform:
           allOf:
-          - $ref: '#/components/schemas/PlatformEnum'
+          - $ref: '#/components/schemas/PlatformA93Enum'
           default: web
       required:
       - code
@@ -25381,6 +27433,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Branch'
+    PaginatedChatMessageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+    PaginatedChatThreadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatThread'
     PaginatedClassLevelList:
       type: object
       required:
@@ -25588,6 +27686,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Device'
+    PaginatedDeviceTokenList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceToken'
     PaginatedDeviceUserMapList:
       type: object
       required:
@@ -25611,6 +27732,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceUserMap'
+    PaginatedEmergencyAlertList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmergencyAlert'
     PaginatedExamEligibilityPolicyList:
       type: object
       required:
@@ -26186,6 +28330,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MyChildren'
+    PaginatedNoticeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notice'
+    PaginatedNotificationDeliveryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationDelivery'
+    PaginatedNotificationTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationTemplate'
     PaginatedPaymentList:
       type: object
       required:
@@ -26508,6 +28721,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RoutineSlot'
+    PaginatedSMSGatewayConfigList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SMSGatewayConfig'
     PaginatedSeatPlanList:
       type: object
       required:
@@ -27547,7 +29783,7 @@ components:
         description:
           type: string
         target_audience:
-          $ref: '#/components/schemas/TargetAudienceEnum'
+          $ref: '#/components/schemas/DeviceGroupTargetAudienceEnum'
     PatchedDeviceRequest:
       type: object
       description: Serializer for hardware terminal devices.
@@ -28282,6 +30518,108 @@ components:
           type: string
           format: uuid
           nullable: true
+    PatchedNoticeRequest:
+      type: object
+      description: Serializer for School Notice board posts.
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        content_en:
+          type: string
+          minLength: 1
+        content_bn:
+          type: string
+        category:
+          $ref: '#/components/schemas/NoticeCategoryEnum'
+        target_audience:
+          $ref: '#/components/schemas/NoticeTargetAudienceEnum'
+        target_class_level:
+          type: string
+          format: uuid
+          nullable: true
+        target_section:
+          type: string
+          format: uuid
+          nullable: true
+        is_pinned:
+          type: boolean
+          description: Pin to the top of notice boards
+        is_published:
+          type: boolean
+        publish_date:
+          type: string
+          format: date-time
+        expiry_date:
+          type: string
+          format: date-time
+          nullable: true
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+    PatchedNotificationPreferenceRequest:
+      type: object
+      description: User notification preference settings.
+      properties:
+        enable_sms:
+          type: boolean
+        enable_push:
+          type: boolean
+        enable_email:
+          type: boolean
+        enable_in_app:
+          type: boolean
+        quiet_hours_enabled:
+          type: boolean
+          description: If True, suppress non-emergency notifications during night
+            hours
+        quiet_hours_start:
+          type: string
+          format: time
+          nullable: true
+        quiet_hours_end:
+          type: string
+          format: time
+          nullable: true
+        language_preference:
+          $ref: '#/components/schemas/LanguagePreferenceEnum'
+    PatchedNotificationTemplateRequest:
+      type: object
+      description: Serializer for bilingual notification templates.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        code:
+          type: string
+          minLength: 1
+          description: Unique event code, e.g. attendance_absent, fee_due, otp_verification
+          maxLength: 60
+        channel:
+          $ref: '#/components/schemas/ChannelEnum'
+        subject_template:
+          type: string
+          description: Optional subject line template for push/email
+          maxLength: 255
+        body_template_en:
+          type: string
+          minLength: 1
+          description: English message body with {{variables}}
+        body_template_bn:
+          type: string
+          minLength: 1
+          description: Bengali message body with {{variables}}
+        variables_schema:
+          description: List of accepted placeholder keys, e.g. ['student_name', 'amount',
+            'date']
+        is_active:
+          type: boolean
     PatchedPaymentRequest:
       type: object
       properties:
@@ -28615,6 +30953,60 @@ components:
           type: string
           format: uuid
           nullable: true
+    PatchedSMSGatewayConfigRequest:
+      type: object
+      description: Serializer for SMS Gateway credentials and configuration.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Gateway display name, e.g. 'Primary SSL Wireless'
+          maxLength: 100
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        sender_id:
+          type: string
+          minLength: 1
+          description: Approved BTRC masking alphanumeric sender ID or 11-digit phone
+            number
+          maxLength: 50
+        is_masking:
+          type: boolean
+          description: True if using an approved brand masking name, False for non-masking
+        api_key:
+          type: string
+          writeOnly: true
+          minLength: 1
+        api_secret:
+          type: string
+          writeOnly: true
+        client_id:
+          type: string
+          description: Optional client ID, SID, or username
+          maxLength: 100
+        endpoint_url:
+          type: string
+          format: uri
+          description: Custom gateway HTTP/REST endpoint URL if required
+          maxLength: 200
+        is_active:
+          type: boolean
+        is_default:
+          type: boolean
+          description: Default gateway used for outbound SMS dispatch for this institution
+        rate_per_segment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          description: Cost in BDT per SMS segment (typically ৳0.30 - ৳0.65)
+        rate_limit_per_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum messages permitted per minute
+        meta_config:
+          description: Additional provider-specific parameters (e.g. headers, project
+            id)
     PatchedSectionRequest:
       type: object
       properties:
@@ -29093,7 +31485,7 @@ components:
           description: e.g. Sibling Concession 50%
           maxLength: 255
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: '#/components/schemas/WaiverRuleCategoryEnum'
         discount_type:
           $ref: '#/components/schemas/DiscountTypeEnum'
         discount_value:
@@ -29596,7 +31988,7 @@ components:
       - order
       - shift
       - start_time
-    PlatformEnum:
+    PlatformA93Enum:
       enum:
       - web
       - android
@@ -30012,6 +32404,20 @@ components:
         * `mqtt` - MQTT Broker
         * `pull_sdk` - Pull via SDK / Network Socket
         * `simulator` - Virtual Simulator
+    ProviderEnum:
+      enum:
+      - ssl_wireless
+      - greenweb
+      - onnorokom
+      - teletalk
+      - mock_console
+      type: string
+      description: |-
+        * `ssl_wireless` - SSL Wireless
+        * `greenweb` - Greenweb BD
+        * `onnorokom` - Onnorokom SMS
+        * `teletalk` - Teletalk Govt
+        * `mock_console` - Local / Mock Console
     PurposeEnum:
       enum:
       - login
@@ -31116,6 +33522,144 @@ components:
       - period_id
       - section_id
       - weekday
+    SMSGatewayConfig:
+      type: object
+      description: Serializer for SMS Gateway credentials and configuration.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Gateway display name, e.g. 'Primary SSL Wireless'
+          maxLength: 100
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        sender_id:
+          type: string
+          description: Approved BTRC masking alphanumeric sender ID or 11-digit phone
+            number
+          maxLength: 50
+        is_masking:
+          type: boolean
+          description: True if using an approved brand masking name, False for non-masking
+        api_key_masked:
+          type: string
+          readOnly: true
+        client_id:
+          type: string
+          description: Optional client ID, SID, or username
+          maxLength: 100
+        endpoint_url:
+          type: string
+          format: uri
+          description: Custom gateway HTTP/REST endpoint URL if required
+          maxLength: 200
+        is_active:
+          type: boolean
+        is_default:
+          type: boolean
+          description: Default gateway used for outbound SMS dispatch for this institution
+        rate_per_segment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          description: Cost in BDT per SMS segment (typically ৳0.30 - ৳0.65)
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+          description: Current credited account balance in BDT
+        last_balance_check:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rate_limit_per_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum messages permitted per minute
+        meta_config:
+          description: Additional provider-specific parameters (e.g. headers, project
+            id)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - api_key_masked
+      - balance
+      - created_at
+      - id
+      - last_balance_check
+      - name
+      - sender_id
+      - updated_at
+    SMSGatewayConfigRequest:
+      type: object
+      description: Serializer for SMS Gateway credentials and configuration.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Gateway display name, e.g. 'Primary SSL Wireless'
+          maxLength: 100
+        provider:
+          $ref: '#/components/schemas/ProviderEnum'
+        sender_id:
+          type: string
+          minLength: 1
+          description: Approved BTRC masking alphanumeric sender ID or 11-digit phone
+            number
+          maxLength: 50
+        is_masking:
+          type: boolean
+          description: True if using an approved brand masking name, False for non-masking
+        api_key:
+          type: string
+          writeOnly: true
+          minLength: 1
+        api_secret:
+          type: string
+          writeOnly: true
+        client_id:
+          type: string
+          description: Optional client ID, SID, or username
+          maxLength: 100
+        endpoint_url:
+          type: string
+          format: uri
+          description: Custom gateway HTTP/REST endpoint URL if required
+          maxLength: 200
+        is_active:
+          type: boolean
+        is_default:
+          type: boolean
+          description: Default gateway used for outbound SMS dispatch for this institution
+        rate_per_segment:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,4})?$
+          description: Cost in BDT per SMS segment (typically ৳0.30 - ৳0.65)
+        rate_limit_per_minute:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Maximum messages permitted per minute
+        meta_config:
+          description: Additional provider-specific parameters (e.g. headers, project
+            id)
+      required:
+      - api_key
+      - name
+      - sender_id
     ScaleTypeEnum:
       enum:
       - gpa_5
@@ -31287,6 +33831,25 @@ components:
       - name
       - session
       - shift
+    SendDirectSMSRequest:
+      type: object
+      description: Serializer for ad-hoc manual SMS testing.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 25
+        message:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        gateway_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - message
+      - phone
     SessionCloseRequest:
       type: object
       description: Serializer for confirming session closure.
@@ -31296,6 +33859,16 @@ components:
           description: Must be True to confirm irreversible session closure.
       required:
       - confirm
+    SeverityEnum:
+      enum:
+      - warning
+      - critical
+      - disaster
+      type: string
+      description: |-
+        * `warning` - Warning
+        * `critical` - Critical
+        * `disaster` - Disaster
     Shift:
       type: object
       description: Serializer for Shift.
@@ -33435,18 +36008,6 @@ components:
       required:
       - class_level
       - exam
-    TargetAudienceEnum:
-      enum:
-      - all
-      - students
-      - staff
-      - drivers
-      type: string
-      description: |-
-        * `all` - All
-        * `students` - Students
-        * `staff` - Staff
-        * `drivers` - Drivers
     TeacherAssignment:
       type: object
       description: Instructor class/subject mapping serializer.
@@ -33530,6 +36091,29 @@ components:
       - session
       - subject
       - teacher
+    TemplatePreviewLanguageEnum:
+      enum:
+      - bn
+      - en
+      type: string
+      description: |-
+        * `bn` - bn
+        * `en` - en
+    TemplatePreviewRequest:
+      type: object
+      description: Serializer for testing template substitution.
+      properties:
+        variables:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+        language:
+          allOf:
+          - $ref: '#/components/schemas/TemplatePreviewLanguageEnum'
+          default: bn
+      required:
+      - variables
     Term:
       type: object
       description: Serializer for Term.
@@ -34139,7 +36723,7 @@ components:
           readOnly: true
         platform:
           allOf:
-          - $ref: '#/components/schemas/PlatformEnum'
+          - $ref: '#/components/schemas/PlatformA93Enum'
           readOnly: true
         app_version:
           type: string
@@ -34266,7 +36850,7 @@ components:
           description: e.g. Sibling Concession 50%
           maxLength: 255
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: '#/components/schemas/WaiverRuleCategoryEnum'
         discount_type:
           $ref: '#/components/schemas/DiscountTypeEnum'
         discount_value:
@@ -34306,6 +36890,22 @@ components:
       - institution
       - name
       - updated_at
+    WaiverRuleCategoryEnum:
+      enum:
+      - sibling
+      - merit
+      - poor_fund
+      - quota
+      - staff_child
+      - special
+      type: string
+      description: |-
+        * `sibling` - Sibling Concession (সহোদর সুবিধা)
+        * `merit` - Merit / Academic Scholarship (মেধাবৃত্তি)
+        * `poor_fund` - Poor Fund / Zakat / Financial Need (দরিদ্র তহবিল)
+        * `quota` - Freedom Fighter / Special Quota (মুক্তিযোদ্ধা/বিশেষ কোটা)
+        * `staff_child` - Staff / Teacher Child (শিক্ষক সন্তান সুবিধা)
+        * `special` - Discretionary / Special (বিশেষ বিবেচনা)
     WaiverRuleRequest:
       type: object
       properties:
@@ -34315,7 +36915,7 @@ components:
           description: e.g. Sibling Concession 50%
           maxLength: 255
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: '#/components/schemas/WaiverRuleCategoryEnum'
         discount_type:
           $ref: '#/components/schemas/DiscountTypeEnum'
         discount_value:
