@@ -10080,6 +10080,2154 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/events/achievements/:
+    get:
+      operationId: events_achievements_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: is_verified
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAchievementList'
+          description: ''
+    post:
+      operationId: events_achievements_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AchievementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AchievementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AchievementRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Achievement'
+          description: ''
+  /api/v1/events/achievements/{id}/:
+    get:
+      operationId: events_achievements_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Achievement.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Achievement'
+          description: ''
+    put:
+      operationId: events_achievements_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Achievement.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AchievementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AchievementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AchievementRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Achievement'
+          description: ''
+    patch:
+      operationId: events_achievements_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Achievement.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAchievementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAchievementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAchievementRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Achievement'
+          description: ''
+    delete:
+      operationId: events_achievements_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Achievement.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/albums/:
+    get:
+      operationId: events_albums_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: query
+        name: event
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_public_to_guardians
+        schema:
+          type: boolean
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlbumList'
+          description: ''
+    post:
+      operationId: events_albums_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+  /api/v1/events/albums/{id}/:
+    get:
+      operationId: events_albums_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Album.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+    put:
+      operationId: events_albums_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Album.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlbumRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+    patch:
+      operationId: events_albums_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Album.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlbumRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlbumRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlbumRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+          description: ''
+    delete:
+      operationId: events_albums_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Album.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/calendar/:
+    get:
+      operationId: events_calendar_list
+      description: Unified chronological calendar merging Events, Holidays, and published
+        Notices.
+      parameters:
+      - in: query
+        name: end_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: start_date
+        schema:
+          type: string
+          format: date
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnifiedCalendarItem'
+          description: ''
+  /api/v1/events/certificates/:
+    get:
+      operationId: events_certificates_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: template_code
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCertificateList'
+          description: ''
+    post:
+      operationId: events_certificates_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+  /api/v1/events/certificates/{id}/:
+    get:
+      operationId: events_certificates_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Certificate.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+    put:
+      operationId: events_certificates_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Certificate.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CertificateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+    patch:
+      operationId: events_certificates_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Certificate.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCertificateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Certificate'
+          description: ''
+    delete:
+      operationId: events_certificates_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Certificate.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/certificates/{id}/download-pdf/:
+    get:
+      operationId: events_certificates_download_pdf_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Certificate.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/events/club-memberships/:
+    get:
+      operationId: events_club_memberships_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: query
+        name: club
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - captain
+          - member
+          - president
+          - secretary
+          - treasurer
+        description: |-
+          * `member` - Member
+          * `president` - President
+          * `secretary` - Secretary
+          * `treasurer` - Treasurer
+          * `captain` - Captain
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - inactive
+        description: |-
+          * `active` - Active
+          * `inactive` - Inactive
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedClubMembershipList'
+          description: ''
+    post:
+      operationId: events_club_memberships_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClubMembershipRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClubMembershipRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClubMembershipRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubMembership'
+          description: ''
+  /api/v1/events/club-memberships/{id}/:
+    get:
+      operationId: events_club_memberships_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club Membership.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubMembership'
+          description: ''
+    put:
+      operationId: events_club_memberships_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club Membership.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClubMembershipRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClubMembershipRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClubMembershipRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubMembership'
+          description: ''
+    patch:
+      operationId: events_club_memberships_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club Membership.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClubMembershipRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClubMembershipRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClubMembershipRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubMembership'
+          description: ''
+    delete:
+      operationId: events_club_memberships_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club Membership.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/clubs/:
+    get:
+      operationId: events_clubs_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - bncc
+          - cultural
+          - debate
+          - other
+          - rover
+          - science
+          - scouts
+          - sports
+        description: |-
+          * `scouts` - Scouts
+          * `rover` - Rover Scouts
+          * `bncc` - BNCC
+          * `debate` - Debate
+          * `cultural` - Cultural
+          * `science` - Science
+          * `sports` - Sports
+          * `other` - Other
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedClubList'
+          description: ''
+    post:
+      operationId: events_clubs_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClubRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClubRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClubRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Club'
+          description: ''
+  /api/v1/events/clubs/{id}/:
+    get:
+      operationId: events_clubs_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Club'
+          description: ''
+    put:
+      operationId: events_clubs_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClubRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClubRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClubRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Club'
+          description: ''
+    patch:
+      operationId: events_clubs_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClubRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClubRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClubRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Club'
+          description: ''
+    delete:
+      operationId: events_clubs_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Club.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/competition-results/:
+    get:
+      operationId: events_competition_results_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: query
+        name: competition
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: position
+        schema:
+          type: string
+          enum:
+          - 1st
+          - 2nd
+          - 3rd
+          - honorable_mention
+          - participant
+        description: |-
+          * `1st` - 1st Place
+          * `2nd` - 2nd Place
+          * `3rd` - 3rd Place
+          * `honorable_mention` - Honorable Mention
+          * `participant` - Participant
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompetitionResultList'
+          description: ''
+    post:
+      operationId: events_competition_results_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionResultRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompetitionResultRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompetitionResultRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResult'
+          description: ''
+  /api/v1/events/competition-results/{id}/:
+    get:
+      operationId: events_competition_results_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition Result.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResult'
+          description: ''
+    put:
+      operationId: events_competition_results_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition Result.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionResultRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompetitionResultRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompetitionResultRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResult'
+          description: ''
+    patch:
+      operationId: events_competition_results_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition Result.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompetitionResultRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompetitionResultRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompetitionResultRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResult'
+          description: ''
+    delete:
+      operationId: events_competition_results_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition Result.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/competitions/:
+    get:
+      operationId: events_competitions_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: query
+        name: club
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: event
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: level
+        schema:
+          type: string
+          enum:
+          - district
+          - division
+          - national
+          - school
+          - upazila
+        description: |-
+          * `school` - School
+          * `upazila` - Upazila
+          * `district` - District
+          * `division` - Division
+          * `national` - National
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompetitionList'
+          description: ''
+    post:
+      operationId: events_competitions_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Competition'
+          description: ''
+  /api/v1/events/competitions/{id}/:
+    get:
+      operationId: events_competitions_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Competition'
+          description: ''
+    put:
+      operationId: events_competitions_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompetitionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Competition'
+          description: ''
+    patch:
+      operationId: events_competitions_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompetitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompetitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompetitionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Competition'
+          description: ''
+    delete:
+      operationId: events_competitions_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Competition.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/events/:
+    get:
+      operationId: events_events_list
+      description: CRUD for school & club events plus RSVP action.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - academic
+          - annual_function
+          - club
+          - cultural
+          - exam
+          - meeting
+          - national_day
+          - other
+          - sports
+        description: |-
+          * `academic` - Academic
+          * `sports` - Sports Day
+          * `annual_function` - Annual Function
+          * `national_day` - National Day
+          * `cultural` - Cultural
+          * `club` - Club Activity
+          * `exam` - Exam
+          * `meeting` - Parent/Staff Meeting
+          * `other` - Other
+      - in: query
+        name: club
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_published
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: requires_rsvp
+        schema:
+          type: boolean
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventList'
+          description: ''
+    post:
+      operationId: events_events_create
+      description: CRUD for school & club events plus RSVP action.
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/v1/events/events/{id}/:
+    get:
+      operationId: events_events_retrieve
+      description: CRUD for school & club events plus RSVP action.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Event.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+    put:
+      operationId: events_events_update
+      description: CRUD for school & club events plus RSVP action.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Event.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+    patch:
+      operationId: events_events_partial_update
+      description: CRUD for school & club events plus RSVP action.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Event.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEventRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEventRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEventRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+    delete:
+      operationId: events_events_destroy
+      description: CRUD for school & club events plus RSVP action.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Event.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/events/{id}/rsvp/:
+    post:
+      operationId: events_events_rsvp_create
+      description: CRUD for school & club events plus RSVP action.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Event.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRSVPActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EventRSVPActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EventRSVPActionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventRSVP'
+          description: ''
+  /api/v1/events/gallery-media/:
+    get:
+      operationId: events_gallery_media_list
+      description: Gallery media with strict guardian consent gating for student photos/videos.
+      parameters:
+      - in: query
+        name: album
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: guardian_consent_verified
+        schema:
+          type: boolean
+      - in: query
+        name: is_approved
+        schema:
+          type: boolean
+      - in: query
+        name: media_type
+        schema:
+          type: string
+          enum:
+          - photo
+          - video
+        description: |-
+          * `photo` - Photo
+          * `video` - Video
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGalleryMediaList'
+          description: ''
+    post:
+      operationId: events_gallery_media_create
+      description: Gallery media with strict guardian consent gating for student photos/videos.
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GalleryMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GalleryMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GalleryMediaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryMedia'
+          description: ''
+  /api/v1/events/gallery-media/{id}/:
+    get:
+      operationId: events_gallery_media_retrieve
+      description: Gallery media with strict guardian consent gating for student photos/videos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Gallery Media.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryMedia'
+          description: ''
+    put:
+      operationId: events_gallery_media_update
+      description: Gallery media with strict guardian consent gating for student photos/videos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Gallery Media.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GalleryMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GalleryMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GalleryMediaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryMedia'
+          description: ''
+    patch:
+      operationId: events_gallery_media_partial_update
+      description: Gallery media with strict guardian consent gating for student photos/videos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Gallery Media.
+        required: true
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGalleryMediaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGalleryMediaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGalleryMediaRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryMedia'
+          description: ''
+    delete:
+      operationId: events_gallery_media_destroy
+      description: Gallery media with strict guardian consent gating for student photos/videos.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Gallery Media.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/events/notice-receipts/:
+    get:
+      operationId: events_notice_receipts_list
+      description: Notice read receipt tracking and read-summary endpoints.
+      summary: List notice read receipts
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNoticeReadReceiptList'
+          description: ''
+  /api/v1/events/notice-receipts/{id}/:
+    get:
+      operationId: events_notice_receipts_retrieve
+      description: Notice read receipt tracking and read-summary endpoints.
+      summary: Retrieve a notice read receipt
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Notice Read Receipt.
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeReadReceipt'
+          description: ''
+  /api/v1/events/notice-receipts/mark-read/:
+    post:
+      operationId: events_notice_receipts_mark_read_create
+      description: Notice read receipt tracking and read-summary endpoints.
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkNoticeReadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkNoticeReadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkNoticeReadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeReadReceipt'
+          description: ''
+  /api/v1/events/notice-receipts/summary/:
+    get:
+      operationId: events_notice_receipts_summary_retrieve
+      description: Notice read receipt tracking and read-summary endpoints.
+      parameters:
+      - in: query
+        name: notice
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - events
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoticeReadReceipt'
+          description: ''
   /api/v1/exams/admit-cards/:
     get:
       operationId: exams_admit_cards_list
@@ -31032,6 +33180,93 @@ components:
         * `equity` - Equity / Fund Balance (মূলধন / তহবিল)
         * `income` - Income / Revenue (আয়)
         * `expense` - Expense (ব্যয়)
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        title_en:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        achieved_date:
+          type: string
+          format: date
+        competition_result:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        is_verified:
+          type: boolean
+        verified_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - achieved_date
+      - created_at
+      - id
+      - institution
+      - student
+      - title_en
+      - updated_at
+      - verified_by
+    AchievementRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        achieved_date:
+          type: string
+          format: date
+        competition_result:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        is_verified:
+          type: boolean
+      required:
+      - achieved_date
+      - student
+      - title_en
     ActionEnum:
       enum:
       - promote
@@ -31502,6 +33737,77 @@ components:
       - invoice_number
       - payment
       - transaction_type
+    Album:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        title_en:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        event:
+          type: string
+          format: uuid
+          nullable: true
+        album_date:
+          type: string
+          format: date
+        is_published:
+          type: boolean
+        is_public_to_guardians:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - album_date
+      - created_at
+      - id
+      - institution
+      - title_en
+      - updated_at
+    AlbumRequest:
+      type: object
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        event:
+          type: string
+          format: uuid
+          nullable: true
+        album_date:
+          type: string
+          format: date
+        is_published:
+          type: boolean
+        is_public_to_guardians:
+          type: boolean
+      required:
+      - album_date
+      - title_en
     Application:
       type: object
       properties:
@@ -33658,6 +35964,109 @@ components:
       - created_copies
       - row_errors
       - skipped
+    Certificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        achievement:
+          type: string
+          format: uuid
+          nullable: true
+        competition_result:
+          type: string
+          format: uuid
+          nullable: true
+        certificate_number:
+          type: string
+          maxLength: 100
+        title_en:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        issued_date:
+          type: string
+          format: date
+        template_code:
+          type: string
+          maxLength: 60
+        signatory_name:
+          type: string
+          maxLength: 150
+        signatory_title:
+          type: string
+          maxLength: 150
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - certificate_number
+      - created_at
+      - id
+      - institution
+      - issued_date
+      - student
+      - title_en
+      - updated_at
+    CertificateRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        achievement:
+          type: string
+          format: uuid
+          nullable: true
+        competition_result:
+          type: string
+          format: uuid
+          nullable: true
+        certificate_number:
+          type: string
+          minLength: 1
+          maxLength: 100
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        issued_date:
+          type: string
+          format: date
+        template_code:
+          type: string
+          minLength: 1
+          maxLength: 60
+        signatory_name:
+          type: string
+          maxLength: 150
+        signatory_title:
+          type: string
+          maxLength: 150
+      required:
+      - certificate_number
+      - issued_date
+      - student
+      - title_en
     ChannelEnum:
       enum:
       - sms
@@ -34017,6 +36426,163 @@ components:
         * `non_collegiate` - Non-Collegiate (Attendance 60-74%)
         * `disqualified` - Disqualified (Attendance <60% or Dues)
         * `cleared_by_principal` - Cleared by Special Permission
+    Club:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name_en:
+          type: string
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        category:
+          $ref: '#/components/schemas/ClubCategoryEnum'
+        description:
+          type: string
+        advisor:
+          type: string
+          format: uuid
+          nullable: true
+        meeting_schedule:
+          type: string
+          maxLength: 200
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - name_en
+      - updated_at
+    ClubCategoryEnum:
+      enum:
+      - scouts
+      - rover
+      - bncc
+      - debate
+      - cultural
+      - science
+      - sports
+      - other
+      type: string
+      description: |-
+        * `scouts` - Scouts
+        * `rover` - Rover Scouts
+        * `bncc` - BNCC
+        * `debate` - Debate
+        * `cultural` - Cultural
+        * `science` - Science
+        * `sports` - Sports
+        * `other` - Other
+    ClubMembership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        club:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        joined_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/ClubMembershipStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - club
+      - created_at
+      - id
+      - institution
+      - joined_date
+      - student
+      - updated_at
+    ClubMembershipRequest:
+      type: object
+      properties:
+        club:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        joined_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/ClubMembershipStatusEnum'
+      required:
+      - club
+      - joined_date
+      - student
+    ClubMembershipStatusEnum:
+      enum:
+      - active
+      - inactive
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+    ClubRequest:
+      type: object
+      properties:
+        name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        category:
+          $ref: '#/components/schemas/ClubCategoryEnum'
+        description:
+          type: string
+        advisor:
+          type: string
+          format: uuid
+          nullable: true
+        meeting_schedule:
+          type: string
+          maxLength: 200
+        is_active:
+          type: boolean
+      required:
+      - name_en
     CommandTypeEnum:
       enum:
       - enroll_user
@@ -34031,6 +36597,146 @@ components:
         * `sync_time` - Sync Time
         * `reboot` - Reboot Device
         * `clear_log` - Clear Log
+    Competition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        title_en:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        event:
+          type: string
+          format: uuid
+          nullable: true
+        club:
+          type: string
+          format: uuid
+          nullable: true
+        competition_date:
+          type: string
+          format: date
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - competition_date
+      - created_at
+      - id
+      - institution
+      - title_en
+      - updated_at
+    CompetitionRequest:
+      type: object
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        event:
+          type: string
+          format: uuid
+          nullable: true
+        club:
+          type: string
+          format: uuid
+          nullable: true
+        competition_date:
+          type: string
+          format: date
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+      required:
+      - competition_date
+      - title_en
+    CompetitionResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        competition:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        position:
+          $ref: '#/components/schemas/PositionEnum'
+        score_or_remark:
+          type: string
+          maxLength: 200
+        awarded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - awarded_at
+      - competition
+      - created_at
+      - id
+      - institution
+      - student
+      - updated_at
+    CompetitionResultRequest:
+      type: object
+      properties:
+        competition:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        position:
+          $ref: '#/components/schemas/PositionEnum'
+        score_or_remark:
+          type: string
+          maxLength: 200
+      required:
+      - competition
+      - student
     ComponentTypeEnum:
       enum:
       - earning
@@ -35235,6 +37941,214 @@ components:
       required:
       - message_bn
       - title
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        title_en:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description_en:
+          type: string
+        description_bn:
+          type: string
+        category:
+          $ref: '#/components/schemas/EventCategoryEnum'
+        start_datetime:
+          type: string
+          format: date-time
+        end_datetime:
+          type: string
+          format: date-time
+        is_all_day:
+          type: boolean
+        venue:
+          type: string
+          maxLength: 255
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceAe1Enum'
+        target_class_level:
+          type: string
+          format: uuid
+          nullable: true
+        target_section:
+          type: string
+          format: uuid
+          nullable: true
+        club:
+          type: string
+          format: uuid
+          nullable: true
+        organizer:
+          type: string
+          format: uuid
+          nullable: true
+        is_published:
+          type: boolean
+        requires_rsvp:
+          type: boolean
+        max_participants:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_datetime
+      - id
+      - institution
+      - start_datetime
+      - title_en
+      - updated_at
+    EventCategoryEnum:
+      enum:
+      - academic
+      - sports
+      - annual_function
+      - national_day
+      - cultural
+      - club
+      - exam
+      - meeting
+      - other
+      type: string
+      description: |-
+        * `academic` - Academic
+        * `sports` - Sports Day
+        * `annual_function` - Annual Function
+        * `national_day` - National Day
+        * `cultural` - Cultural
+        * `club` - Club Activity
+        * `exam` - Exam
+        * `meeting` - Parent/Staff Meeting
+        * `other` - Other
+    EventRSVP:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        event:
+          type: string
+          format: uuid
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status7e8Enum'
+        note:
+          type: string
+          maxLength: 255
+        responded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - event
+      - id
+      - institution
+      - responded_at
+      - user
+    EventRSVPActionRequest:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status7e8Enum'
+          default: going
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        note:
+          type: string
+          default: ''
+    EventRequest:
+      type: object
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description_en:
+          type: string
+        description_bn:
+          type: string
+        category:
+          $ref: '#/components/schemas/EventCategoryEnum'
+        start_datetime:
+          type: string
+          format: date-time
+        end_datetime:
+          type: string
+          format: date-time
+        is_all_day:
+          type: boolean
+        venue:
+          type: string
+          maxLength: 255
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceAe1Enum'
+        target_class_level:
+          type: string
+          format: uuid
+          nullable: true
+        target_section:
+          type: string
+          format: uuid
+          nullable: true
+        club:
+          type: string
+          format: uuid
+          nullable: true
+        organizer:
+          type: string
+          format: uuid
+          nullable: true
+        is_published:
+          type: boolean
+        requires_rsvp:
+          type: boolean
+        max_participants:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+      required:
+      - end_datetime
+      - start_datetime
+      - title_en
     EventType401Enum:
       enum:
       - boarded
@@ -36515,6 +39429,90 @@ components:
       - cost
       - liters
       - vehicle
+    GalleryMedia:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        album:
+          type: string
+          format: uuid
+        media_type:
+          $ref: '#/components/schemas/MediaTypeEnum'
+        file:
+          type: string
+          format: uri
+        caption_en:
+          type: string
+          maxLength: 255
+        caption_bn:
+          type: string
+          maxLength: 255
+        display_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        contains_students:
+          type: boolean
+          description: True if media depicts identifiable students.
+        guardian_consent_verified:
+          type: boolean
+          description: Must be True before student-depicting media is visible to guardians/students.
+        is_approved:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - album
+      - created_at
+      - file
+      - id
+      - institution
+      - updated_at
+    GalleryMediaRequest:
+      type: object
+      properties:
+        album:
+          type: string
+          format: uuid
+        media_type:
+          $ref: '#/components/schemas/MediaTypeEnum'
+        file:
+          type: string
+          format: binary
+        caption_en:
+          type: string
+          maxLength: 255
+        caption_bn:
+          type: string
+          maxLength: 255
+        display_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        contains_students:
+          type: boolean
+          description: True if media depicts identifiable students.
+        guardian_consent_verified:
+          type: boolean
+          description: Must be True before student-depicting media is visible to guardians/students.
+        is_approved:
+          type: boolean
+      required:
+      - album
+      - file
     GatePass:
       type: object
       properties:
@@ -39492,6 +42490,20 @@ components:
         * `draft` - Draft
         * `approved` - Approved
         * `delivered` - Delivered
+    LevelEnum:
+      enum:
+      - school
+      - upazila
+      - district
+      - division
+      - national
+      type: string
+      description: |-
+        * `school` - School
+        * `upazila` - Upazila
+        * `district` - District
+        * `division` - Division
+        * `national` - National
     LibraryFine:
       type: object
       properties:
@@ -40149,6 +43161,14 @@ components:
       required:
       - exam_subject
       - student
+    MarkNoticeReadRequest:
+      type: object
+      properties:
+        notice:
+          type: string
+          format: uuid
+      required:
+      - notice
     MarkPaidRequest:
       type: object
       description: Input serializer for disbursing an approved payroll run.
@@ -40306,6 +43326,14 @@ components:
         * `lunch` - Lunch
         * `snacks` - Snacks
         * `dinner` - Dinner
+    MediaTypeEnum:
+      enum:
+      - photo
+      - video
+      type: string
+      description: |-
+        * `photo` - Photo
+        * `video` - Video
     MediumEnum:
       enum:
       - bangla
@@ -40834,7 +43862,7 @@ components:
         category:
           $ref: '#/components/schemas/NoticeCategoryEnum'
         target_audience:
-          $ref: '#/components/schemas/NoticeTargetAudienceEnum'
+          $ref: '#/components/schemas/TargetAudienceAe1Enum'
         target_class_level:
           type: string
           format: uuid
@@ -40907,6 +43935,34 @@ components:
         * `fee` - Fee & Payment
         * `holiday` - Holiday
         * `emergency` - Emergency
+    NoticeReadReceipt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        notice:
+          type: string
+          format: uuid
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - institution
+      - notice
+      - read_at
+      - user
     NoticeRequest:
       type: object
       description: Serializer for School Notice board posts.
@@ -40926,7 +43982,7 @@ components:
         category:
           $ref: '#/components/schemas/NoticeCategoryEnum'
         target_audience:
-          $ref: '#/components/schemas/NoticeTargetAudienceEnum'
+          $ref: '#/components/schemas/TargetAudienceAe1Enum'
         target_class_level:
           type: string
           format: uuid
@@ -40954,22 +44010,6 @@ components:
       required:
       - content_en
       - title_en
-    NoticeTargetAudienceEnum:
-      enum:
-      - all
-      - students
-      - guardians
-      - teachers
-      - staff
-      - specific_class
-      type: string
-      description: |-
-        * `all` - Entire School
-        * `students` - All Students
-        * `guardians` - All Guardians
-        * `teachers` - All Teachers
-        * `staff` - All Staff
-        * `specific_class` - Specific Class / Section
     NotificationDelivery:
       type: object
       description: Serializer for notification audit and delivery history.
@@ -41498,6 +44538,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Account'
+    PaginatedAchievementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Achievement'
     PaginatedAdmissionCircularList:
       type: object
       required:
@@ -41613,6 +44676,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdvanceBalance'
+    PaginatedAlbumList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Album'
     PaginatedApplicationDocumentList:
       type: object
       required:
@@ -41958,6 +45044,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Branch'
+    PaginatedCertificateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certificate'
     PaginatedChatMessageList:
       type: object
       required:
@@ -42050,6 +45159,98 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ClassSubject'
+    PaginatedClubList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Club'
+    PaginatedClubMembershipList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClubMembership'
+    PaginatedCompetitionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Competition'
+    PaginatedCompetitionResultList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetitionResult'
     PaginatedCumulativeResultList:
       type: object
       required:
@@ -42326,6 +45527,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EmergencyAlert'
+    PaginatedEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
     PaginatedExamEligibilityPolicyList:
       type: object
       required:
@@ -42602,6 +45826,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FuelLog'
+    PaginatedGalleryMediaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryMedia'
     PaginatedGatePassList:
       type: object
       required:
@@ -43384,6 +46631,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Notice'
+    PaginatedNoticeReadReceiptList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoticeReadReceipt'
     PaginatedNotificationDeliveryList:
       type: object
       required:
@@ -44890,6 +48160,33 @@ components:
           maxLength: 100
         is_active:
           type: boolean
+    PatchedAchievementRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        category:
+          type: string
+          maxLength: 100
+        achieved_date:
+          type: string
+          format: date
+        competition_result:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        is_verified:
+          type: boolean
     PatchedAdmissionCircularRequest:
       type: object
       properties:
@@ -44973,6 +48270,29 @@ components:
         remarks:
           type: string
           maxLength: 255
+    PatchedAlbumRequest:
+      type: object
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        event:
+          type: string
+          format: uuid
+          nullable: true
+        album_date:
+          type: string
+          format: date
+        is_published:
+          type: boolean
+        is_public_to_guardians:
+          type: boolean
     PatchedApplicationDocumentRequest:
       type: object
       properties:
@@ -45375,6 +48695,44 @@ components:
           type: string
         is_main:
           type: boolean
+    PatchedCertificateRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        achievement:
+          type: string
+          format: uuid
+          nullable: true
+        competition_result:
+          type: string
+          format: uuid
+          nullable: true
+        certificate_number:
+          type: string
+          minLength: 1
+          maxLength: 100
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        issued_date:
+          type: string
+          format: date
+        template_code:
+          type: string
+          minLength: 1
+          maxLength: 60
+        signatory_name:
+          type: string
+          maxLength: 150
+        signatory_title:
+          type: string
+          maxLength: 150
     PatchedClassLevelRequest:
       type: object
       properties:
@@ -45433,6 +48791,87 @@ components:
         is_optional_elective:
           type: boolean
           description: True if this subject can be chosen as an optional/4th subject
+    PatchedClubMembershipRequest:
+      type: object
+      properties:
+        club:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        joined_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/ClubMembershipStatusEnum'
+    PatchedClubRequest:
+      type: object
+      properties:
+        name_en:
+          type: string
+          minLength: 1
+          maxLength: 150
+        name_bn:
+          type: string
+          maxLength: 150
+        category:
+          $ref: '#/components/schemas/ClubCategoryEnum'
+        description:
+          type: string
+        advisor:
+          type: string
+          format: uuid
+          nullable: true
+        meeting_schedule:
+          type: string
+          maxLength: 200
+        is_active:
+          type: boolean
+    PatchedCompetitionRequest:
+      type: object
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        event:
+          type: string
+          format: uuid
+          nullable: true
+        club:
+          type: string
+          format: uuid
+          nullable: true
+        competition_date:
+          type: string
+          format: date
+        level:
+          $ref: '#/components/schemas/LevelEnum'
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+    PatchedCompetitionResultRequest:
+      type: object
+      properties:
+        competition:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        position:
+          $ref: '#/components/schemas/PositionEnum'
+        score_or_remark:
+          type: string
+          maxLength: 200
     PatchedDepartmentRequest:
       type: object
       description: Department master data serializer.
@@ -45637,6 +49076,60 @@ components:
           maxLength: 500
         is_public_to_members:
           type: boolean
+    PatchedEventRequest:
+      type: object
+      properties:
+        title_en:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        description_en:
+          type: string
+        description_bn:
+          type: string
+        category:
+          $ref: '#/components/schemas/EventCategoryEnum'
+        start_datetime:
+          type: string
+          format: date-time
+        end_datetime:
+          type: string
+          format: date-time
+        is_all_day:
+          type: boolean
+        venue:
+          type: string
+          maxLength: 255
+        target_audience:
+          $ref: '#/components/schemas/TargetAudienceAe1Enum'
+        target_class_level:
+          type: string
+          format: uuid
+          nullable: true
+        target_section:
+          type: string
+          format: uuid
+          nullable: true
+        club:
+          type: string
+          format: uuid
+          nullable: true
+        organizer:
+          type: string
+          format: uuid
+          nullable: true
+        is_published:
+          type: boolean
+        requires_rsvp:
+          type: boolean
+        max_participants:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
     PatchedExamEligibilityPolicyRequest:
       type: object
       properties:
@@ -45975,6 +49468,35 @@ components:
         receipt_no:
           type: string
           maxLength: 64
+    PatchedGalleryMediaRequest:
+      type: object
+      properties:
+        album:
+          type: string
+          format: uuid
+        media_type:
+          $ref: '#/components/schemas/MediaTypeEnum'
+        file:
+          type: string
+          format: binary
+        caption_en:
+          type: string
+          maxLength: 255
+        caption_bn:
+          type: string
+          maxLength: 255
+        display_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        contains_students:
+          type: boolean
+          description: True if media depicts identifiable students.
+        guardian_consent_verified:
+          type: boolean
+          description: Must be True before student-depicting media is visible to guardians/students.
+        is_approved:
+          type: boolean
     PatchedGraceMarkRuleRequest:
       type: object
       properties:
@@ -46669,7 +50191,7 @@ components:
         category:
           $ref: '#/components/schemas/NoticeCategoryEnum'
         target_audience:
-          $ref: '#/components/schemas/NoticeTargetAudienceEnum'
+          $ref: '#/components/schemas/TargetAudienceAe1Enum'
         target_class_level:
           type: string
           format: uuid
@@ -49179,6 +52701,20 @@ components:
           description: Evaluation priority (higher number takes precedence)
       required:
       - policy
+    PositionEnum:
+      enum:
+      - 1st
+      - 2nd
+      - 3rd
+      - honorable_mention
+      - participant
+      type: string
+      description: |-
+        * `1st` - 1st Place
+        * `2nd` - 2nd Place
+        * `3rd` - 3rd Place
+        * `honorable_mention` - Honorable Mention
+        * `participant` - Participant
     PostAccountingRequest:
       type: object
       description: Input serializer for posting a payroll run to apps.accounting GL.
@@ -50781,6 +54317,20 @@ components:
         * `driver` - Driver (চালক)
         * `security` - Security (নিরাপত্তা কর্মী)
         * `other` - Other (অন্যান্য)
+    RoleEnum:
+      enum:
+      - member
+      - president
+      - secretary
+      - treasurer
+      - captain
+      type: string
+      description: |-
+        * `member` - Member
+        * `president` - President
+        * `secretary` - Secretary
+        * `treasurer` - Treasurer
+        * `captain` - Captain
     RoleRequest:
       type: object
       description: Serializer for Role.
@@ -51877,6 +55427,16 @@ components:
         * `mobile` - Mobile GPS App
         * `manual` - Manual Entry
         * `system` - System Processed
+    SourceTypeEnum:
+      enum:
+      - event
+      - holiday
+      - notice
+      type: string
+      description: |-
+        * `event` - event
+        * `holiday` - holiday
+        * `notice` - notice
     StaffCreateUpdate:
       type: object
       description: Full serialization for staff profile onboarding and mutation.
@@ -52761,6 +56321,16 @@ components:
         * `failed` - Failed
         * `cancelled` - Cancelled
         * `refunded` - Refunded
+    Status7e8Enum:
+      enum:
+      - going
+      - interested
+      - declined
+      type: string
+      description: |-
+        * `going` - Going
+        * `interested` - Interested
+        * `declined` - Declined
     Status970Enum:
       enum:
       - pending
@@ -54642,6 +58212,22 @@ components:
       required:
       - class_level
       - exam
+    TargetAudienceAe1Enum:
+      enum:
+      - all
+      - students
+      - guardians
+      - teachers
+      - staff
+      - specific_class
+      type: string
+      description: |-
+        * `all` - Entire School
+        * `students` - All Students
+        * `guardians` - All Guardians
+        * `teachers` - All Teachers
+        * `staff` - All Staff
+        * `specific_class` - Specific Class / Section
     TeacherAssignment:
       type: object
       description: Instructor class/subject mapping serializer.
@@ -55381,6 +58967,44 @@ components:
           default: ''
       required:
       - route
+    UnifiedCalendarItem:
+      type: object
+      properties:
+        id:
+          type: string
+        source_type:
+          $ref: '#/components/schemas/SourceTypeEnum'
+        category:
+          type: string
+        title_en:
+          type: string
+        title_bn:
+          type: string
+        description:
+          type: string
+        start:
+          type: string
+        end:
+          type: string
+          nullable: true
+        is_all_day:
+          type: boolean
+        venue:
+          type: string
+        is_pinned:
+          type: boolean
+      required:
+      - category
+      - description
+      - end
+      - id
+      - is_all_day
+      - is_pinned
+      - source_type
+      - start
+      - title_bn
+      - title_en
+      - venue
     UnlinkStudentActionRequest:
       type: object
       description: Payload to disassociate a student from a guardian.

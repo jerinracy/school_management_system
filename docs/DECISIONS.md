@@ -472,3 +472,16 @@
   - **Guardian OTP GatePass**: 6-digit OTPs are stored only as SHA-256 hashes with expiry (`guardian_otp_hash`, `guardian_otp_expires_at`) and verified via `hmac.compare_digest` before `approve_gate_pass` is permitted.
 - **Consequences**:
   - Day-schools incur zero hostel UI/API exposure, bed conflicts are impossible under concurrency, and student exits require verifiable guardian consent.
+
+---
+
+## ADR-025: Unified Calendar Aggregation & Consent-Gated Student Gallery
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Notice Board (`communications.Notice`) and Holidays (`institutions.Holiday`) already existed as authoritative models; Task 23 needed a unified calendar, event RSVPs, co-curricular clubs/competitions/certificates, and a student photo/video gallery with strict child-privacy protection.
+- **Decision**:
+  - **No Duplicate Notice/Holiday Models**: `apps/events/services/event_service.py` (`get_unified_calendar`) aggregates `Event`, `institutions.Holiday`, and published `communications.Notice` in a single tenant-scoped chronological feed, while `NoticeReadReceipt` adds per-user read tracking on top of `communications.Notice`.
+  - **Consent-Gated Gallery (`apps/events/views.py`)**: `GalleryMedia` carries `contains_students`, `guardian_consent_verified`, and `is_approved`. Non-staff users (guardians/students) only receive media where `album.is_published=True`, `album.is_public_to_guardians=True`, `is_approved=True`, and (`contains_students=False` OR `guardian_consent_verified=True`).
+- **Consequences**:
+  - Single source of truth is preserved for notices and holidays, and unconsented student photos/videos cannot leak to guardians or students.

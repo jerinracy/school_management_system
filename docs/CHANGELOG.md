@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 23**: Notice Board & Event Calendar (`apps/events`).
+  - Notice Board & Unified Calendar (`apps/events/services/event_service.py`, `apps/events/views.py`):
+    - Added `NoticeReadReceipt` (`mark-read` idempotent action and `summary` endpoint) integrating with `communications.Notice` without duplicating notices.
+    - Added `GET /api/v1/events/calendar/` merging `Event`, `institutions.Holiday`, and published `communications.Notice` records chronologically per institution.
+  - Events, Clubs, Competitions, Achievements & Certificates (`apps/events/models.py`):
+    - `Event` & `EventRSVP` with atomic `select_for_update()` capacity enforcement (`max_participants`) and `send_upcoming_event_reminders` Celery task.
+    - `Club`, `ClubMembership`, `Competition`, `CompetitionResult`, `Achievement`, and `Certificate` with landscape A4 PDF generation (`GET /api/v1/events/certificates/<id>/download-pdf/`) via `reportlab`.
+  - Consent-Gated Gallery (`apps/events/models.py`, `apps/events/views.py`):
+    - `Album` and `GalleryMedia` (extension/size validated) enforcing `is_approved=True` and `guardian_consent_verified=True` for student-depicting media on non-staff queries.
 - **Task 22**: Hostel Management (`apps/hostel`).
   - Feature-Flagged Module (`apps/hostel/permissions.py`, `apps/hostel/services/hostel_service.py`):
     - Enforces `IsHostelFeatureEnabled` per institution via `institution.settings` (`hostel_enabled` / `features.hostel_enabled`), returning `403 Forbidden` when disabled.

@@ -63,6 +63,7 @@ LOCAL_APPS = [
     "apps.library.apps.LibraryConfig",
     "apps.transport.apps.TransportConfig",
     "apps.hostel.apps.HostelConfig",
+    "apps.events.apps.EventsConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
