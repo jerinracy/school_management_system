@@ -27,7 +27,7 @@ Legend:
 | **Task 17** | Basic Accounting & Cashbook | DONE | Task 15 | 2026-11-12 |
 | **Task 18** | Payroll Management | DONE | Task 08, Task 10, Task 17 | 2026-11-12 |
 | **Task 19** | Homework & Assignment Management | DONE | Task 04, Task 06 | 2026-11-12 |
-| **Task 20** | Library Management | TODO | Task 06, Task 08 | - |
+| **Task 20** | Library Management | DONE | Task 06, Task 08 | 2026-11-12 |
 | **Task 21** | Transport Management | TODO | Task 06 | - |
 | **Task 22** | Hostel Management | TODO | Task 06 | - |
 | **Task 23** | Notice Board & Event Calendar | TODO | Task 02, Task 16 | - |

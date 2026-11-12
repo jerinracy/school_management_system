@@ -18929,6 +18929,1695 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/library/books/:
+    get:
+      operationId: library_books_list
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: Search Library Book Catalog
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: is_reference_only
+        schema:
+          type: boolean
+      - in: query
+        name: language
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+    post:
+      operationId: library_books_create
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: Add Book to Catalog
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+  /api/v1/library/books/{id}/:
+    get:
+      operationId: library_books_retrieve
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: Get Book Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+    put:
+      operationId: library_books_update
+      description: Catalog search, popular books, and Excel bulk import.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+    patch:
+      operationId: library_books_partial_update
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: Update Book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBookRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBookRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+          description: ''
+    delete:
+      operationId: library_books_destroy
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: Delete Book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/library/books/import-xlsx/:
+    post:
+      operationId: library_books_import_xlsx_create
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: Import Books & Copies from Excel (.xlsx)
+      tags:
+      - library
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CatalogImportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CatalogImportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogImportResponse'
+          description: ''
+  /api/v1/library/books/popular/:
+    get:
+      operationId: library_books_popular_list
+      description: Catalog search, popular books, and Excel bulk import.
+      summary: List Most Popular Books
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: is_reference_only
+        schema:
+          type: boolean
+      - in: query
+        name: language
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookList'
+          description: ''
+  /api/v1/library/copies/:
+    get:
+      operationId: library_copies_list
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      summary: List Book Copies
+      parameters:
+      - in: query
+        name: book
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - available
+          - damaged
+          - issued
+          - lost
+          - maintenance
+          - reserved
+        description: |-
+          * `available` - Available
+          * `issued` - Issued
+          * `reserved` - Reserved
+          * `maintenance` - Maintenance
+          * `lost` - Lost
+          * `damaged` - Damaged
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookCopyList'
+          description: ''
+    post:
+      operationId: library_copies_create
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      summary: Add Book Copy
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCopyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookCopyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookCopyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+          description: ''
+  /api/v1/library/copies/{id}/:
+    get:
+      operationId: library_copies_retrieve
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      summary: Get Book Copy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book copy.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+          description: ''
+    put:
+      operationId: library_copies_update
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book copy.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCopyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookCopyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookCopyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+          description: ''
+    patch:
+      operationId: library_copies_partial_update
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      summary: Update Book Copy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book copy.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBookCopyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBookCopyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBookCopyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+          description: ''
+    delete:
+      operationId: library_copies_destroy
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      summary: Delete Book Copy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book copy.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/library/copies/lookup/:
+    get:
+      operationId: library_copies_lookup_retrieve
+      description: Physical copy inventory with barcode/RFID scan lookup.
+      summary: Lookup Book Copy by Barcode, RFID, or Accession Number
+      parameters:
+      - in: query
+        name: accession_no
+        schema:
+          type: string
+      - in: query
+        name: barcode
+        schema:
+          type: string
+      - in: query
+        name: rfid_tag
+        schema:
+          type: string
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookCopy'
+          description: ''
+  /api/v1/library/ebooks/:
+    get:
+      operationId: library_ebooks_list
+      description: Digital library resources and e-books.
+      summary: List Digital Resources & E-Books
+      parameters:
+      - in: query
+        name: book
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: is_public_to_members
+        schema:
+          type: boolean
+      - in: query
+        name: language
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEBookList'
+          description: ''
+    post:
+      operationId: library_ebooks_create
+      description: Digital library resources and e-books.
+      summary: Upload or Link E-Book
+      tags:
+      - library
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EBookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EBookRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EBookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EBook'
+          description: ''
+  /api/v1/library/ebooks/{id}/:
+    get:
+      operationId: library_ebooks_retrieve
+      description: Digital library resources and e-books.
+      summary: Get E-Book Details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this e book.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EBook'
+          description: ''
+    put:
+      operationId: library_ebooks_update
+      description: Digital library resources and e-books.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this e book.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EBookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EBookRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EBookRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EBook'
+          description: ''
+    patch:
+      operationId: library_ebooks_partial_update
+      description: Digital library resources and e-books.
+      summary: Update E-Book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this e book.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEBookRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEBookRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEBookRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EBook'
+          description: ''
+    delete:
+      operationId: library_ebooks_destroy
+      description: Digital library resources and e-books.
+      summary: Delete E-Book
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this e book.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/library/fines/:
+    get:
+      operationId: library_fines_list
+      description: Library fine records, payments, and waivers.
+      summary: List Library Fines
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: reason
+        schema:
+          type: string
+          enum:
+          - damaged
+          - lost
+          - overdue
+        description: |-
+          * `overdue` - Overdue Return
+          * `lost` - Lost Book
+          * `damaged` - Damaged Book
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - paid
+          - partially_paid
+          - unpaid
+          - waived
+        description: |-
+          * `unpaid` - Unpaid
+          * `partially_paid` - Partially Paid
+          * `paid` - Paid
+          * `waived` - Waived
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLibraryFineList'
+          description: ''
+  /api/v1/library/fines/{id}/:
+    get:
+      operationId: library_fines_retrieve
+      description: Library fine records, payments, and waivers.
+      summary: Get Library Fine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library fine.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryFine'
+          description: ''
+  /api/v1/library/fines/{id}/pay/:
+    post:
+      operationId: library_fines_pay_create
+      description: Library fine records, payments, and waivers.
+      summary: Record Library Fine Payment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library fine.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinePaymentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FinePaymentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FinePaymentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryFine'
+          description: ''
+  /api/v1/library/fines/{id}/waive/:
+    post:
+      operationId: library_fines_waive_create
+      description: Library fine records, payments, and waivers.
+      summary: Waive Library Fine
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library fine.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FineWaiveRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FineWaiveRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FineWaiveRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryFine'
+          description: ''
+  /api/v1/library/issues/:
+    get:
+      operationId: library_issues_list
+      description: 'Circulation endpoints: issue, return, renew, and overdue list.'
+      summary: List Book Issues
+      parameters:
+      - in: query
+        name: copy
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: member
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - issued
+          - lost
+          - overdue
+          - returned
+        description: |-
+          * `issued` - Issued
+          * `returned` - Returned
+          * `overdue` - Overdue
+          * `lost` - Lost
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookIssueList'
+          description: ''
+  /api/v1/library/issues/{id}/:
+    get:
+      operationId: library_issues_retrieve
+      description: 'Circulation endpoints: issue, return, renew, and overdue list.'
+      summary: Get Book Issue
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this book issue.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookIssue'
+          description: ''
+  /api/v1/library/issues/issue/:
+    post:
+      operationId: library_issues_issue_create
+      description: 'Circulation endpoints: issue, return, renew, and overdue list.'
+      summary: Issue a Book Copy (Barcode / RFID / Accession Scan)
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookIssueCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookIssueCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookIssueCreateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookIssue'
+          description: ''
+  /api/v1/library/issues/overdue/:
+    get:
+      operationId: library_issues_overdue_list
+      description: 'Circulation endpoints: issue, return, renew, and overdue list.'
+      summary: List Overdue Book Issues
+      parameters:
+      - in: query
+        name: copy
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: member
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - issued
+          - lost
+          - overdue
+          - returned
+        description: |-
+          * `issued` - Issued
+          * `returned` - Returned
+          * `overdue` - Overdue
+          * `lost` - Lost
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookIssueList'
+          description: ''
+  /api/v1/library/issues/renew/:
+    post:
+      operationId: library_issues_renew_create
+      description: 'Circulation endpoints: issue, return, renew, and overdue list.'
+      summary: Renew an Active Book Issue
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRenewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookRenewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookRenewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookIssue'
+          description: ''
+  /api/v1/library/issues/return/:
+    post:
+      operationId: library_issues_return_create
+      description: 'Circulation endpoints: issue, return, renew, and overdue list.'
+      summary: Return a Book Copy (Barcode / RFID / Accession Scan)
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookReturnRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookReturnRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookReturnRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookIssue'
+          description: ''
+  /api/v1/library/members/:
+    get:
+      operationId: library_members_list
+      description: Library membership cards and member borrowing/fine history.
+      summary: List Library Members
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: member_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+          - teacher
+        description: |-
+          * `student` - Student
+          * `teacher` - Teacher
+          * `staff` - Staff
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - expired
+          - suspended
+        description: |-
+          * `active` - Active
+          * `suspended` - Suspended
+          * `expired` - Expired
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLibraryMemberList'
+          description: ''
+    post:
+      operationId: library_members_create
+      description: Library membership cards and member borrowing/fine history.
+      summary: Create Library Member
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryMemberRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LibraryMemberRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LibraryMemberRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryMember'
+          description: ''
+  /api/v1/library/members/{id}/:
+    get:
+      operationId: library_members_retrieve
+      description: Library membership cards and member borrowing/fine history.
+      summary: Get Library Member
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library member.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryMember'
+          description: ''
+    put:
+      operationId: library_members_update
+      description: Library membership cards and member borrowing/fine history.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library member.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryMemberRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LibraryMemberRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LibraryMemberRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryMember'
+          description: ''
+    patch:
+      operationId: library_members_partial_update
+      description: Library membership cards and member borrowing/fine history.
+      summary: Update Library Member
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library member.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryMemberRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryMemberRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryMemberRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryMember'
+          description: ''
+    delete:
+      operationId: library_members_destroy
+      description: Library membership cards and member borrowing/fine history.
+      summary: Delete Library Member
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library member.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/library/members/{id}/history/:
+    get:
+      operationId: library_members_history_retrieve
+      description: Library membership cards and member borrowing/fine history.
+      summary: Get Member Borrowing, Reservation, and Fine History
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library member.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberHistoryResponse'
+          description: ''
+  /api/v1/library/policies/:
+    get:
+      operationId: library_policies_list
+      description: Manage borrowing, renewal, and fine policies.
+      summary: List Library Policies
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: member_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+          - teacher
+        description: |-
+          * `student` - Student
+          * `teacher` - Teacher
+          * `staff` - Staff
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLibraryPolicyList'
+          description: ''
+    post:
+      operationId: library_policies_create
+      description: Manage borrowing, renewal, and fine policies.
+      summary: Create Library Policy
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryPolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LibraryPolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LibraryPolicyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryPolicy'
+          description: ''
+  /api/v1/library/policies/{id}/:
+    get:
+      operationId: library_policies_retrieve
+      description: Manage borrowing, renewal, and fine policies.
+      summary: Get Library Policy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library policy.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryPolicy'
+          description: ''
+    put:
+      operationId: library_policies_update
+      description: Manage borrowing, renewal, and fine policies.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library policy.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryPolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LibraryPolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LibraryPolicyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryPolicy'
+          description: ''
+    patch:
+      operationId: library_policies_partial_update
+      description: Manage borrowing, renewal, and fine policies.
+      summary: Update Library Policy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library policy.
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryPolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryPolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryPolicyRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryPolicy'
+          description: ''
+    delete:
+      operationId: library_policies_destroy
+      description: Manage borrowing, renewal, and fine policies.
+      summary: Delete Library Policy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this library policy.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/library/reservations/:
+    get:
+      operationId: library_reservations_list
+      description: FIFO book reservations.
+      summary: List Book Reservations
+      parameters:
+      - in: query
+        name: book
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: member
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - expired
+          - fulfilled
+          - queued
+          - ready_for_pickup
+        description: |-
+          * `queued` - Queued
+          * `ready_for_pickup` - Ready for Pickup
+          * `fulfilled` - Fulfilled
+          * `cancelled` - Cancelled
+          * `expired` - Expired
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReservationList'
+          description: ''
+    post:
+      operationId: library_reservations_create
+      description: FIFO book reservations.
+      summary: Reserve a Book
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+  /api/v1/library/reservations/{id}/:
+    get:
+      operationId: library_reservations_retrieve
+      description: FIFO book reservations.
+      summary: Get Reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this reservation.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
+  /api/v1/library/reservations/{id}/cancel/:
+    post:
+      operationId: library_reservations_cancel_create
+      description: FIFO book reservations.
+      summary: Cancel Reservation
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this reservation.
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+          description: ''
   /api/v1/payroll/components/:
     get:
       operationId: payroll_components_list
@@ -26883,6 +28572,435 @@ components:
         * `cambridge` - Cambridge
         * `edexcel` - Edexcel
         * `ib` - International Baccalaureate
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        isbn:
+          type: string
+          maxLength: 32
+        title:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        authors:
+          type: string
+          maxLength: 500
+        category:
+          type: string
+          maxLength: 100
+        publisher:
+          type: string
+          maxLength: 200
+        edition:
+          type: string
+          maxLength: 64
+        publication_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        language:
+          type: string
+          maxLength: 32
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        cover_image_url:
+          type: string
+          format: uri
+          maxLength: 500
+        is_reference_only:
+          type: boolean
+        total_copies:
+          type: integer
+          readOnly: true
+          default: 0
+        available_copies:
+          type: integer
+          readOnly: true
+          default: 0
+        issue_count:
+          type: integer
+          readOnly: true
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - authors
+      - available_copies
+      - created_at
+      - id
+      - institution
+      - issue_count
+      - title
+      - total_copies
+      - updated_at
+    BookCopy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        book:
+          type: string
+          format: uuid
+        book_title:
+          type: string
+          readOnly: true
+        book_isbn:
+          type: string
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        accession_no:
+          type: string
+          maxLength: 64
+        barcode:
+          type: string
+          default: ''
+          maxLength: 64
+        rfid_tag:
+          type: string
+          default: ''
+          maxLength: 64
+        shelf_location:
+          type: string
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/BookCopyStatusEnum'
+        condition_notes:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - accession_no
+      - book
+      - book_isbn
+      - book_title
+      - created_at
+      - id
+      - institution
+      - updated_at
+    BookCopyRequest:
+      type: object
+      properties:
+        book:
+          type: string
+          format: uuid
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        accession_no:
+          type: string
+          minLength: 1
+          maxLength: 64
+        barcode:
+          type: string
+          default: ''
+          maxLength: 64
+        rfid_tag:
+          type: string
+          default: ''
+          maxLength: 64
+        shelf_location:
+          type: string
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/BookCopyStatusEnum'
+        condition_notes:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - accession_no
+      - book
+    BookCopyStatusEnum:
+      enum:
+      - available
+      - issued
+      - reserved
+      - maintenance
+      - lost
+      - damaged
+      type: string
+      description: |-
+        * `available` - Available
+        * `issued` - Issued
+        * `reserved` - Reserved
+        * `maintenance` - Maintenance
+        * `lost` - Lost
+        * `damaged` - Damaged
+    BookIssue:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        copy:
+          type: string
+          format: uuid
+          readOnly: true
+        book_title:
+          type: string
+          readOnly: true
+        accession_no:
+          type: string
+          readOnly: true
+        barcode:
+          type: string
+          readOnly: true
+        member:
+          type: string
+          format: uuid
+          readOnly: true
+        card_number:
+          type: string
+          readOnly: true
+        issued_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        returned_to:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        issue_date:
+          type: string
+          format: date
+          readOnly: true
+        due_date:
+          type: string
+          format: date
+          readOnly: true
+        return_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        renewal_count:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BookIssueStatusEnum'
+          readOnly: true
+        remarks:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - accession_no
+      - barcode
+      - book_title
+      - card_number
+      - copy
+      - created_at
+      - due_date
+      - id
+      - institution
+      - issue_date
+      - issued_by
+      - member
+      - remarks
+      - renewal_count
+      - return_date
+      - returned_to
+      - status
+      - updated_at
+    BookIssueCreateRequest:
+      type: object
+      properties:
+        member_id:
+          type: string
+          format: uuid
+          nullable: true
+        card_number:
+          type: string
+          default: ''
+        rfid_card_uid:
+          type: string
+          default: ''
+        copy_id:
+          type: string
+          format: uuid
+          nullable: true
+        accession_no:
+          type: string
+          default: ''
+        barcode:
+          type: string
+          default: ''
+        rfid_tag:
+          type: string
+          default: ''
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        remarks:
+          type: string
+          default: ''
+    BookIssueStatusEnum:
+      enum:
+      - issued
+      - returned
+      - overdue
+      - lost
+      type: string
+      description: |-
+        * `issued` - Issued
+        * `returned` - Returned
+        * `overdue` - Overdue
+        * `lost` - Lost
+    BookRenewRequest:
+      type: object
+      properties:
+        issue_id:
+          type: string
+          format: uuid
+        extra_days:
+          type: integer
+          maximum: 90
+          minimum: 1
+      required:
+      - issue_id
+    BookRequest:
+      type: object
+      properties:
+        isbn:
+          type: string
+          maxLength: 32
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        authors:
+          type: string
+          minLength: 1
+          maxLength: 500
+        category:
+          type: string
+          maxLength: 100
+        publisher:
+          type: string
+          maxLength: 200
+        edition:
+          type: string
+          maxLength: 64
+        publication_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        language:
+          type: string
+          minLength: 1
+          maxLength: 32
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        cover_image_url:
+          type: string
+          format: uri
+          maxLength: 500
+        is_reference_only:
+          type: boolean
+      required:
+      - authors
+      - title
+    BookReturnRequest:
+      type: object
+      properties:
+        issue_id:
+          type: string
+          format: uuid
+          nullable: true
+        accession_no:
+          type: string
+          default: ''
+        barcode:
+          type: string
+          default: ''
+        rfid_tag:
+          type: string
+          default: ''
+        return_date:
+          type: string
+          format: date
+          nullable: true
+        mark_damaged:
+          type: boolean
+          default: false
+        mark_lost:
+          type: boolean
+          default: false
+        damage_fine_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        remarks:
+          type: string
+          default: ''
     Branch:
       type: object
       description: Serializer for Branch.
@@ -27089,6 +29207,37 @@ components:
       required:
       - account
       - date
+    CatalogImportRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - file
+    CatalogImportResponse:
+      type: object
+      properties:
+        created_books:
+          type: integer
+        created_copies:
+          type: integer
+        skipped:
+          type: integer
+        row_errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+      - created_books
+      - created_copies
+      - row_errors
+      - skipped
     ChannelEnum:
       enum:
       - sms
@@ -28414,6 +30563,104 @@ components:
       - student_name_en
       - total_due_amount
       - unpaid_invoice_count
+    EBook:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        authors:
+          type: string
+          maxLength: 500
+        category:
+          type: string
+          maxLength: 100
+        language:
+          type: string
+          maxLength: 32
+        book:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+        file:
+          type: string
+          format: uri
+          nullable: true
+        external_url:
+          type: string
+          format: uri
+          maxLength: 500
+        is_public_to_members:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - title
+      - updated_at
+    EBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        authors:
+          type: string
+          maxLength: 500
+        category:
+          type: string
+          maxLength: 100
+        language:
+          type: string
+          minLength: 1
+          maxLength: 32
+        book:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+        file:
+          type: string
+          format: binary
+          nullable: true
+        external_url:
+          type: string
+          format: uri
+          maxLength: 500
+        is_public_to_members:
+          type: boolean
+      required:
+      - title
     EmergencyAlert:
       type: object
       description: Serializer for campus-wide emergency broadcasts.
@@ -29500,6 +31747,18 @@ components:
         * `id_card` - Student ID Card (পরিচয়পত্র)
         * `late_fine` - Late Fine (বিলম্ব ফি)
         * `other` - Other Fee (অন্যান্য)
+    FinePaymentRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        payment_reference:
+          type: string
+          default: ''
+      required:
+      - amount
     FineRule:
       type: object
       properties:
@@ -29595,6 +31854,12 @@ components:
         * `fixed` - Fixed Amount
         * `daily` - Daily Accrual
         * `slab` - Tiered / Slab-Based
+    FineWaiveRequest:
+      type: object
+      properties:
+        waive_reason:
+          type: string
+          default: ''
     FiscalYear:
       type: object
       description: FiscalYear serializer.
@@ -31923,6 +34188,339 @@ components:
         * `draft` - Draft
         * `approved` - Approved
         * `delivered` - Delivered
+    LibraryFine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        issue:
+          type: string
+          format: uuid
+          readOnly: true
+        book_title:
+          type: string
+          readOnly: true
+        member:
+          type: string
+          format: uuid
+          readOnly: true
+        card_number:
+          type: string
+          readOnly: true
+        reason:
+          allOf:
+          - $ref: '#/components/schemas/ReasonEnum'
+          readOnly: true
+        overdue_days:
+          type: integer
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        paid_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/LibraryFineStatusEnum'
+          readOnly: true
+        paid_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        payment_reference:
+          type: string
+          readOnly: true
+        waived_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        waive_reason:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - book_title
+      - card_number
+      - created_at
+      - id
+      - institution
+      - issue
+      - member
+      - overdue_days
+      - paid_amount
+      - paid_at
+      - payment_reference
+      - reason
+      - status
+      - updated_at
+      - waive_reason
+      - waived_by
+    LibraryFineStatusEnum:
+      enum:
+      - unpaid
+      - partially_paid
+      - paid
+      - waived
+      type: string
+      description: |-
+        * `unpaid` - Unpaid
+        * `partially_paid` - Partially Paid
+        * `paid` - Paid
+        * `waived` - Waived
+    LibraryMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        member_type:
+          $ref: '#/components/schemas/MemberTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        holder_name:
+          type: string
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        card_number:
+          type: string
+          maxLength: 64
+        rfid_card_uid:
+          type: string
+          default: ''
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/LibraryMemberStatusEnum'
+        joined_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - card_number
+      - created_at
+      - holder_name
+      - id
+      - institution
+      - member_type
+      - staff
+      - student
+      - updated_at
+    LibraryMemberRequest:
+      type: object
+      properties:
+        member_type:
+          $ref: '#/components/schemas/MemberTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        card_number:
+          type: string
+          minLength: 1
+          maxLength: 64
+        rfid_card_uid:
+          type: string
+          default: ''
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/LibraryMemberStatusEnum'
+        joined_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+      required:
+      - card_number
+      - member_type
+      - staff
+      - student
+    LibraryMemberStatusEnum:
+      enum:
+      - active
+      - suspended
+      - expired
+      type: string
+      description: |-
+        * `active` - Active
+        * `suspended` - Suspended
+        * `expired` - Expired
+    LibraryPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        member_type:
+          allOf:
+          - $ref: '#/components/schemas/MemberTypeEnum'
+          default: student
+        max_books:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        loan_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_renewals:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        renewal_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        fine_per_day:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        grace_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        block_issue_on_library_fines:
+          type: boolean
+        block_issue_on_fee_dues:
+          type: boolean
+        max_unpaid_fine_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        reservation_hold_hours:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - branch
+      - created_at
+      - id
+      - institution
+      - updated_at
+    LibraryPolicyRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        member_type:
+          allOf:
+          - $ref: '#/components/schemas/MemberTypeEnum'
+          default: student
+        max_books:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        loan_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_renewals:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        renewal_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        fine_per_day:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        grace_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        block_issue_on_library_fines:
+          type: boolean
+        block_issue_on_fee_dues:
+          type: boolean
+        max_unpaid_fine_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        reservation_hold_hours:
+          type: integer
+          maximum: 32767
+          minimum: 0
+      required:
+      - branch
     LineTypeEnum:
       enum:
       - earning
@@ -32215,6 +34813,48 @@ components:
         * `english_version` - English Version (NCTB)
         * `english_medium` - English Medium (Cambridge/Edexcel)
         * `madrasa` - Madrasa (Dakhil/Alim)
+    MemberHistoryResponse:
+      type: object
+      properties:
+        member:
+          $ref: '#/components/schemas/LibraryMember'
+        active_issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookIssue'
+        past_issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookIssue'
+        reservations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
+        fines:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryFine'
+        unpaid_fine_total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - active_issues
+      - fines
+      - member
+      - past_issues
+      - reservations
+      - unpaid_fine_total
+    MemberTypeEnum:
+      enum:
+      - student
+      - teacher
+      - staff
+      type: string
+      description: |-
+        * `student` - Student
+        * `teacher` - Teacher
+        * `staff` - Staff
     MergeGuardianActionRequest:
       type: object
       description: Payload to merge duplicate guardian records.
@@ -33665,6 +36305,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BiometricEnrollment'
+    PaginatedBookCopyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookCopy'
+    PaginatedBookIssueList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookIssue'
+    PaginatedBookList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Book'
     PaginatedBranchList:
       type: object
       required:
@@ -33987,6 +36696,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceUserMap'
+    PaginatedEBookList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EBook'
     PaginatedEmergencyAlertList:
       type: object
       required:
@@ -34585,6 +37317,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LessonPlan'
+    PaginatedLibraryFineList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryFine'
+    PaginatedLibraryMemberList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryMember'
+    PaginatedLibraryPolicyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryPolicy'
     PaginatedLotteryDrawList:
       type: object
       required:
@@ -35183,6 +37984,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReportCard'
+    PaginatedReservationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reservation'
     PaginatedResultPublicationList:
       type: object
       required:
@@ -36444,6 +39268,86 @@ components:
           nullable: true
         notes:
           type: string
+    PatchedBookCopyRequest:
+      type: object
+      properties:
+        book:
+          type: string
+          format: uuid
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        accession_no:
+          type: string
+          minLength: 1
+          maxLength: 64
+        barcode:
+          type: string
+          default: ''
+          maxLength: 64
+        rfid_tag:
+          type: string
+          default: ''
+          maxLength: 64
+        shelf_location:
+          type: string
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/BookCopyStatusEnum'
+        condition_notes:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+    PatchedBookRequest:
+      type: object
+      properties:
+        isbn:
+          type: string
+          maxLength: 32
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        authors:
+          type: string
+          minLength: 1
+          maxLength: 500
+        category:
+          type: string
+          maxLength: 100
+        publisher:
+          type: string
+          maxLength: 200
+        edition:
+          type: string
+          maxLength: 64
+        publication_year:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          nullable: true
+        language:
+          type: string
+          minLength: 1
+          maxLength: 32
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+        cover_image_url:
+          type: string
+          format: uri
+          maxLength: 500
+        is_reference_only:
+          type: boolean
     PatchedBranchRequest:
       type: object
       description: Serializer for Branch.
@@ -36664,6 +39568,44 @@ components:
         rfid_card:
           type: string
           maxLength: 50
+    PatchedEBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        title_bn:
+          type: string
+          maxLength: 255
+        authors:
+          type: string
+          maxLength: 500
+        category:
+          type: string
+          maxLength: 100
+        language:
+          type: string
+          minLength: 1
+          maxLength: 32
+        book:
+          type: string
+          format: uuid
+          nullable: true
+        subject:
+          type: string
+          format: uuid
+          nullable: true
+        file:
+          type: string
+          format: binary
+          nullable: true
+        external_url:
+          type: string
+          format: uri
+          maxLength: 500
+        is_public_to_members:
+          type: boolean
     PatchedExamEligibilityPolicyRequest:
       type: object
       properties:
@@ -37416,6 +40358,89 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/LessonPlanStatusEnum'
+    PatchedLibraryMemberRequest:
+      type: object
+      properties:
+        member_type:
+          $ref: '#/components/schemas/MemberTypeEnum'
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        card_number:
+          type: string
+          minLength: 1
+          maxLength: 64
+        rfid_card_uid:
+          type: string
+          default: ''
+          maxLength: 64
+        status:
+          $ref: '#/components/schemas/LibraryMemberStatusEnum'
+        joined_date:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+    PatchedLibraryPolicyRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        member_type:
+          allOf:
+          - $ref: '#/components/schemas/MemberTypeEnum'
+          default: student
+        max_books:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        loan_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        max_renewals:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        renewal_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        fine_per_day:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        grace_days:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        block_issue_on_library_fines:
+          type: boolean
+        block_issue_on_fee_dues:
+          type: boolean
+        max_unpaid_fine_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        reservation_hold_hours:
+          type: integer
+          maximum: 32767
+          minimum: 0
     PatchedMarkEntryRequest:
       type: object
       properties:
@@ -40799,6 +43824,16 @@ components:
       required:
       - exam_subject
       - student
+    ReasonEnum:
+      enum:
+      - overdue
+      - lost
+      - damaged
+      type: string
+      description: |-
+        * `overdue` - Overdue Return
+        * `lost` - Lost Book
+        * `damaged` - Damaged Book
     RecurrenceEnum:
       enum:
       - one_time
@@ -41128,6 +44163,102 @@ components:
       description: |-
         * `default_bd` - Standard Bangladesh National Curriculum
         * `modern` - Modern Bilingual Card
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        book:
+          type: string
+          format: uuid
+        book_title:
+          type: string
+          readOnly: true
+        member:
+          type: string
+          format: uuid
+        card_number:
+          type: string
+          readOnly: true
+        queue_position:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReservationStatusEnum'
+          readOnly: true
+        reserved_at:
+          type: string
+          format: date-time
+          readOnly: true
+        notified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        fulfilled_copy:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - book
+      - book_title
+      - card_number
+      - created_at
+      - expires_at
+      - fulfilled_copy
+      - id
+      - institution
+      - notified_at
+      - queue_position
+      - reserved_at
+      - status
+      - updated_at
+    ReservationRequest:
+      type: object
+      properties:
+        book:
+          type: string
+          format: uuid
+        member:
+          type: string
+          format: uuid
+      required:
+      - book
+    ReservationStatusEnum:
+      enum:
+      - queued
+      - ready_for_pickup
+      - fulfilled
+      - cancelled
+      - expired
+      type: string
+      description: |-
+        * `queued` - Queued
+        * `ready_for_pickup` - Ready for Pickup
+        * `fulfilled` - Fulfilled
+        * `cancelled` - Cancelled
+        * `expired` - Expired
     ResultApproveRequest:
       type: object
       properties:

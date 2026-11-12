@@ -430,3 +430,17 @@
   - **Signed Download Policy**: When an S3-compatible backend is active, delegate download URLs to storage presigned URLs (`storage.url`); on local `FileSystemStorage`, generate time-limited HMAC tokens via `TimestampSigner` (`HOMEWORK_SIGNED_URL_TTL_SECONDS`, default `900s`) served by `/api/v1/homework/download/` with `IsAuthenticated`, tenant checks, student/guardian ownership checks for submissions, and `Content-Disposition: attachment` + `X-Content-Type-Options: nosniff`.
 - **Consequences**:
   - Student submissions and school materials remain protected by authentication, tenant scoping, and per-student authorization regardless of storage backend, without requiring extra infrastructure packages in dev/CI.
+
+---
+
+## ADR-022: Library Circulation Concurrency, FIFO Reservation Holds & Dues Blocking
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - School libraries face concurrent issue attempts on the last physical copy, barcode/RFID counter scanning, FIFO reservation queues when all copies are checked out, and institutional policies blocking borrowing when students have unpaid library fines or overdue school fee invoices.
+- **Decision**:
+  - **Concurrency Safety (`apps/library/models.py`, `apps/library/services/circulation_service.py`)**: Combine `select_for_update()` row locking on `BookCopy` and `LibraryMember` inside `transaction.atomic()` with a database partial unique constraint (`unique_active_issue_per_copy` on `BookIssue(copy)` where `status IN ('issued', 'overdue')`).
+  - **Reservation Queue Promotion**: On book return, if a `queued` `Reservation` exists for the `Book`, the returned copy transitions directly to `reserved` (not `available`) and promotes the #1 reservation to `ready_for_pickup` with a configurable hold window (`reservation_hold_hours`) and notification; expired holds are swept by `expire_stale_reservations`.
+  - **Configurable Dues Blocking**: `LibraryPolicy` supports independent toggles `block_issue_on_library_fines` (with `max_unpaid_fine_threshold`) and `block_issue_on_fee_dues` (checking unpaid `apps.fees.models.Invoice` balances for student members).
+- **Consequences**:
+  - Zero double-issue race conditions on last copies, deterministic FIFO reservation fulfillment, and flexible per-branch/member-type borrowing rules.

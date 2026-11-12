@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 20**: Library Management (`apps/library`).
+  - Core Models (`apps/library/models.py`):
+    - `Book`, `BookCopy`: Bibliographic catalog (ISBN, title, Bangla title, authors, category, publisher, edition, language, reference-only flag) and physical inventory (accession number, barcode, RFID tag, shelf location, status, price).
+    - `LibraryMember`, `LibraryPolicy`: Student/Teacher/Staff membership cards (barcode/RFID UID) and configurable per-branch/member-type borrowing limits, loan days, renewal caps, daily fines, grace days, and dues blocking.
+    - `BookIssue`, `Reservation`, `LibraryFine`, `EBook`: Barcode/RFID scan-friendly circulation with row-level `select_for_update()` + partial unique constraint on active copy issues, FIFO reservation queue with pickup holds, automatic overdue/loss/damage fine assessment + pay/waive workflows, and digital e-book resources.
+  - Services & Celery Tasks (`apps/library/services/`, `apps/library/tasks.py`):
+    - `issue_book`, `return_book`, `renew_book`, `reserve_book`, `cancel_reservation`, `record_fine_payment`, `waive_fine`, and `import_books_from_xlsx` (`openpyxl` bulk catalog/copy import).
+    - `sync_overdue_issues_and_notify` and `expire_stale_reservations` Celery tasks.
+  - API & Tests (`apps/library/views.py`, `apps/library/tests/`):
+    - Endpoints under `/api/v1/library/` (`policies/`, `books/`, `books/popular/`, `books/import-xlsx/`, `copies/`, `copies/lookup/`, `members/`, `members/<id>/history/`, `issues/issue/`, `issues/return/`, `issues/renew/`, `issues/overdue/`, `reservations/`, `fines/`, `ebooks/`).
 - **Task 19**: Homework & Assignment Management (`apps/homework`).
   - Core Models (`apps/homework/models.py`):
     - `Homework`, `HomeworkAttachment`: Class/section/subject assignments with due dates, late-submission policy + optional cutoff, max marks, and scanned attachments.
