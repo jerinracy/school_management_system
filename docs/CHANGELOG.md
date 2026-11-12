@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 25**: Reporting Engine & Data Exports (`apps/reports`).
+  - Role-Based Dashboard KPIs (`apps/reports/services/kpi_service.py`):
+    - Cached (`60s` TTL) KPIs for today's student/staff attendance, active online/offline devices, upcoming exams, pending attendance corrections, and role-gated financial totals (today's collections & total outstanding dues).
+  - Whitelisted Report Builder & Exports (`apps/reports/services/report_service.py`, `apps/reports/tasks.py`):
+    - Strict per-dataset column and filter whitelists (`students`, `daily_attendance`, `fee_invoices`, `fee_payments`, `exam_results`) with zero raw SQL.
+    - Generates downloadable `CSV`, `XLSX` (`openpyxl`), and `PDF` (`reportlab`) files with 7-day expiry, async/cleanup Celery tasks, and `AuditAction.EXPORT` logging.
+  - Bulk Import Framework (`apps/reports/services/import_service.py`):
+    - Downloadable CSV templates (`students`, `staff`), `dry_run=True` validation, and atomic `bulk_create` commit (`dry_run=False`).
+    - Endpoints mounted under `/api/v1/reports/`.
 - **Task 24**: Audit Logging & Activity Tracking (`apps/audit`).
   - Immutable Audit & Activity Models (`apps/audit/models.py`):
     - `AuditLog` and `ActivityLog` inheriting `ImmutableAuditModel`, blocking ORM updates and deletes (`ValidationError`) and exposing read-only DRF ViewSets under `/api/v1/audit/logs/` and `/api/v1/audit/activities/` guarded by `HasModulePermission("audit.view")`.

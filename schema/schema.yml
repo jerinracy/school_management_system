@@ -26751,6 +26751,548 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedSalaryStructureList'
           description: ''
+  /api/v1/reports/dashboard/kpis/:
+    get:
+      operationId: reports_dashboard_kpis_retrieve
+      description: Role-scoped, cached dashboard KPI summary.
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/reports/definitions/:
+    get:
+      operationId: reports_definitions_list
+      description: CRUD for saved whitelisted report definitions.
+      parameters:
+      - in: query
+        name: dataset
+        schema:
+          type: string
+          enum:
+          - daily_attendance
+          - exam_results
+          - fee_invoices
+          - fee_payments
+          - students
+        description: |-
+          * `students` - Students
+          * `daily_attendance` - Daily Attendance
+          * `fee_invoices` - Fee Invoices
+          * `fee_payments` - Fee Payments
+          * `exam_results` - Exam Results
+      - in: query
+        name: is_shared
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReportDefinitionList'
+          description: ''
+    post:
+      operationId: reports_definitions_create
+      description: CRUD for saved whitelisted report definitions.
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+          description: ''
+  /api/v1/reports/definitions/{id}/:
+    get:
+      operationId: reports_definitions_retrieve
+      description: CRUD for saved whitelisted report definitions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Definition.
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+          description: ''
+    put:
+      operationId: reports_definitions_update
+      description: CRUD for saved whitelisted report definitions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Definition.
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+          description: ''
+    patch:
+      operationId: reports_definitions_partial_update
+      description: CRUD for saved whitelisted report definitions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Definition.
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReportDefinitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReportDefinitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReportDefinitionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDefinition'
+          description: ''
+    delete:
+      operationId: reports_definitions_destroy
+      description: CRUD for saved whitelisted report definitions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Definition.
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/reports/definitions/{id}/export/:
+    post:
+      operationId: reports_definitions_export_create
+      description: CRUD for saved whitelisted report definitions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Definition.
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportDefinitionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportExportJob'
+          description: ''
+  /api/v1/reports/exports/:
+    get:
+      operationId: reports_exports_list
+      description: List, run, and download whitelisted report exports.
+      parameters:
+      - in: query
+        name: dataset
+        schema:
+          type: string
+          enum:
+          - daily_attendance
+          - exam_results
+          - fee_invoices
+          - fee_payments
+          - students
+        description: |-
+          * `students` - Students
+          * `daily_attendance` - Daily Attendance
+          * `fee_invoices` - Fee Invoices
+          * `fee_payments` - Fee Payments
+          * `exam_results` - Exam Results
+      - in: query
+        name: export_format
+        schema:
+          type: string
+          enum:
+          - csv
+          - pdf
+          - xlsx
+        description: |-
+          * `csv` - CSV
+          * `xlsx` - Excel (XLSX)
+          * `pdf` - PDF
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - completed
+          - failed
+          - pending
+          - processing
+        description: |-
+          * `pending` - Pending
+          * `processing` - Processing
+          * `completed` - Completed
+          * `failed` - Failed
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReportExportJobList'
+          description: ''
+  /api/v1/reports/exports/{id}/:
+    get:
+      operationId: reports_exports_retrieve
+      description: List, run, and download whitelisted report exports.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Export Job.
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportExportJob'
+          description: ''
+  /api/v1/reports/exports/{id}/download/:
+    get:
+      operationId: reports_exports_download_retrieve
+      description: List, run, and download whitelisted report exports.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Report Export Job.
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/reports/exports/run/:
+    post:
+      operationId: reports_exports_run_create
+      description: List, run, and download whitelisted report exports.
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunReportExportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RunReportExportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RunReportExportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportExportJob'
+          description: ''
+  /api/v1/reports/imports/:
+    get:
+      operationId: reports_imports_list
+      description: Bulk import template download, dry-run validation & commit endpoints.
+      parameters:
+      - in: query
+        name: dry_run
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - committed
+          - failed
+          - validated
+        description: |-
+          * `validated` - Validated (Dry Run)
+          * `committed` - Committed
+          * `failed` - Failed
+      - in: query
+        name: target_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - students
+        description: |-
+          * `students` - Students
+          * `staff` - Staff
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBulkImportJobList'
+          description: ''
+  /api/v1/reports/imports/{id}/:
+    get:
+      operationId: reports_imports_retrieve
+      description: Bulk import template download, dry-run validation & commit endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Bulk Import Job.
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkImportJob'
+          description: ''
+  /api/v1/reports/imports/template/:
+    get:
+      operationId: reports_imports_template_retrieve
+      description: Bulk import template download, dry-run validation & commit endpoints.
+      parameters:
+      - in: query
+        name: target_type
+        schema:
+          type: string
+        required: true
+      tags:
+      - reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/reports/imports/upload/:
+    post:
+      operationId: reports_imports_upload_create
+      description: Bulk import template download, dry-run validation & commit endpoints.
+      tags:
+      - reports
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BulkImportUploadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BulkImportUploadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkImportJob'
+          description: ''
   /api/v1/results/analytics/promotion_eligibility/:
     get:
       operationId: results_analytics_promotion_eligibility_retrieve
@@ -36181,6 +36723,75 @@ components:
       - names
       - session_id
       - shift_id
+    BulkImportJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        target_type:
+          allOf:
+          - $ref: '#/components/schemas/TargetTypeEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BulkImportJobStatusEnum'
+          readOnly: true
+        file:
+          type: string
+          format: uri
+          readOnly: true
+        dry_run:
+          type: boolean
+          readOnly: true
+        total_rows:
+          type: integer
+          readOnly: true
+        valid_rows:
+          type: integer
+          readOnly: true
+        error_rows:
+          type: integer
+          readOnly: true
+        errors_summary:
+          readOnly: true
+        uploaded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - dry_run
+      - error_rows
+      - errors_summary
+      - file
+      - id
+      - institution
+      - status
+      - target_type
+      - total_rows
+      - uploaded_by
+      - valid_rows
+    BulkImportJobStatusEnum:
+      enum:
+      - validated
+      - committed
+      - failed
+      type: string
+      description: |-
+        * `validated` - Validated (Dry Run)
+        * `committed` - Committed
+        * `failed` - Failed
     BulkImportRequest:
       type: object
       properties:
@@ -36192,6 +36803,20 @@ components:
           default: true
       required:
       - file
+    BulkImportUploadRequest:
+      type: object
+      properties:
+        target_type:
+          $ref: '#/components/schemas/TargetTypeEnum'
+        file:
+          type: string
+          format: binary
+        dry_run:
+          type: boolean
+          default: true
+      required:
+      - file
+      - target_type
     CalculationTypeEnum:
       enum:
       - fixed
@@ -37437,6 +38062,30 @@ components:
       - date
       - payment_count
       - total_collected
+    DatasetEnum:
+      enum:
+      - students
+      - daily_attendance
+      - fee_invoices
+      - fee_payments
+      - exam_results
+      type: string
+      description: |-
+        * `students` - Students
+        * `daily_attendance` - Daily Attendance
+        * `fee_invoices` - Fee Invoices
+        * `fee_payments` - Fee Payments
+        * `exam_results` - Exam Results
+    DefaultFormatEnum:
+      enum:
+      - csv
+      - xlsx
+      - pdf
+      type: string
+      description: |-
+        * `csv` - CSV
+        * `xlsx` - Excel (XLSX)
+        * `pdf` - PDF
     Department:
       type: object
       description: Department master data serializer.
@@ -39211,6 +39860,16 @@ components:
       required:
       - code
       - name
+    ExportFormatEnum:
+      enum:
+      - csv
+      - xlsx
+      - pdf
+      type: string
+      description: |-
+        * `csv` - CSV
+        * `xlsx` - Excel (XLSX)
+        * `pdf` - PDF
     Family:
       type: object
       description: Serializer for Family households.
@@ -45458,6 +46117,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Branch'
+    PaginatedBulkImportJobList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkImportJob'
     PaginatedCertificateList:
       type: object
       required:
@@ -47505,6 +48187,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReportCard'
+    PaginatedReportDefinitionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportDefinition'
+    PaginatedReportExportJobList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportExportJob'
     PaginatedReservationList:
       type: object
       required:
@@ -51056,6 +51784,21 @@ components:
           type: string
           format: binary
           nullable: true
+    PatchedReportDefinitionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        dataset:
+          $ref: '#/components/schemas/DatasetEnum'
+        selected_columns: {}
+        filters: {}
+        default_format:
+          $ref: '#/components/schemas/DefaultFormatEnum'
+        is_shared:
+          type: boolean
     PatchedResultPublicationRequest:
       type: object
       properties:
@@ -54490,6 +55233,151 @@ components:
       description: |-
         * `default_bd` - Standard Bangladesh National Curriculum
         * `modern` - Modern Bilingual Card
+    ReportDefinition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        dataset:
+          $ref: '#/components/schemas/DatasetEnum'
+        selected_columns: {}
+        filters: {}
+        default_format:
+          $ref: '#/components/schemas/DefaultFormatEnum'
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        is_shared:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - dataset
+      - id
+      - institution
+      - name
+      - updated_at
+    ReportDefinitionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        dataset:
+          $ref: '#/components/schemas/DatasetEnum'
+        selected_columns: {}
+        filters: {}
+        default_format:
+          $ref: '#/components/schemas/DefaultFormatEnum'
+        is_shared:
+          type: boolean
+      required:
+      - dataset
+      - name
+    ReportExportJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        definition:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        dataset:
+          allOf:
+          - $ref: '#/components/schemas/DatasetEnum'
+          readOnly: true
+        selected_columns:
+          readOnly: true
+        filters:
+          readOnly: true
+        export_format:
+          allOf:
+          - $ref: '#/components/schemas/ExportFormatEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportExportJobStatusEnum'
+          readOnly: true
+        file:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        row_count:
+          type: integer
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        requested_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        error_message:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - dataset
+      - definition
+      - error_message
+      - expires_at
+      - export_format
+      - file
+      - filters
+      - id
+      - institution
+      - requested_by
+      - row_count
+      - selected_columns
+      - status
+    ReportExportJobStatusEnum:
+      enum:
+      - pending
+      - processing
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `processing` - Processing
+        * `completed` - Completed
+        * `failed` - Failed
     Reservation:
       type: object
       properties:
@@ -55220,6 +56108,25 @@ components:
       - period_id
       - section_id
       - weekday
+    RunReportExportRequest:
+      type: object
+      properties:
+        dataset:
+          $ref: '#/components/schemas/DatasetEnum'
+        selected_columns:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        filters:
+          type: object
+          additionalProperties: {}
+        export_format:
+          allOf:
+          - $ref: '#/components/schemas/ExportFormatEnum'
+          default: csv
+      required:
+      - dataset
     SMSGatewayConfig:
       type: object
       description: Serializer for SMS Gateway credentials and configuration.
@@ -58654,6 +59561,14 @@ components:
         * `teachers` - All Teachers
         * `staff` - All Staff
         * `specific_class` - Specific Class / Section
+    TargetTypeEnum:
+      enum:
+      - students
+      - staff
+      type: string
+      description: |-
+        * `students` - Students
+        * `staff` - Staff
     TeacherAssignment:
       type: object
       description: Instructor class/subject mapping serializer.

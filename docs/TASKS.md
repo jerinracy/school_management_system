@@ -32,5 +32,5 @@ Legend:
 | **Task 22** | Hostel Management | DONE | Task 06 | 2026-11-12 |
 | **Task 23** | Notice Board & Event Calendar | DONE | Task 02, Task 16 | 2026-11-12 |
 | **Task 24** | Audit Logging & Activity Tracking | DONE | Task 03 | 2026-11-12 |
-| **Task 25** | Reporting Engine & Data Exports | TODO | Task 06, Task 10, Task 13, Task 15 | - |
+| **Task 25** | Reporting Engine & Data Exports | DONE | Task 06, Task 10, Task 13, Task 15 | 2026-11-12 |
 | **Task 26** | Hardening, Backup & Production Readiness | TODO | All Tasks | - |

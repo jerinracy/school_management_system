@@ -499,3 +499,17 @@
   - **ContextVar Request Attribution (`apps/audit/middleware.py`)**: `AuditContextMiddleware` stores request IP, User-Agent, and request ID in `contextvars` so signal handlers (`apps/audit/signals.py`) attribute changes automatically without passing `request` through every model save.
 - **Consequences**:
   - Audit records cannot be silently altered or deleted, sensitive PII/secrets never enter audit JSON payloads, and signal-driven audits retain full request context.
+
+---
+
+## ADR-027: Whitelisted Report Builder, Role-Scoped KPI Caching & Dry-Run Bulk Imports
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Admins, head teachers, accountants, and teachers need fast dashboard KPIs, custom data exports (CSV/XLSX/PDF), and bulk student/staff CSV imports without SQL injection or partial-import corruption.
+- **Decision**:
+  - **Strict Whitelist Engine (`apps/reports/services/report_service.py`)**: `REPORT_DATASETS` maps allowed dataset keys to Django models, allowed columns, and allowed filter fields; unknown datasets, columns, or filters raise `ValidationError` before any ORM query executes, and every export logs `AuditAction.EXPORT`.
+  - **Role-Scoped Cached KPIs (`apps/reports/services/kpi_service.py`)**: KPIs are cached for 60s per `(institution_id, role_variant, date)`, omitting financial figures for non-financial roles (`teacher`, `staff`).
+  - **Dry-Run Bulk Imports (`apps/reports/services/import_service.py`)**: CSV imports validate all rows first (`dry_run=True` default) and only persist via `transaction.atomic` + `bulk_create` when `dry_run=False` and `error_rows == 0`.
+- **Consequences**:
+  - Zero raw SQL exposure, fast dashboard loads, auditable exports, and safe all-or-nothing bulk imports.
