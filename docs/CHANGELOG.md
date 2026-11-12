@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 17**: Basic Accounting & Cashbook (`apps/accounting`).
+  - Core Models:
+    - `FiscalYear`: Institutional financial cycles (`start_date`, `end_date`, `is_current`, `is_closed`) with single-active-year enforcement per tenant.
+    - `Account`: Hierarchical Chart of Accounts (COA) (`account_code`, `name_en`, `name_bn`, `account_type`, `subtype`, `parent`, `is_group`, `is_system`, `opening_balance`, `current_balance`, `bank_name`, `bank_account_number`, `bank_branch`, `is_active`) with normal balance computation (debit normal for Assets/Expenses; credit normal for Liabilities/Equity/Income).
+    - `VoucherSequence`: Atomic, gap-free sequential counter per tenant, fiscal year, and voucher type (`PV`, `RV`, `JV`, `CV`).
+    - `JournalEntry`: Double-entry accounting voucher header (`voucher_no`, `voucher_type`, `fiscal_year`, `date`, `narration`, `status`, `total_debit`, `total_credit`, `cheque_no`, `cheque_date`, `payee_or_payer`, `posted_at`, `posted_by`, `voided_at`, `voided_by`, `void_reason`, `payment_reference`, `attachment`).
+    - `JournalEntryItem`: Double-entry split lines (`entry`, `account`, `debit`, `credit`, `narration`) enforcing debit/credit balance integrity.
+    - `Budget`: Annual budget allocations and variance tracking per fiscal year and expenditure account (`allocated_amount`, `spent_amount`).
+    - `CashbookClosing`: Daily cashier drawer closing reconciliation (`account`, `date`, `opening_balance`, `total_receipts`, `total_payments`, `closing_balance`, `physical_count`, `discrepancy`, `note`, `closed_by`).
+  - Service Layer (`apps/accounting/services/`):
+    - `account_service.py`: Standard Bangladeshi school Chart of Accounts seeder (Assets 1000s, Liabilities 2000s, Equity 3000s, Revenue 4000s, Expenses 5000s) and full GL balance recalculation.
+    - `voucher_service.py`: Thread-safe gap-free sequence generation (`PV-{year}-{seq:06d}`), double-entry debit=credit validation, posting (atomic balance updates according to normal balance rules), and voiding with full reversal and audit trail.
+    - `payment_integration_service.py`: Automated fee payment integration converting Task 15 fee payments into auto-posted Receipt Vouchers (RV), routing funds to Cash/Bank/MFS asset accounts and crediting fee head income accounts or student advance deposits.
+    - `financial_reports_service.py`: Real-time financial reports engine:
+      - Daily Cashbook statement (`get_daily_cashbook`) with opening, day receipts, day payments, closing balance, and transaction drill-down.
+      - Trial Balance (`get_trial_balance`) verifying total debits == total credits.
+      - Income Statement / P&L (`get_income_statement`) computing operational revenues, expenses, and net surplus/deficit.
+      - Balance Sheet (`get_balance_sheet`) verifying Assets = Liabilities + Equity + Retained Surplus.
+    - `voucher_pdf_service.py`: ReportLab printable voucher generator featuring TrueType `Kalpurush.ttf` Bengali font, bilingual headers, itemized debit/credit tables, BDT amount in words (Taka/Poisha), and official institutional signature blocks.
+  - REST API ViewSets & Endpoints (`apps/accounting/views.py` & `apps/accounting/urls.py`):
+    - `/api/v1/accounting/fiscal-years/`: Fiscal year management (`set_current`, `close`).
+    - `/api/v1/accounting/accounts/`: Chart of accounts CRUD, hierarchical tree (`tree`), seeding (`seed_default`), and balance recalculation (`recalculate`).
+    - `/api/v1/accounting/vouchers/`: Accounting vouchers CRUD, posting (`post`), voiding (`void`), and bilingual PDF download (`pdf`).
+    - `/api/v1/accounting/cashbook/`: Daily cashbook view (GET) and day-end cashier closing reconciliation (POST).
+    - `/api/v1/accounting/reports/`: Real-time statements (`trial_balance`, `income_statement`, `balance_sheet`).
 - **Task 16**: SMS Gateway Integration & Communication Suite (`apps/communications`).
   - Core Models:
     - `SMSGatewayConfig`: Tenant-configurable credentials for Bangladeshi SMS providers (SSL Wireless, Greenweb, Onnorokom, Teletalk) and mock console, tracking masking status, sender ID, rate limits, per-segment cost, and account balance in BDT (৳).

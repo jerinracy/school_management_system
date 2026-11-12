@@ -2132,6 +2132,1045 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/accounting/accounts/:
+    get:
+      operationId: accounting_accounts_list
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: List accounts (COA)
+      parameters:
+      - in: query
+        name: account_type
+        schema:
+          type: string
+          enum:
+          - asset
+          - equity
+          - expense
+          - income
+          - liability
+        description: |-
+          * `asset` - Asset (সম্পদ)
+          * `liability` - Liability (দায়)
+          * `equity` - Equity / Fund Balance (মূলধন / তহবিল)
+          * `income` - Income / Revenue (আয়)
+          * `expense` - Expense (ব্যয়)
+      - in: query
+        name: is_group
+        schema:
+          type: boolean
+      - in: query
+        name: is_system
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subtype
+        schema:
+          type: string
+          enum:
+          - admin_expense
+          - admission_fee
+          - bank
+          - cash
+          - current_asset
+          - current_liability
+          - development_fund
+          - exam_expense
+          - exam_fee
+          - fixed_asset
+          - general_fund
+          - long_term_liability
+          - maintenance_expense
+          - mfs
+          - other_expense
+          - other_income
+          - payable
+          - receivable
+          - salary_expense
+          - scholarship_fund
+          - tuition_fee
+          - utility_expense
+        description: |-
+          * `cash` - Cash in Hand (নগদ টাকা)
+          * `bank` - Bank Account (ব্যাংক হিসাব)
+          * `mfs` - Mobile Financial Services / Gateway (বিকাশ / নগদ)
+          * `receivable` - Accounts Receivable (প্রাপ্য হিসাব)
+          * `payable` - Accounts Payable (প্রদেয় হিসাব)
+          * `current_asset` - Other Current Asset
+          * `fixed_asset` - Fixed Asset (স্থায়ী সম্পদ)
+          * `current_liability` - Current Liability
+          * `long_term_liability` - Long-term Liability
+          * `general_fund` - General Fund
+          * `development_fund` - Development / Building Fund
+          * `scholarship_fund` - Scholarship / Poor Fund
+          * `tuition_fee` - Tuition Fee Revenue
+          * `admission_fee` - Admission Fee Revenue
+          * `exam_fee` - Exam Fee Revenue
+          * `other_income` - Other Operating Income
+          * `salary_expense` - Staff Salary & Allowances
+          * `utility_expense` - Utility (Electricity, Water, Internet)
+          * `exam_expense` - Exam & Evaluation Expenses
+          * `maintenance_expense` - Repairs & Maintenance
+          * `admin_expense` - Administrative & Office Expense
+          * `other_expense` - Other Expense
+      tags:
+      - Accounting - Chart of Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountList'
+          description: ''
+    post:
+      operationId: accounting_accounts_create
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Create account
+      tags:
+      - Accounting - Chart of Accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+  /api/v1/accounting/accounts/{id}/:
+    get:
+      operationId: accounting_accounts_retrieve
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Retrieve account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Account.
+        required: true
+      tags:
+      - Accounting - Chart of Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+    put:
+      operationId: accounting_accounts_update
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Update account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Account.
+        required: true
+      tags:
+      - Accounting - Chart of Accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+    patch:
+      operationId: accounting_accounts_partial_update
+      description: ViewSet for hierarchical Chart of Accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Account.
+        required: true
+      tags:
+      - accounting
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAccountRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+    delete:
+      operationId: accounting_accounts_destroy
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Delete account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Account.
+        required: true
+      tags:
+      - Accounting - Chart of Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounting/accounts/recalculate/:
+    post:
+      operationId: accounting_accounts_recalculate_create
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Recalculate all account balances
+      tags:
+      - Accounting - Chart of Accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+  /api/v1/accounting/accounts/seed_default/:
+    post:
+      operationId: accounting_accounts_seed_default_create
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Seed standard Bangladeshi school COA
+      tags:
+      - Accounting - Chart of Accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+  /api/v1/accounting/accounts/tree/:
+    get:
+      operationId: accounting_accounts_tree_retrieve
+      description: ViewSet for hierarchical Chart of Accounts.
+      summary: Get hierarchical tree of accounts
+      tags:
+      - Accounting - Chart of Accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+  /api/v1/accounting/cashbook/:
+    get:
+      operationId: accounting_cashbook_retrieve
+      description: Daily cashbook report & cashier day-end reconciliation view.
+      summary: Get daily cashbook statement
+      parameters:
+      - in: query
+        name: account_id
+        schema:
+          type: string
+        description: Cash or Bank Account UUID (optional)
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Date in YYYY-MM-DD (defaults to today)
+      tags:
+      - Accounting - Cashbook
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: accounting_cashbook_create
+      description: Daily cashbook report & cashier day-end reconciliation view.
+      summary: Close daily cashier cashbook
+      tags:
+      - Accounting - Cashbook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashbookClosingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CashbookClosingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CashbookClosingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashbookClosing'
+          description: ''
+  /api/v1/accounting/fiscal-years/:
+    get:
+      operationId: accounting_fiscal_years_list
+      description: ViewSet for managing financial fiscal years.
+      summary: List fiscal years
+      parameters:
+      - in: query
+        name: is_closed
+        schema:
+          type: boolean
+      - in: query
+        name: is_current
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Accounting - Fiscal Years
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFiscalYearList'
+          description: ''
+    post:
+      operationId: accounting_fiscal_years_create
+      description: ViewSet for managing financial fiscal years.
+      summary: Create fiscal year
+      tags:
+      - Accounting - Fiscal Years
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiscalYear'
+          description: ''
+  /api/v1/accounting/fiscal-years/{id}/:
+    get:
+      operationId: accounting_fiscal_years_retrieve
+      description: ViewSet for managing financial fiscal years.
+      summary: Retrieve fiscal year
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fiscal Year.
+        required: true
+      tags:
+      - Accounting - Fiscal Years
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiscalYear'
+          description: ''
+    put:
+      operationId: accounting_fiscal_years_update
+      description: ViewSet for managing financial fiscal years.
+      summary: Update fiscal year
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fiscal Year.
+        required: true
+      tags:
+      - Accounting - Fiscal Years
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiscalYear'
+          description: ''
+    patch:
+      operationId: accounting_fiscal_years_partial_update
+      description: ViewSet for managing financial fiscal years.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fiscal Year.
+        required: true
+      tags:
+      - accounting
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFiscalYearRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFiscalYearRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFiscalYearRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiscalYear'
+          description: ''
+    delete:
+      operationId: accounting_fiscal_years_destroy
+      description: ViewSet for managing financial fiscal years.
+      summary: Delete fiscal year
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fiscal Year.
+        required: true
+      tags:
+      - Accounting - Fiscal Years
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounting/fiscal-years/{id}/close/:
+    post:
+      operationId: accounting_fiscal_years_close_create
+      description: ViewSet for managing financial fiscal years.
+      summary: Close fiscal year
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fiscal Year.
+        required: true
+      tags:
+      - Accounting - Fiscal Years
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiscalYear'
+          description: ''
+  /api/v1/accounting/fiscal-years/{id}/set_current/:
+    post:
+      operationId: accounting_fiscal_years_set_current_create
+      description: ViewSet for managing financial fiscal years.
+      summary: Set fiscal year as current active
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fiscal Year.
+        required: true
+      tags:
+      - Accounting - Fiscal Years
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FiscalYearRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiscalYear'
+          description: ''
+  /api/v1/accounting/reports/balance_sheet/:
+    get:
+      operationId: accounting_reports_balance_sheet_retrieve
+      description: Endpoints for Trial Balance, Income Statement, and Balance Sheet.
+      summary: Generate Balance Sheet
+      parameters:
+      - in: query
+        name: as_of_date
+        schema:
+          type: string
+        description: As of date (YYYY-MM-DD)
+      - in: query
+        name: fiscal_year_id
+        schema:
+          type: string
+        description: Fiscal year UUID (optional)
+      tags:
+      - Accounting - Financial Reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/accounting/reports/income_statement/:
+    get:
+      operationId: accounting_reports_income_statement_retrieve
+      description: Endpoints for Trial Balance, Income Statement, and Balance Sheet.
+      summary: Generate Income Statement (Profit & Loss / Surplus & Deficit)
+      parameters:
+      - in: query
+        name: end_date
+        schema:
+          type: string
+        description: End date (YYYY-MM-DD)
+      - in: query
+        name: fiscal_year_id
+        schema:
+          type: string
+        description: Fiscal year UUID (optional)
+      - in: query
+        name: start_date
+        schema:
+          type: string
+        description: Start date (YYYY-MM-DD)
+      tags:
+      - Accounting - Financial Reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/accounting/reports/trial_balance/:
+    get:
+      operationId: accounting_reports_trial_balance_retrieve
+      description: Endpoints for Trial Balance, Income Statement, and Balance Sheet.
+      summary: Generate Trial Balance
+      parameters:
+      - in: query
+        name: as_of_date
+        schema:
+          type: string
+        description: As of date (YYYY-MM-DD)
+      - in: query
+        name: fiscal_year_id
+        schema:
+          type: string
+        description: Fiscal year UUID (optional)
+      tags:
+      - Accounting - Financial Reports
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/accounting/vouchers/:
+    get:
+      operationId: accounting_vouchers_list
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: List journal entries
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: fiscal_year
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - draft
+          - posted
+          - void
+        description: |-
+          * `draft` - Draft
+          * `posted` - Posted
+          * `void` - Void
+      - in: query
+        name: voucher_type
+        schema:
+          type: string
+          enum:
+          - contra
+          - journal
+          - payment
+          - receipt
+        description: |-
+          * `journal` - Journal Voucher (JV) (জাবেদা)
+          * `payment` - Payment Voucher (PV) (ডেবিট / খরচ)
+          * `receipt` - Receipt Voucher (RV) (ক্রেডিট / জমা)
+          * `contra` - Contra Voucher (CV) (কন্ট্রা / স্থানান্তর)
+      tags:
+      - Accounting - Journal Entries
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJournalEntryList'
+          description: ''
+    post:
+      operationId: accounting_vouchers_create
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Create journal entry
+      tags:
+      - Accounting - Journal Entries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
+  /api/v1/accounting/vouchers/{id}/:
+    get:
+      operationId: accounting_vouchers_retrieve
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Retrieve journal entry
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - Accounting - Journal Entries
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
+    put:
+      operationId: accounting_vouchers_update
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Update journal entry
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - Accounting - Journal Entries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
+    patch:
+      operationId: accounting_vouchers_partial_update
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - accounting
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJournalEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedJournalEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedJournalEntryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
+    delete:
+      operationId: accounting_vouchers_destroy
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Delete journal entry
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - Accounting - Journal Entries
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/accounting/vouchers/{id}/pdf/:
+    get:
+      operationId: accounting_vouchers_pdf_retrieve
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Download official voucher PDF
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - Accounting - Journal Entries
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
+  /api/v1/accounting/vouchers/{id}/post/:
+    post:
+      operationId: accounting_vouchers_post_create
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Post journal entry to general ledger
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - Accounting - Journal Entries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
+  /api/v1/accounting/vouchers/{id}/void/:
+    post:
+      operationId: accounting_vouchers_void_create
+      description: ViewSet for Journal Entries / Accounting Vouchers.
+      summary: Void journal entry
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Journal Entry.
+        required: true
+      tags:
+      - Accounting - Journal Entries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JournalEntryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+          description: ''
   /api/v1/admissions/applications/:
     get:
       operationId: admissions_applications_list
@@ -19912,6 +20951,165 @@ components:
         * `planned` - Planned
         * `active` - Active
         * `closed` - Closed
+    Account:
+      type: object
+      description: Hierarchical Chart of Accounts serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        account_code:
+          type: string
+          description: Standardized code (e.g. 1010 for Cash, 4010 for Tuition Fee).
+          maxLength: 50
+        name_en:
+          type: string
+          description: Account title in English.
+          maxLength: 200
+        name_bn:
+          type: string
+          description: Account title in Bengali.
+          maxLength: 200
+        account_type:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        subtype:
+          oneOf:
+          - $ref: '#/components/schemas/SubtypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent account grouping for tree hierarchy.
+        parent_code:
+          type: string
+          readOnly: true
+        parent_name:
+          type: string
+          readOnly: true
+        is_group:
+          type: boolean
+          description: If True, acts as a header folder and cannot receive direct
+            voucher postings.
+        is_system:
+          type: boolean
+          readOnly: true
+          description: System-locked default account that cannot be deleted.
+        opening_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Starting balance at the inception of the account.
+        current_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+          description: Running net balance derived from posted vouchers.
+        normal_balance_type:
+          type: string
+          readOnly: true
+        bank_name:
+          type: string
+          description: e.g. Sonali Bank PLC
+          maxLength: 100
+        bank_account_number:
+          type: string
+          maxLength: 50
+        bank_branch:
+          type: string
+          maxLength: 100
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - account_code
+      - account_type
+      - created_at
+      - current_balance
+      - id
+      - is_system
+      - name_en
+      - normal_balance_type
+      - parent_code
+      - parent_name
+      - updated_at
+    AccountRequest:
+      type: object
+      description: Hierarchical Chart of Accounts serializer.
+      properties:
+        account_code:
+          type: string
+          minLength: 1
+          description: Standardized code (e.g. 1010 for Cash, 4010 for Tuition Fee).
+          maxLength: 50
+        name_en:
+          type: string
+          minLength: 1
+          description: Account title in English.
+          maxLength: 200
+        name_bn:
+          type: string
+          description: Account title in Bengali.
+          maxLength: 200
+        account_type:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        subtype:
+          oneOf:
+          - $ref: '#/components/schemas/SubtypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent account grouping for tree hierarchy.
+        is_group:
+          type: boolean
+          description: If True, acts as a header folder and cannot receive direct
+            voucher postings.
+        opening_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Starting balance at the inception of the account.
+        bank_name:
+          type: string
+          description: e.g. Sonali Bank PLC
+          maxLength: 100
+        bank_account_number:
+          type: string
+          maxLength: 50
+        bank_branch:
+          type: string
+          maxLength: 100
+        is_active:
+          type: boolean
+      required:
+      - account_code
+      - account_type
+      - name_en
+    AccountTypeEnum:
+      enum:
+      - asset
+      - liability
+      - equity
+      - income
+      - expense
+      type: string
+      description: |-
+        * `asset` - Asset (সম্পদ)
+        * `liability` - Liability (দায়)
+        * `equity` - Equity / Fund Balance (মূলধন / তহবিল)
+        * `income` - Income / Revenue (আয়)
+        * `expense` - Expense (ব্যয়)
     ActionEnum:
       enum:
       - promote
@@ -21589,6 +22787,9 @@ components:
       - staff_name
       - student_name
       - updated_at
+    BlankEnum:
+      enum:
+      - ''
     BloodGroup9d3Enum:
       enum:
       - A+
@@ -21762,6 +22963,105 @@ components:
           default: true
       required:
       - file
+    CashbookClosing:
+      type: object
+      description: Daily cashbook closing reconciliation serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        account:
+          type: string
+          format: uuid
+          description: Cash or Bank account being reconciled.
+        account_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        opening_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_receipts:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_payments:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        closing_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        physical_count:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Physical currency denomination count in drawer.
+        discrepancy:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+          description: 'Variance: physical_count - closing_balance (shortage or excess).'
+        note:
+          type: string
+        closed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        closed_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - account
+      - account_name
+      - closed_by
+      - closed_by_name
+      - closing_balance
+      - created_at
+      - date
+      - discrepancy
+      - id
+      - opening_balance
+      - total_payments
+      - total_receipts
+    CashbookClosingRequest:
+      type: object
+      description: Daily cashbook closing reconciliation serializer.
+      properties:
+        account:
+          type: string
+          format: uuid
+          description: Cash or Bank account being reconciled.
+        date:
+          type: string
+          format: date
+        physical_count:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+          description: Physical currency denomination count in drawer.
+        note:
+          type: string
+      required:
+      - account
+      - date
     ChannelEnum:
       enum:
       - sms
@@ -24260,6 +25560,70 @@ components:
         * `fixed` - Fixed Amount
         * `daily` - Daily Accrual
         * `slab` - Tiered / Slab-Based
+    FiscalYear:
+      type: object
+      description: FiscalYear serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: e.g. FY 2025-2026 or 2026
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_current:
+          type: boolean
+          description: Designates the active operating fiscal year for the institution.
+        is_closed:
+          type: boolean
+          description: Closed fiscal years prohibit further voucher posting.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_date
+      - id
+      - name
+      - start_date
+      - updated_at
+    FiscalYearRequest:
+      type: object
+      description: FiscalYear serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. FY 2025-2026 or 2026
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_current:
+          type: boolean
+          description: Designates the active operating fiscal year for the institution.
+        is_closed:
+          type: boolean
+          description: Closed fiscal years prohibit further voucher posting.
+      required:
+      - end_date
+      - name
+      - start_date
     GenderEnum:
       enum:
       - male
@@ -25495,6 +26859,215 @@ components:
         * `admission` - Admission & Initial Enrollment
         * `session` - Annual Session Charge
         * `custom` - Custom / Miscellaneous
+    JournalEntry:
+      type: object
+      description: Journal entry header & items serializer with double-entry validation.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        voucher_no:
+          type: string
+          readOnly: true
+          description: Formatted sequence number, e.g. PV-2026-000001
+        voucher_type:
+          $ref: '#/components/schemas/VoucherTypeEnum'
+        fiscal_year:
+          type: string
+          format: uuid
+        fiscal_year_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        narration:
+          type: string
+          description: Purpose and explanation of the transaction.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/JournalEntryStatusEnum'
+          readOnly: true
+        total_debit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_credit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        cheque_no:
+          type: string
+          maxLength: 50
+        payment_reference:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked fee payment transaction if automatically generated.
+        attachment:
+          type: string
+          format: uri
+          nullable: true
+        posted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        posted_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        posted_by_name:
+          type: string
+          readOnly: true
+        voided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        voided_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        voided_by_name:
+          type: string
+          readOnly: true
+        void_reason:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntryItem'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fiscal_year
+      - fiscal_year_name
+      - id
+      - narration
+      - posted_at
+      - posted_by
+      - posted_by_name
+      - status
+      - total_credit
+      - total_debit
+      - updated_at
+      - voided_at
+      - voided_by
+      - voided_by_name
+      - voucher_no
+    JournalEntryItem:
+      type: object
+      description: Journal entry line item serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        account:
+          type: string
+          format: uuid
+        account_code:
+          type: string
+          readOnly: true
+        account_name:
+          type: string
+          readOnly: true
+        debit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        credit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        narration:
+          type: string
+          maxLength: 255
+      required:
+      - account
+      - account_code
+      - account_name
+      - id
+    JournalEntryItemRequest:
+      type: object
+      description: Journal entry line item serializer.
+      properties:
+        account:
+          type: string
+          format: uuid
+        debit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        credit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        narration:
+          type: string
+          maxLength: 255
+      required:
+      - account
+    JournalEntryRequest:
+      type: object
+      description: Journal entry header & items serializer with double-entry validation.
+      properties:
+        voucher_type:
+          $ref: '#/components/schemas/VoucherTypeEnum'
+        fiscal_year:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        narration:
+          type: string
+          minLength: 1
+          description: Purpose and explanation of the transaction.
+        cheque_no:
+          type: string
+          maxLength: 50
+        payment_reference:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked fee payment transaction if automatically generated.
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+        void_reason:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntryItemRequest'
+      required:
+      - fiscal_year
+      - narration
+    JournalEntryStatusEnum:
+      enum:
+      - draft
+      - posted
+      - void
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `posted` - Posted
+        * `void` - Void
     Language633Enum:
       enum:
       - bn
@@ -27088,6 +28661,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AcademicSession'
+    PaginatedAccountList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
     PaginatedAdmissionCircularList:
       type: object
       required:
@@ -27985,6 +29581,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FineRule'
+    PaginatedFiscalYearList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiscalYear'
     PaginatedGraceMarkRuleList:
       type: object
       required:
@@ -28123,6 +29742,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Invoice'
+    PaginatedJournalEntryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntry'
     PaginatedLeaveBalanceList:
       type: object
       required:
@@ -29280,6 +30922,56 @@ components:
         end_date:
           type: string
           format: date
+    PatchedAccountRequest:
+      type: object
+      description: Hierarchical Chart of Accounts serializer.
+      properties:
+        account_code:
+          type: string
+          minLength: 1
+          description: Standardized code (e.g. 1010 for Cash, 4010 for Tuition Fee).
+          maxLength: 50
+        name_en:
+          type: string
+          minLength: 1
+          description: Account title in English.
+          maxLength: 200
+        name_bn:
+          type: string
+          description: Account title in Bengali.
+          maxLength: 200
+        account_type:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        subtype:
+          oneOf:
+          - $ref: '#/components/schemas/SubtypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent account grouping for tree hierarchy.
+        is_group:
+          type: boolean
+          description: If True, acts as a header folder and cannot receive direct
+            voucher postings.
+        opening_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          description: Starting balance at the inception of the account.
+        bank_name:
+          type: string
+          description: e.g. Sonali Bank PLC
+          maxLength: 100
+        bank_account_number:
+          type: string
+          maxLength: 50
+        bank_branch:
+          type: string
+          maxLength: 100
+        is_active:
+          type: boolean
     PatchedAdmissionCircularRequest:
       type: object
       properties:
@@ -30168,6 +31860,27 @@ components:
             50.00}, ...]'
         is_active:
           type: boolean
+    PatchedFiscalYearRequest:
+      type: object
+      description: FiscalYear serializer.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: e.g. FY 2025-2026 or 2026
+          maxLength: 100
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        is_current:
+          type: boolean
+          description: Designates the active operating fiscal year for the institution.
+        is_closed:
+          type: boolean
+          description: Closed fiscal years prohibit further voucher posting.
     PatchedGraceMarkRuleRequest:
       type: object
       properties:
@@ -30425,6 +32138,40 @@ components:
           nullable: true
         cancellation_reason:
           type: string
+    PatchedJournalEntryRequest:
+      type: object
+      description: Journal entry header & items serializer with double-entry validation.
+      properties:
+        voucher_type:
+          $ref: '#/components/schemas/VoucherTypeEnum'
+        fiscal_year:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        narration:
+          type: string
+          minLength: 1
+          description: Purpose and explanation of the transaction.
+        cheque_no:
+          type: string
+          maxLength: 50
+        payment_reference:
+          type: string
+          format: uuid
+          nullable: true
+          description: Linked fee payment transaction if automatically generated.
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+        void_reason:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntryItemRequest'
     PatchedLeaveRequestRequest:
       type: object
       description: Leave application lifecycle serializer.
@@ -35885,6 +37632,54 @@ components:
       - routine_slot
       - slot_date
       - substitute_teacher
+    SubtypeEnum:
+      enum:
+      - cash
+      - bank
+      - mfs
+      - receivable
+      - payable
+      - current_asset
+      - fixed_asset
+      - current_liability
+      - long_term_liability
+      - general_fund
+      - development_fund
+      - scholarship_fund
+      - tuition_fee
+      - admission_fee
+      - exam_fee
+      - other_income
+      - salary_expense
+      - utility_expense
+      - exam_expense
+      - maintenance_expense
+      - admin_expense
+      - other_expense
+      type: string
+      description: |-
+        * `cash` - Cash in Hand (নগদ টাকা)
+        * `bank` - Bank Account (ব্যাংক হিসাব)
+        * `mfs` - Mobile Financial Services / Gateway (বিকাশ / নগদ)
+        * `receivable` - Accounts Receivable (প্রাপ্য হিসাব)
+        * `payable` - Accounts Payable (প্রদেয় হিসাব)
+        * `current_asset` - Other Current Asset
+        * `fixed_asset` - Fixed Asset (স্থায়ী সম্পদ)
+        * `current_liability` - Current Liability
+        * `long_term_liability` - Long-term Liability
+        * `general_fund` - General Fund
+        * `development_fund` - Development / Building Fund
+        * `scholarship_fund` - Scholarship / Poor Fund
+        * `tuition_fee` - Tuition Fee Revenue
+        * `admission_fee` - Admission Fee Revenue
+        * `exam_fee` - Exam Fee Revenue
+        * `other_income` - Other Operating Income
+        * `salary_expense` - Staff Salary & Allowances
+        * `utility_expense` - Utility (Electricity, Water, Internet)
+        * `exam_expense` - Exam & Evaluation Expenses
+        * `maintenance_expense` - Repairs & Maintenance
+        * `admin_expense` - Administrative & Office Expense
+        * `other_expense` - Other Expense
     TabulationGenerateFileFormatEnum:
       enum:
       - xlsx
@@ -36828,6 +38623,18 @@ components:
         * `qr` - QR Code (কিউআর কোড)
         * `pin` - PIN / Password (পিন কোড)
         * `mobile` - Mobile App GPS (মোবাইল অ্যাপ)
+    VoucherTypeEnum:
+      enum:
+      - journal
+      - payment
+      - receipt
+      - contra
+      type: string
+      description: |-
+        * `journal` - Journal Voucher (JV) (জাবেদা)
+        * `payment` - Payment Voucher (PV) (ডেবিট / খরচ)
+        * `receipt` - Receipt Voucher (RV) (ক্রেডিট / জমা)
+        * `contra` - Contra Voucher (CV) (কন্ট্রা / স্থানান্তর)
     WaiverRejectRequest:
       type: object
       properties:

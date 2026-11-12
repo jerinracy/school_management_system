@@ -369,3 +369,36 @@
   - Seamless notification dispatching across Bangladesh SMS aggregators and mobile push notifications.
   - Transparent per-message segment count and cost auditability.
   - Clean foundation for downstream event triggers from Attendance (Tasks 10/11), Exams (Task 13), and Fees (Task 14/15).
+
+---
+
+## ADR-019: Basic Accounting, Double-Entry General Ledger, Daily Cashbook & Financial Statements
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Educational institutions in Bangladesh operate on a strict double-entry general ledger accounting system.
+  - Key accounting requirements for Bangladeshi schools include:
+    1. **Standard Chart of Accounts (COA)**: 5 core accounting heads (Assets: 1000s, Liabilities: 2000s, Equity/Funds: 3000s, Revenue/Income: 4000s, Expenses: 5000s) with hierarchical tree grouping and normal balance orientations (Assets/Expenses are Debit-normal; Liabilities/Equity/Income are Credit-normal).
+    2. **Strict Double-Entry Invariant**: Every accounting voucher must enforce $\sum \text{Debits} = \sum \text{Credits}$ with at least two line items. Unbalanced entries are prohibited by the service layer.
+    3. **Voucher Numbering**: Concurrency-safe, gap-free sequential voucher numbering per fiscal year and voucher type (`PV-{year}-{seq:06d}`, `RV-{year}-{seq:06d}`, `JV-{year}-{seq:06d}`, `CV-{year}-{seq:06d}`).
+    4. **Fee Payment Integration**: Settled student fee payments from Task 15 must automatically generate and post Receipt Vouchers (RV), crediting fee heads (Tuition, Admission, Exam Fees) or student advance deposits, and debiting Cash in Hand, Bank, or MFS asset ledgers.
+    5. **Daily Cashbook & Day-End Closing**: Real-time cashier cashbook tracking opening balance, receipts, payments, and closing balance, coupled with physical drawer count reconciliation and discrepancy logging.
+    6. **Core Financial Statements**: Trial Balance (ensuring system-wide debits == credits), Income Statement / P&L (revenue minus expense surplus/deficit), and Balance Sheet ($\text{Assets} = \text{Liabilities} + \text{Equity} + \text{Retained Surplus}$).
+    7. **Bilingual Printable Vouchers**: Official A4 printable vouchers generated via ReportLab using TrueType `Kalpurush.ttf` font with Bengali and English typography, BDT amounts in words (Taka and Poisha), and official institutional signature blocks.
+- **Decision**:
+  - **Models & Hierarchical COA (`apps/accounting/models.py`)**:
+    - Created `FiscalYear`, `Account`, `VoucherSequence`, `JournalEntry`, `JournalEntryItem`, `Budget`, and `CashbookClosing`.
+    - Normal balance logic implemented on `Account` model to handle balance updates accurately on posting and reversing on voiding.
+  - **Service Architecture (`apps/accounting/services/`)**:
+    - `account_service.py`: Standard Bangladeshi school Chart of Accounts seeder and ledger recalculation.
+    - `voucher_service.py`: Atomic gap-free sequence generation, transaction-safe posting, and audit-compliant voiding.
+    - `payment_integration_service.py`: Zero-effort fee payment collection feed (`create_voucher_for_fee_payment`) mapping payments directly into double-entry general ledger vouchers.
+    - `financial_reports_service.py`: In-memory and SQL-aggregated Daily Cashbook, Trial Balance, Income Statement, and Balance Sheet generators.
+    - `voucher_pdf_service.py`: ReportLab Platypus engine rendering official bilingual vouchers with TrueType Bengali fonts.
+  - **REST API ViewSets (`apps/accounting/views.py`)**:
+    - `FiscalYearViewSet`, `AccountViewSet`, `JournalEntryViewSet`, `CashbookView`, and `FinancialReportsViewSet`.
+- **Consequences**:
+  - Full double-entry financial integrity for all school income and expenditures.
+  - Automated ledger updates from counter and digital student fee collections.
+  - Seamless day-end reconciliation for school cashiers and accountants.
+  - Ready-to-audit financial reporting compliant with Bangladeshi institutional accounting practices.

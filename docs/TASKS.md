@@ -24,7 +24,7 @@ Legend:
 | **Task 14** | Fee Structure & Invoice Generation | DONE | Task 06 | 2026-11-11 |
 | **Task 15** | Payment Collection & Gateways (bKash, Nagad, SSLCommerz) | DONE | Task 14 | 2026-11-12 |
 | **Task 16** | SMS Gateway Integration & Communication Suite | DONE | Task 03, Task 07 | 2026-11-12 |
-| **Task 17** | Basic Accounting & Cashbook | TODO | Task 15 | - |
+| **Task 17** | Basic Accounting & Cashbook | DONE | Task 15 | 2026-11-12 |
 | **Task 18** | Payroll Management | TODO | Task 08, Task 10, Task 17 | - |
 | **Task 19** | Homework & Assignment Management | TODO | Task 04, Task 06 | - |
 | **Task 20** | Library Management | TODO | Task 06, Task 08 | - |
