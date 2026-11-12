@@ -64,6 +64,7 @@ LOCAL_APPS = [
     "apps.transport.apps.TransportConfig",
     "apps.hostel.apps.HostelConfig",
     "apps.events.apps.EventsConfig",
+    "apps.audit.apps.AuditConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -77,6 +78,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.audit.middleware.AuditContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

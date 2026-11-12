@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 24**: Audit Logging & Activity Tracking (`apps/audit`).
+  - Immutable Audit & Activity Models (`apps/audit/models.py`):
+    - `AuditLog` and `ActivityLog` inheriting `ImmutableAuditModel`, blocking ORM updates and deletes (`ValidationError`) and exposing read-only DRF ViewSets under `/api/v1/audit/logs/` and `/api/v1/audit/activities/` guarded by `HasModulePermission("audit.view")`.
+  - Service, Redaction & Request Context (`apps/audit/services/audit_service.py`, `apps/audit/middleware.py`):
+    - `record()` & `record_activity()` with automatic `changed_fields` computation, recursive secret/NID/biometric redaction (`[REDACTED]`), and BD phone number masking (`+88017****5678`).
+    - `AuditContextMiddleware` capturing actor, IP address, User-Agent, and request ID via `contextvars`.
+  - Sensitive Model Signals (`apps/audit/signals.py`):
+    - Connected `UserRole` (`role_change`) and optional sensitive models (`AttendanceCorrection`, `ResultPublication`, `PaymentTransaction`) to write immutable `AuditLog` entries.
 - **Task 23**: Notice Board & Event Calendar (`apps/events`).
   - Notice Board & Unified Calendar (`apps/events/services/event_service.py`, `apps/events/views.py`):
     - Added `NoticeReadReceipt` (`mark-read` idempotent action and `summary` endpoint) integrating with `communications.Notice` without duplicating notices.

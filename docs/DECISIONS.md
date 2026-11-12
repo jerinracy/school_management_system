@@ -485,3 +485,17 @@
   - **Consent-Gated Gallery (`apps/events/views.py`)**: `GalleryMedia` carries `contains_students`, `guardian_consent_verified`, and `is_approved`. Non-staff users (guardians/students) only receive media where `album.is_published=True`, `album.is_public_to_guardians=True`, `is_approved=True`, and (`contains_students=False` OR `guardian_consent_verified=True`).
 - **Consequences**:
   - Single source of truth is preserved for notices and holidays, and unconsented student photos/videos cannot leak to guardians or students.
+
+---
+
+## ADR-026: Immutable Append-Only AuditLog, ContextVar Attribution & PII Redaction
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - Sensitive operations (role changes, attendance corrections, result publications, payments, exports) require a tamper-evident audit trail without leaking secrets, raw biometrics, NIDs, or unmasked phone numbers.
+- **Decision**:
+  - **Append-Only Enforcement (`apps/audit/models.py`, `apps/audit/views.py`)**: `ImmutableAuditModel` rejects ORM updates (`save()` on existing PK) and `delete()` with `ValidationError`, Django admin disables add/change/delete, and DRF exposes `ReadOnlyModelViewSet` guarded by `HasModulePermission("audit.view")`.
+  - **Automatic Sanitization (`apps/audit/services/audit_service.py`)**: `record()` recursively redacts sensitive keys (`password`, `token`, `secret`, `otp`, `pin`, `nid`, `biometric`, `raw_image`, `api_key`, `hash`) and masks phone numbers before persisting `before_data`, `after_data`, and `metadata`.
+  - **ContextVar Request Attribution (`apps/audit/middleware.py`)**: `AuditContextMiddleware` stores request IP, User-Agent, and request ID in `contextvars` so signal handlers (`apps/audit/signals.py`) attribute changes automatically without passing `request` through every model save.
+- **Consequences**:
+  - Audit records cannot be silently altered or deleted, sensitive PII/secrets never enter audit JSON payloads, and signal-driven audits retain full request context.

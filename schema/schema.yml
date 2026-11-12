@@ -6545,6 +6545,222 @@ paths:
               schema:
                 $ref: '#/components/schemas/AttendancePolicy'
           description: ''
+  /api/v1/audit/activities/:
+    get:
+      operationId: audit_activities_list
+      description: Read-only, tenant-scoped endpoint for ActivityLog entries.
+      summary: List immutable user activity logs
+      parameters:
+      - in: query
+        name: activity_type
+        schema:
+          type: string
+      - in: query
+        name: actor
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: module
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - audit
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedActivityLogList'
+          description: ''
+  /api/v1/audit/activities/{id}/:
+    get:
+      operationId: audit_activities_retrieve
+      description: Read-only, tenant-scoped endpoint for ActivityLog entries.
+      summary: Retrieve an immutable user activity log entry
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Activity Log.
+        required: true
+      tags:
+      - audit
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityLog'
+          description: ''
+  /api/v1/audit/logs/:
+    get:
+      operationId: audit_logs_list
+      description: Read-only, tenant-scoped endpoint for immutable AuditLog entries.
+      summary: List immutable audit logs
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum:
+          - approve
+          - consent_change
+          - create
+          - delete
+          - export
+          - login
+          - login_failed
+          - logout
+          - override
+          - payment
+          - permission_change
+          - reject
+          - role_change
+          - soft_delete
+          - update
+        description: |-
+          * `create` - Create
+          * `update` - Update
+          * `delete` - Delete
+          * `soft_delete` - Soft Delete
+          * `login` - Login
+          * `logout` - Logout
+          * `login_failed` - Login Failed
+          * `role_change` - Role Change
+          * `permission_change` - Permission Change
+          * `approve` - Approve
+          * `reject` - Reject
+          * `override` - Override
+          * `export` - Export
+          * `consent_change` - Consent Change
+          * `payment` - Payment
+      - in: query
+        name: actor
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: module
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: target_model
+        schema:
+          type: string
+      - in: query
+        name: target_object_id
+        schema:
+          type: string
+      tags:
+      - audit
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditLogList'
+          description: ''
+  /api/v1/audit/logs/{id}/:
+    get:
+      operationId: audit_logs_retrieve
+      description: Read-only, tenant-scoped endpoint for immutable AuditLog entries.
+      summary: Retrieve an immutable audit log entry
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Audit Log.
+        required: true
+      tags:
+      - audit
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+          description: ''
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
@@ -33267,18 +33483,60 @@ components:
       - achieved_date
       - student
       - title_en
-    ActionEnum:
-      enum:
-      - promote
-      - repeat
-      - demote
-      - withdraw
-      type: string
-      description: |-
-        * `promote` - Promote to Next Class
-        * `repeat` - Repeat Current Class
-        * `demote` - Demote
-        * `withdraw` - Withdraw
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        actor_username:
+          type: string
+          readOnly: true
+        activity_type:
+          type: string
+          readOnly: true
+        module:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        user_agent:
+          type: string
+          readOnly: true
+        metadata:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - activity_type
+      - actor
+      - actor_username
+      - created_at
+      - description
+      - id
+      - institution
+      - ip_address
+      - metadata
+      - module
+      - user_agent
     AdmissionCircular:
       type: object
       properties:
@@ -34788,6 +35046,116 @@ components:
           type: boolean
       required:
       - name
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        actor_username:
+          type: string
+          readOnly: true
+        action:
+          allOf:
+          - $ref: '#/components/schemas/AuditLogActionEnum'
+          readOnly: true
+        module:
+          type: string
+          readOnly: true
+        target_model:
+          type: string
+          readOnly: true
+        target_object_id:
+          type: string
+          readOnly: true
+        target_repr:
+          type: string
+          readOnly: true
+        before_data:
+          readOnly: true
+        after_data:
+          readOnly: true
+        changed_fields:
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        user_agent:
+          type: string
+          readOnly: true
+        request_id:
+          type: string
+          readOnly: true
+        metadata:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - actor
+      - actor_username
+      - after_data
+      - before_data
+      - changed_fields
+      - created_at
+      - id
+      - institution
+      - ip_address
+      - metadata
+      - module
+      - request_id
+      - target_model
+      - target_object_id
+      - target_repr
+      - user_agent
+    AuditLogActionEnum:
+      enum:
+      - create
+      - update
+      - delete
+      - soft_delete
+      - login
+      - logout
+      - login_failed
+      - role_change
+      - permission_change
+      - approve
+      - reject
+      - override
+      - export
+      - consent_change
+      - payment
+      type: string
+      description: |-
+        * `create` - Create
+        * `update` - Update
+        * `delete` - Delete
+        * `soft_delete` - Soft Delete
+        * `login` - Login
+        * `logout` - Logout
+        * `login_failed` - Login Failed
+        * `role_change` - Role Change
+        * `permission_change` - Permission Change
+        * `approve` - Approve
+        * `reject` - Reject
+        * `override` - Override
+        * `export` - Export
+        * `consent_change` - Consent Change
+        * `payment` - Payment
     AuthorizedPickup:
       type: object
       description: Serializer for authorized pickup persons.
@@ -44561,6 +44929,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Achievement'
+    PaginatedActivityLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityLog'
     PaginatedAdmissionCircularList:
       type: object
       required:
@@ -44837,6 +45228,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AttendancePolicy'
+    PaginatedAuditLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLog'
     PaginatedAuthorizedPickupList:
       type: object
       required:
@@ -52993,7 +53407,7 @@ components:
           maximum: 2147483647
           minimum: 0
         action:
-          $ref: '#/components/schemas/ActionEnum'
+          $ref: '#/components/schemas/PromotionItemActionEnum'
         gpa:
           type: string
           format: decimal
@@ -53012,6 +53426,18 @@ components:
       - target_roll_no
       - target_section
       - target_section_name
+    PromotionItemActionEnum:
+      enum:
+      - promote
+      - repeat
+      - demote
+      - withdraw
+      type: string
+      description: |-
+        * `promote` - Promote to Next Class
+        * `repeat` - Repeat Current Class
+        * `demote` - Demote
+        * `withdraw` - Withdraw
     PromotionItemRequest:
       type: object
       properties:
@@ -53032,7 +53458,7 @@ components:
           maximum: 2147483647
           minimum: 0
         action:
-          $ref: '#/components/schemas/ActionEnum'
+          $ref: '#/components/schemas/PromotionItemActionEnum'
         gpa:
           type: string
           format: decimal
