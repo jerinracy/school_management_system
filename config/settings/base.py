@@ -61,6 +61,7 @@ LOCAL_APPS = [
     "apps.payroll.apps.PayrollConfig",
     "apps.homework.apps.HomeworkConfig",
     "apps.library.apps.LibraryConfig",
+    "apps.transport.apps.TransportConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -362,3 +363,6 @@ LOGGING = {
         },
     },
 }
+
+# Transport GPS live location retention policy (days)
+TRANSPORT_LOCATION_RETENTION_DAYS = env.int("TRANSPORT_LOCATION_RETENTION_DAYS", default=30)

@@ -444,3 +444,17 @@
   - **Configurable Dues Blocking**: `LibraryPolicy` supports independent toggles `block_issue_on_library_fines` (with `max_unpaid_fine_threshold`) and `block_issue_on_fee_dues` (checking unpaid `apps.fees.models.Invoice` balances for student members).
 - **Consequences**:
   - Zero double-issue race conditions on last copies, deterministic FIFO reservation fulfillment, and flexible per-branch/member-type borrowing rules.
+
+---
+
+## ADR-023: Transport GPS Token Auth, Idempotent Boarding Alerts & Location Retention
+- **Date**: 2026-11-12
+- **Status**: Accepted
+- **Context**:
+  - School transport requires headless GPS tracker ping ingestion (`LiveLocation`), driver-operated trip & boarding scans with guardian alerts, vehicle capacity enforcement, and bounded GPS location history storage.
+- **Decision**:
+  - **Device Token Hashing (`apps/transport/services/transport_service.py`)**: Store only SHA-256 `gps_token_hash` on `Vehicle` and verify `X-GPS-Device-Id` + `X-GPS-Device-Token` using `hmac.compare_digest`; raw tokens are returned once upon generation/rotation.
+  - **Capacity & Idempotent Boarding**: Enforce vehicle seat capacity atomically via `select_for_update()` on `Route`/`Vehicle` in `assign_transport`, and deduplicate `BoardingEvent` by `(institution, idempotency_key)` and `(institution, trip, student, event_type)` before dispatching guardian notifications.
+  - **Location Retention (`apps/transport/tasks.py`)**: Retain `LiveLocation` pings for `TRANSPORT_LOCATION_RETENTION_DAYS` (default `30` days) and purge older rows via `purge_old_live_locations`.
+- **Consequences**:
+  - GPS trackers authenticate without user sessions or plaintext secrets in DB, duplicate scans never double-notify guardians, and GPS storage remains bounded.

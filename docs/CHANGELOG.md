@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task 21**: Transport Management (`apps/transport`).
+  - Core Models (`apps/transport/models.py`):
+    - `Vehicle`, `Driver`, `Route`, `RouteStop`: Fleet inventory with fitness/insurance/tax/permit expiry dates, hashed GPS device tokens (`gps_token_hash`), driver profiles linked to `Staff`, and ordered pickup/drop stops.
+    - `TransportFeeLink`, `TransportAssignment`, `VehicleMaintenance`, `FuelLog`: FeeHead billing integration, session-scoped student/staff assignments with atomic `select_for_update()` vehicle capacity checks, maintenance logs, and fuel logs.
+    - `TripLog`, `BoardingEvent`, `LiveLocation`: Driver-scoped trip start/end lifecycle, idempotent QR/RFID/manual boarding scans with automatic guardian notifications, and device-token-authenticated GPS ping ingestion.
+  - Celery Tasks & API (`apps/transport/tasks.py`, `apps/transport/views.py`):
+    - `send_transport_expiry_alerts` (daily vehicle/driver expiry alerts) and `purge_old_live_locations` (30-day retention cleanup via `TRANSPORT_LOCATION_RETENTION_DAYS`).
+    - Endpoints under `/api/v1/transport/` (`vehicles/`, `drivers/`, `routes/`, `stops/`, `fee-links/`, `assignments/`, `maintenances/`, `fuel-logs/`, `trips/`, `boarding-events/`, `live-locations/`, `gps/ping/`).
 - **Task 20**: Library Management (`apps/library`).
   - Core Models (`apps/library/models.py`):
     - `Book`, `BookCopy`: Bibliographic catalog (ISBN, title, Bangla title, authors, category, publisher, edition, language, reference-only flag) and physical inventory (accession number, barcode, RFID tag, shelf location, status, price).

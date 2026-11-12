@@ -26542,6 +26542,2267 @@ paths:
               schema:
                 $ref: '#/components/schemas/TransferCertificate'
           description: ''
+  /api/v1/transport/assignments/:
+    get:
+      operationId: transport_assignments_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Transport Assignments
+      parameters:
+      - in: query
+        name: assignee_type
+        schema:
+          type: string
+          enum:
+          - staff
+          - student
+        description: |-
+          * `student` - Student
+          * `staff` - Staff
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: route
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: stop
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransportAssignmentList'
+          description: ''
+    post:
+      operationId: transport_assignments_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Assign Student or Staff to Route
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransportAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransportAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportAssignment'
+          description: ''
+  /api/v1/transport/assignments/{id}/:
+    get:
+      operationId: transport_assignments_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Transport Assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport assignment.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportAssignment'
+          description: ''
+    put:
+      operationId: transport_assignments_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport assignment.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransportAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransportAssignmentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportAssignment'
+          description: ''
+    patch:
+      operationId: transport_assignments_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Transport Assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport assignment.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTransportAssignmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTransportAssignmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTransportAssignmentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportAssignment'
+          description: ''
+    delete:
+      operationId: transport_assignments_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Transport Assignment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport assignment.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/boarding-events/:
+    get:
+      operationId: transport_boarding_events_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Boarding Events
+      parameters:
+      - in: query
+        name: event_type
+        schema:
+          type: string
+          enum:
+          - boarded
+          - dropped
+        description: |-
+          * `boarded` - Boarded
+          * `dropped` - Dropped
+      - in: query
+        name: method
+        schema:
+          type: string
+          enum:
+          - manual
+          - qr
+          - rfid
+        description: |-
+          * `qr` - QR Code
+          * `rfid` - RFID Card
+          * `manual` - Manual
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: trip
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBoardingEventList'
+          description: ''
+  /api/v1/transport/boarding-events/{id}/:
+    get:
+      operationId: transport_boarding_events_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Boarding Event
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this boarding event.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardingEvent'
+          description: ''
+  /api/v1/transport/boarding-events/scan/:
+    post:
+      operationId: transport_boarding_events_scan_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Scan Student Boarding/Dropping Event (Idempotent)
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BoardingScanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BoardingScanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BoardingScanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardingEvent'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardingEvent'
+          description: ''
+  /api/v1/transport/drivers/:
+    get:
+      operationId: transport_drivers_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Drivers
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - inactive
+          - on_leave
+          - suspended
+        description: |-
+          * `active` - Active
+          * `on_leave` - On Leave
+          * `suspended` - Suspended
+          * `inactive` - Inactive
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDriverList'
+          description: ''
+    post:
+      operationId: transport_drivers_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Driver
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+  /api/v1/transport/drivers/{id}/:
+    get:
+      operationId: transport_drivers_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Driver
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this driver.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+    put:
+      operationId: transport_drivers_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this driver.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DriverRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+    patch:
+      operationId: transport_drivers_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Driver
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this driver.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDriverRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDriverRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDriverRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+          description: ''
+    delete:
+      operationId: transport_drivers_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Driver
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this driver.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/fee-links/:
+    get:
+      operationId: transport_fee_links_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Transport Fee Links
+      parameters:
+      - in: query
+        name: fee_head
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: route
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransportFeeLinkList'
+          description: ''
+    post:
+      operationId: transport_fee_links_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Transport Fee Link
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportFeeLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransportFeeLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransportFeeLinkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportFeeLink'
+          description: ''
+  /api/v1/transport/fee-links/{id}/:
+    get:
+      operationId: transport_fee_links_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Transport Fee Link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport fee link.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportFeeLink'
+          description: ''
+    put:
+      operationId: transport_fee_links_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport fee link.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportFeeLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransportFeeLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransportFeeLinkRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportFeeLink'
+          description: ''
+    patch:
+      operationId: transport_fee_links_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Transport Fee Link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport fee link.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTransportFeeLinkRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTransportFeeLinkRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTransportFeeLinkRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransportFeeLink'
+          description: ''
+    delete:
+      operationId: transport_fee_links_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Transport Fee Link
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this transport fee link.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/fuel-logs/:
+    get:
+      operationId: transport_fuel_logs_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Fuel Logs
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: vehicle
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFuelLogList'
+          description: ''
+    post:
+      operationId: transport_fuel_logs_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Fuel Log
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelLogRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelLog'
+          description: ''
+  /api/v1/transport/fuel-logs/{id}/:
+    get:
+      operationId: transport_fuel_logs_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Fuel Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fuel log.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelLog'
+          description: ''
+    put:
+      operationId: transport_fuel_logs_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fuel log.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelLogRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelLog'
+          description: ''
+    patch:
+      operationId: transport_fuel_logs_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Fuel Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fuel log.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelLogRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelLog'
+          description: ''
+    delete:
+      operationId: transport_fuel_logs_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Fuel Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fuel log.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/gps/ping/:
+    post:
+      operationId: transport_gps_ping_create
+      description: Device-token-authenticated GPS ping ingestion endpoint.
+      summary: Ingest Vehicle GPS Location Ping (Device Token Auth)
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GpsPingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GpsPingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GpsPingRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveLocation'
+          description: ''
+  /api/v1/transport/live-locations/:
+    get:
+      operationId: transport_live_locations_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Live Location History
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: trip
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: vehicle
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLiveLocationList'
+          description: ''
+  /api/v1/transport/live-locations/{id}/:
+    get:
+      operationId: transport_live_locations_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Live Location Ping
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this live location.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveLocation'
+          description: ''
+  /api/v1/transport/live-locations/latest/:
+    get:
+      operationId: transport_live_locations_latest_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Latest Live Location for a Vehicle
+      parameters:
+      - in: query
+        name: vehicle
+        schema:
+          type: string
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveLocation'
+          description: ''
+  /api/v1/transport/maintenances/:
+    get:
+      operationId: transport_maintenances_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Vehicle Maintenance Logs
+      parameters:
+      - in: query
+        name: maintenance_date
+        schema:
+          type: string
+          format: date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: vehicle
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVehicleMaintenanceList'
+          description: ''
+    post:
+      operationId: transport_maintenances_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Vehicle Maintenance Log
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleMaintenanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VehicleMaintenanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleMaintenanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMaintenance'
+          description: ''
+  /api/v1/transport/maintenances/{id}/:
+    get:
+      operationId: transport_maintenances_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Vehicle Maintenance Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle maintenance.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMaintenance'
+          description: ''
+    put:
+      operationId: transport_maintenances_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle maintenance.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleMaintenanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VehicleMaintenanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleMaintenanceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMaintenance'
+          description: ''
+    patch:
+      operationId: transport_maintenances_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Vehicle Maintenance Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle maintenance.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleMaintenanceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleMaintenanceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleMaintenanceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMaintenance'
+          description: ''
+    delete:
+      operationId: transport_maintenances_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Vehicle Maintenance Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle maintenance.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/routes/:
+    get:
+      operationId: transport_routes_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Transport Routes
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: driver
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: vehicle
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRouteList'
+          description: ''
+    post:
+      operationId: transport_routes_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Transport Route
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+  /api/v1/transport/routes/{id}/:
+    get:
+      operationId: transport_routes_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Transport Route
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    put:
+      operationId: transport_routes_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    patch:
+      operationId: transport_routes_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Transport Route
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    delete:
+      operationId: transport_routes_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Transport Route
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/stops/:
+    get:
+      operationId: transport_stops_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Route Stops
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: route
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRouteStopList'
+          description: ''
+    post:
+      operationId: transport_stops_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Route Stop
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteStopRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteStopRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteStopRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteStop'
+          description: ''
+  /api/v1/transport/stops/{id}/:
+    get:
+      operationId: transport_stops_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Route Stop
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route stop.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteStop'
+          description: ''
+    put:
+      operationId: transport_stops_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route stop.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteStopRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteStopRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteStopRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteStop'
+          description: ''
+    patch:
+      operationId: transport_stops_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Route Stop
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route stop.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteStopRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteStopRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteStopRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteStop'
+          description: ''
+    delete:
+      operationId: transport_stops_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Route Stop
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this route stop.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/trips/:
+    get:
+      operationId: transport_trips_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Trip Logs
+      parameters:
+      - in: query
+        name: direction
+        schema:
+          type: string
+          enum:
+          - afternoon_drop
+          - morning_pickup
+          - special
+        description: |-
+          * `morning_pickup` - Morning Pickup
+          * `afternoon_drop` - Afternoon Drop
+          * `special` - Special Trip
+      - in: query
+        name: driver
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: route
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - completed
+          - in_progress
+          - scheduled
+        description: |-
+          * `scheduled` - Scheduled
+          * `in_progress` - In Progress
+          * `completed` - Completed
+          * `cancelled` - Cancelled
+      - in: query
+        name: trip_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: vehicle
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTripLogList'
+          description: ''
+  /api/v1/transport/trips/{id}/:
+    get:
+      operationId: transport_trips_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Trip Log
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this trip log.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLog'
+          description: ''
+  /api/v1/transport/trips/{id}/end/:
+    post:
+      operationId: transport_trips_end_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: End an In-Progress Transport Trip
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this trip log.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripEndRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TripEndRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TripEndRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLog'
+          description: ''
+  /api/v1/transport/trips/start/:
+    post:
+      operationId: transport_trips_start_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Start a Transport Trip
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripStartRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TripStartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TripStartRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripLog'
+          description: ''
+  /api/v1/transport/vehicles/:
+    get:
+      operationId: transport_vehicles_list
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List Vehicles
+      parameters:
+      - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - inactive
+          - maintenance
+        description: |-
+          * `active` - Active
+          * `maintenance` - Under Maintenance
+          * `inactive` - Inactive
+      - in: query
+        name: vehicle_type
+        schema:
+          type: string
+          enum:
+          - bus
+          - car
+          - microbus
+          - van
+        description: |-
+          * `bus` - Bus
+          * `microbus` - Microbus
+          * `van` - Van
+          * `car` - Car
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVehicleList'
+          description: ''
+    post:
+      operationId: transport_vehicles_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Create Vehicle
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+  /api/v1/transport/vehicles/{id}/:
+    get:
+      operationId: transport_vehicles_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Get Vehicle
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    put:
+      operationId: transport_vehicles_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VehicleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    patch:
+      operationId: transport_vehicles_partial_update
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Update Vehicle
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVehicleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          description: ''
+    delete:
+      operationId: transport_vehicles_destroy
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Delete Vehicle
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle.
+        required: true
+      tags:
+      - transport
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/transport/vehicles/{id}/rotate-gps-token/:
+    post:
+      operationId: transport_vehicles_rotate_gps_token_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Rotate GPS Device Token for Vehicle
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this vehicle.
+        required: true
+      tags:
+      - transport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GpsTokenRotateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GpsTokenRotateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GpsTokenRotateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GpsTokenRotateResponse'
+          description: ''
 components:
   schemas:
     AbsenceDeductionBasisEnum:
@@ -27781,6 +30042,14 @@ components:
         * `pending` - Pending Approval
         * `approved` - Approved
         * `rejected` - Rejected
+    AssigneeTypeEnum:
+      enum:
+      - student
+      - staff
+      type: string
+      description: |-
+        * `student` - Student
+        * `staff` - Staff
     AttendanceCorrection:
       type: object
       properties:
@@ -27924,7 +30193,7 @@ components:
           readOnly: true
         user_type:
           allOf:
-          - $ref: '#/components/schemas/UserType841Enum'
+          - $ref: '#/components/schemas/AssigneeTypeEnum'
           readOnly: true
         student:
           type: string
@@ -27944,7 +30213,7 @@ components:
           readOnly: true
         direction:
           allOf:
-          - $ref: '#/components/schemas/DirectionEnum'
+          - $ref: '#/components/schemas/AttendanceEventDirectionEnum'
           readOnly: true
         method:
           type: string
@@ -27988,6 +30257,16 @@ components:
       - student_name
       - timestamp
       - user_type
+    AttendanceEventDirectionEnum:
+      enum:
+      - in
+      - out
+      - auto
+      type: string
+      description: |-
+        * `in` - Check In
+        * `out` - Check Out
+        * `auto` - Auto Determine
     AttendancePolicy:
       type: object
       properties:
@@ -28340,7 +30619,7 @@ components:
           format: uuid
           readOnly: true
         subject_type:
-          $ref: '#/components/schemas/SubjectTypeEnum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -28401,7 +30680,7 @@ components:
       type: object
       properties:
         subject_type:
-          $ref: '#/components/schemas/SubjectTypeEnum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -28437,7 +30716,7 @@ components:
           format: uuid
           readOnly: true
         subject_type:
-          $ref: '#/components/schemas/SubjectTypeEnum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -28572,6 +30851,110 @@ components:
         * `cambridge` - Cambridge
         * `edexcel` - Edexcel
         * `ib` - International Baccalaureate
+    BoardingEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        trip:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          readOnly: true
+        student_code:
+          type: string
+          readOnly: true
+        student_name:
+          type: string
+          readOnly: true
+        stop:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        event_type:
+          allOf:
+          - $ref: '#/components/schemas/EventTypeEnum'
+          readOnly: true
+        event_ts:
+          type: string
+          format: date-time
+          readOnly: true
+        method:
+          allOf:
+          - $ref: '#/components/schemas/Method00cEnum'
+          readOnly: true
+        idempotency_key:
+          type: string
+          readOnly: true
+          default: ''
+        recorded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - event_ts
+      - event_type
+      - id
+      - idempotency_key
+      - institution
+      - method
+      - recorded_by
+      - stop
+      - student
+      - student_code
+      - student_name
+      - trip
+      - updated_at
+    BoardingScanRequest:
+      type: object
+      properties:
+        trip:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+        stop:
+          type: string
+          format: uuid
+          nullable: true
+        event_type:
+          $ref: '#/components/schemas/EventTypeEnum'
+        method:
+          allOf:
+          - $ref: '#/components/schemas/Method00cEnum'
+          default: qr
+        event_ts:
+          type: string
+          format: date-time
+          nullable: true
+        idempotency_key:
+          type: string
+          default: ''
+      required:
+      - event_type
+      - student
+      - trip
     Book:
       type: object
       properties:
@@ -29823,7 +32206,7 @@ components:
           readOnly: true
         user_type:
           allOf:
-          - $ref: '#/components/schemas/UserType841Enum'
+          - $ref: '#/components/schemas/AssigneeTypeEnum'
           readOnly: true
         student:
           type: string
@@ -30446,7 +32829,7 @@ components:
           description: Hardware user PIN/ID as registered on terminal, e.g. '1001'
           maxLength: 50
         user_type:
-          $ref: '#/components/schemas/UserType841Enum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -30494,7 +32877,7 @@ components:
           description: Hardware user PIN/ID as registered on terminal, e.g. '1001'
           maxLength: 50
         user_type:
-          $ref: '#/components/schemas/UserType841Enum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -30509,16 +32892,16 @@ components:
       required:
       - device
       - device_user_id
-    DirectionEnum:
+    DirectionBc3Enum:
       enum:
-      - in
-      - out
-      - auto
+      - morning_pickup
+      - afternoon_drop
+      - special
       type: string
       description: |-
-        * `in` - Check In
-        * `out` - Check Out
-        * `auto` - Auto Determine
+        * `morning_pickup` - Morning Pickup
+        * `afternoon_drop` - Afternoon Drop
+        * `special` - Special Trip
     DiscountTypeEnum:
       enum:
       - percentage
@@ -30527,6 +32910,91 @@ components:
       description: |-
         * `percentage` - Percentage (%)
         * `flat` - Flat Amount (BDT)
+    Driver:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        staff:
+          type: string
+          format: uuid
+        staff_name:
+          type: string
+          readOnly: true
+        license_no:
+          type: string
+          maxLength: 64
+        license_expiry:
+          type: string
+          format: date
+        helper_name:
+          type: string
+          maxLength: 150
+        helper_phone:
+          type: string
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/DriverStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - license_expiry
+      - license_no
+      - staff
+      - staff_name
+      - updated_at
+    DriverRequest:
+      type: object
+      properties:
+        staff:
+          type: string
+          format: uuid
+        license_no:
+          type: string
+          minLength: 1
+          maxLength: 64
+        license_expiry:
+          type: string
+          format: date
+        helper_name:
+          type: string
+          maxLength: 150
+        helper_phone:
+          type: string
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/DriverStatusEnum'
+      required:
+      - license_expiry
+      - license_no
+      - staff
+    DriverStatusEnum:
+      enum:
+      - active
+      - on_leave
+      - suspended
+      - inactive
+      type: string
+      description: |-
+        * `active` - Active
+        * `on_leave` - On Leave
+        * `suspended` - Suspended
+        * `inactive` - Inactive
     DueListItem:
       type: object
       properties:
@@ -30730,6 +33198,14 @@ components:
       required:
       - message_bn
       - title
+    EventTypeEnum:
+      enum:
+      - boarded
+      - dropped
+      type: string
+      description: |-
+        * `boarded` - Boarded
+        * `dropped` - Dropped
     Exam:
       type: object
       properties:
@@ -31924,6 +34400,84 @@ components:
       - end_date
       - name
       - start_date
+    FuelLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle:
+          type: string
+          format: uuid
+        filled_at:
+          type: string
+          format: date-time
+        liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        odometer_km:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        receipt_no:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cost
+      - created_at
+      - id
+      - institution
+      - liters
+      - updated_at
+      - vehicle
+    FuelLogRequest:
+      type: object
+      properties:
+        vehicle:
+          type: string
+          format: uuid
+        filled_at:
+          type: string
+          format: date-time
+        liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        odometer_km:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        receipt_no:
+          type: string
+          maxLength: 64
+      required:
+      - cost
+      - liters
+      - vehicle
     GenderEnum:
       enum:
       - male
@@ -31972,6 +34526,53 @@ components:
       required:
       - month
       - year
+    GpsPingRequest:
+      type: object
+      properties:
+        gps_device_id:
+          type: string
+          default: ''
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        speed_kmh:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          default: '0.00'
+        recorded_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - latitude
+      - longitude
+    GpsTokenRotateRequest:
+      type: object
+      properties:
+        gps_device_id:
+          type: string
+          minLength: 1
+          maxLength: 80
+    GpsTokenRotateResponse:
+      type: object
+      properties:
+        vehicle_id:
+          type: string
+          format: uuid
+        gps_device_id:
+          type: string
+        gps_token:
+          type: string
+      required:
+      - gps_device_id
+      - gps_token
+      - vehicle_id
     GraceMarkRule:
       type: object
       properties:
@@ -34565,6 +37166,68 @@ components:
           default: false
       required:
       - student_id
+    LiveLocation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle_registration:
+          type: string
+          readOnly: true
+        trip:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+        speed_kmh:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,2})?$
+          readOnly: true
+        recorded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - latitude
+      - longitude
+      - recorded_at
+      - speed_kmh
+      - trip
+      - updated_at
+      - vehicle
+      - vehicle_registration
     LoanTypeEnum:
       enum:
       - advance
@@ -35045,6 +37708,16 @@ components:
         * `merit` - Selected (Merit)
         * `waiting` - Waiting List
         * `quota` - Selected (Quota)
+    Method00cEnum:
+      enum:
+      - qr
+      - rfid
+      - manual
+      type: string
+      description: |-
+        * `qr` - QR Code
+        * `rfid` - RFID Card
+        * `manual` - Manual
     MobileCheckin:
       type: object
       properties:
@@ -36305,6 +38978,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BiometricEnrollment'
+    PaginatedBoardingEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardingEvent'
     PaginatedBookCopyList:
       type: object
       required:
@@ -36696,6 +39392,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeviceUserMap'
+    PaginatedDriverList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Driver'
     PaginatedEBookList:
       type: object
       required:
@@ -36995,6 +39714,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FiscalYear'
+    PaginatedFuelLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuelLog'
     PaginatedGraceMarkRuleList:
       type: object
       required:
@@ -37386,6 +40128,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LibraryPolicy'
+    PaginatedLiveLocationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveLocation'
     PaginatedLotteryDrawList:
       type: object
       required:
@@ -38076,6 +40841,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Room'
+    PaginatedRouteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Route'
+    PaginatedRouteStopList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteStop'
     PaginatedRoutineSlotList:
       type: object
       required:
@@ -38743,6 +41554,75 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TransferCertificate'
+    PaginatedTransportAssignmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransportAssignment'
+    PaginatedTransportFeeLinkList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransportFeeLink'
+    PaginatedTripLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripLog'
     PaginatedUserList:
       type: object
       required:
@@ -38789,6 +41669,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UserSession'
+    PaginatedVehicleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+    PaginatedVehicleMaintenanceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleMaintenance'
     PaginatedWaiverRuleList:
       type: object
       required:
@@ -39244,7 +42170,7 @@ components:
       type: object
       properties:
         subject_type:
-          $ref: '#/components/schemas/SubjectTypeEnum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -39556,7 +42482,7 @@ components:
           description: Hardware user PIN/ID as registered on terminal, e.g. '1001'
           maxLength: 50
         user_type:
-          $ref: '#/components/schemas/UserType841Enum'
+          $ref: '#/components/schemas/AssigneeTypeEnum'
         student:
           type: string
           format: uuid
@@ -39568,6 +42494,27 @@ components:
         rfid_card:
           type: string
           maxLength: 50
+    PatchedDriverRequest:
+      type: object
+      properties:
+        staff:
+          type: string
+          format: uuid
+        license_no:
+          type: string
+          minLength: 1
+          maxLength: 64
+        license_expiry:
+          type: string
+          format: date
+        helper_name:
+          type: string
+          maxLength: 150
+        helper_phone:
+          type: string
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/DriverStatusEnum'
     PatchedEBookRequest:
       type: object
       properties:
@@ -39919,6 +42866,31 @@ components:
         is_closed:
           type: boolean
           description: Closed fiscal years prohibit further voucher posting.
+    PatchedFuelLogRequest:
+      type: object
+      properties:
+        vehicle:
+          type: string
+          format: uuid
+        filled_at:
+          type: string
+          format: date-time
+        liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        odometer_km:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        receipt_no:
+          type: string
+          maxLength: 64
     PatchedGraceMarkRuleRequest:
       type: object
       properties:
@@ -41001,6 +43973,72 @@ components:
           description: Seating capacity
         type:
           $ref: '#/components/schemas/RoomTypeEnum'
+    PatchedRouteRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+        driver:
+          type: string
+          format: uuid
+          nullable: true
+        monthly_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+    PatchedRouteStopRequest:
+      type: object
+      properties:
+        route:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        pickup_time:
+          type: string
+          format: time
+          nullable: true
+        drop_time:
+          type: string
+          format: time
+          nullable: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        stop_fee_override:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
     PatchedRoutineSlotRequest:
       type: object
       properties:
@@ -41770,6 +44808,57 @@ components:
           pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
           description: Percentage contribution towards cumulative annual result (e.g.
             30.00, 70.00).
+    PatchedTransportAssignmentRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        route:
+          type: string
+          format: uuid
+        stop:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        transport_fee_link:
+          type: string
+          format: uuid
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+    PatchedTransportFeeLinkRequest:
+      type: object
+      properties:
+        fee_head:
+          type: string
+          format: uuid
+        route:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        effective_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
     PatchedUserProfileUpdateRequest:
       type: object
       description: Serializer for self-updating user profile.
@@ -41821,6 +44910,76 @@ components:
           type: string
           format: binary
           nullable: true
+    PatchedVehicleMaintenanceRequest:
+      type: object
+      properties:
+        vehicle:
+          type: string
+          format: uuid
+        maintenance_date:
+          type: string
+          format: date
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        odometer_km:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        next_due_date:
+          type: string
+          format: date
+          nullable: true
+    PatchedVehicleRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        registration_no:
+          type: string
+          minLength: 1
+          maxLength: 40
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleTypeEnum'
+        capacity:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        make_model:
+          type: string
+          maxLength: 120
+        fitness_expiry:
+          type: string
+          format: date
+          nullable: true
+        insurance_expiry:
+          type: string
+          format: date
+          nullable: true
+        tax_token_expiry:
+          type: string
+          format: date
+          nullable: true
+        route_permit_expiry:
+          type: string
+          format: date
+          nullable: true
+        gps_device_id:
+          type: string
+          default: ''
+          maxLength: 80
+        status:
+          $ref: '#/components/schemas/VehicleStatusEnum'
     PatchedWaiverRuleRequest:
       type: object
       properties:
@@ -44515,6 +47674,200 @@ components:
         * `library` - Library
         * `auditorium` - Auditorium
         * `other` - Other
+    Route:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          maxLength: 150
+        code:
+          type: string
+          maxLength: 32
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+        vehicle_registration:
+          type: string
+          readOnly: true
+          default: ''
+        driver:
+          type: string
+          format: uuid
+          nullable: true
+        monthly_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteStop'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - institution
+      - name
+      - stops
+      - updated_at
+      - vehicle_registration
+    RouteRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+        driver:
+          type: string
+          format: uuid
+          nullable: true
+        monthly_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+      required:
+      - code
+      - name
+    RouteStop:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        route:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 150
+        order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        pickup_time:
+          type: string
+          format: time
+          nullable: true
+        drop_time:
+          type: string
+          format: time
+          nullable: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        stop_fee_override:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - name
+      - order
+      - route
+      - updated_at
+    RouteStopRequest:
+      type: object
+      properties:
+        route:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        order:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        pickup_time:
+          type: string
+          format: time
+          nullable: true
+        drop_time:
+          type: string
+          format: time
+          nullable: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        stop_fee_override:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+      required:
+      - name
+      - order
+      - route
     RoutineSlot:
       type: object
       properties:
@@ -47645,12 +50998,16 @@ components:
       - total_marks
     SubjectTypeEnum:
       enum:
-      - student
-      - staff
+      - compulsory
+      - optional
+      - fourth_subject
+      - co_curricular
       type: string
       description: |-
-        * `student` - Student
-        * `staff` - Staff
+        * `compulsory` - Compulsory
+        * `optional` - Optional / Elective
+        * `fourth_subject` - 4th Subject (Additional)
+        * `co_curricular` - Co-Curricular / Activity
     SubmissionAttachment:
       type: object
       description: Serializer for student submission files with signed download URLs.
@@ -48528,6 +51885,296 @@ components:
       - issue_date
       - reason
       - student
+    TransportAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+        route:
+          type: string
+          format: uuid
+        route_name:
+          type: string
+          readOnly: true
+        stop:
+          type: string
+          format: uuid
+        stop_name:
+          type: string
+          readOnly: true
+        assignee_type:
+          allOf:
+          - $ref: '#/components/schemas/AssigneeTypeEnum'
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        transport_fee_link:
+          type: string
+          format: uuid
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assignee_type
+      - created_at
+      - id
+      - institution
+      - route
+      - route_name
+      - session
+      - staff
+      - stop
+      - stop_name
+      - student
+      - updated_at
+    TransportAssignmentRequest:
+      type: object
+      properties:
+        session:
+          type: string
+          format: uuid
+        route:
+          type: string
+          format: uuid
+        stop:
+          type: string
+          format: uuid
+        student:
+          type: string
+          format: uuid
+          nullable: true
+        staff:
+          type: string
+          format: uuid
+          nullable: true
+        transport_fee_link:
+          type: string
+          format: uuid
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - route
+      - session
+      - staff
+      - stop
+      - student
+    TransportFeeLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        fee_head:
+          type: string
+          format: uuid
+        route:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        effective_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fee_head
+      - id
+      - institution
+      - updated_at
+    TransportFeeLinkRequest:
+      type: object
+      properties:
+        fee_head:
+          type: string
+          format: uuid
+        route:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        effective_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - fee_head
+    TripEndRequest:
+      type: object
+      properties:
+        notes:
+          type: string
+          default: ''
+    TripLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        route:
+          type: string
+          format: uuid
+          readOnly: true
+        route_name:
+          type: string
+          readOnly: true
+        vehicle:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle_registration:
+          type: string
+          readOnly: true
+        driver:
+          type: string
+          format: uuid
+          readOnly: true
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/DirectionBc3Enum'
+          readOnly: true
+        trip_date:
+          type: string
+          format: date
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        ended_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TripLogStatusEnum'
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - direction
+      - driver
+      - ended_at
+      - id
+      - institution
+      - notes
+      - route
+      - route_name
+      - started_at
+      - status
+      - trip_date
+      - updated_at
+      - vehicle
+      - vehicle_registration
+    TripLogStatusEnum:
+      enum:
+      - scheduled
+      - in_progress
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `scheduled` - Scheduled
+        * `in_progress` - In Progress
+        * `completed` - Completed
+        * `cancelled` - Cancelled
+    TripStartRequest:
+      type: object
+      properties:
+        route:
+          type: string
+          format: uuid
+        vehicle:
+          type: string
+          format: uuid
+          nullable: true
+        driver:
+          type: string
+          format: uuid
+          nullable: true
+        direction:
+          allOf:
+          - $ref: '#/components/schemas/DirectionBc3Enum'
+          default: morning_pickup
+        notes:
+          type: string
+          default: ''
+      required:
+      - route
     UnlinkStudentActionRequest:
       type: object
       description: Payload to disassociate a student from a guardian.
@@ -48829,14 +52476,6 @@ components:
       - is_active
       - last_seen_at
       - platform
-    UserType841Enum:
-      enum:
-      - student
-      - staff
-      type: string
-      description: |-
-        * `student` - Student
-        * `staff` - Staff
     UserType8d7Enum:
       enum:
       - superadmin
@@ -48877,6 +52516,224 @@ components:
         * `student` - Student
         * `staff` - Staff
         * `all` - All
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        registration_no:
+          type: string
+          maxLength: 40
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleTypeEnum'
+        capacity:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        make_model:
+          type: string
+          maxLength: 120
+        fitness_expiry:
+          type: string
+          format: date
+          nullable: true
+        insurance_expiry:
+          type: string
+          format: date
+          nullable: true
+        tax_token_expiry:
+          type: string
+          format: date
+          nullable: true
+        route_permit_expiry:
+          type: string
+          format: date
+          nullable: true
+        gps_device_id:
+          type: string
+          default: ''
+          maxLength: 80
+        has_gps_token:
+          type: boolean
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/VehicleStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - capacity
+      - created_at
+      - has_gps_token
+      - id
+      - institution
+      - registration_no
+      - updated_at
+    VehicleMaintenance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          readOnly: true
+        vehicle:
+          type: string
+          format: uuid
+        maintenance_date:
+          type: string
+          format: date
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        odometer_km:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        next_due_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - institution
+      - maintenance_date
+      - title
+      - updated_at
+      - vehicle
+    VehicleMaintenanceRequest:
+      type: object
+      properties:
+        vehicle:
+          type: string
+          format: uuid
+        maintenance_date:
+          type: string
+          format: date
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        cost:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        odometer_km:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        next_due_date:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - maintenance_date
+      - title
+      - vehicle
+    VehicleRequest:
+      type: object
+      properties:
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+        registration_no:
+          type: string
+          minLength: 1
+          maxLength: 40
+        vehicle_type:
+          $ref: '#/components/schemas/VehicleTypeEnum'
+        capacity:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        make_model:
+          type: string
+          maxLength: 120
+        fitness_expiry:
+          type: string
+          format: date
+          nullable: true
+        insurance_expiry:
+          type: string
+          format: date
+          nullable: true
+        tax_token_expiry:
+          type: string
+          format: date
+          nullable: true
+        route_permit_expiry:
+          type: string
+          format: date
+          nullable: true
+        gps_device_id:
+          type: string
+          default: ''
+          maxLength: 80
+        status:
+          $ref: '#/components/schemas/VehicleStatusEnum'
+      required:
+      - capacity
+      - registration_no
+    VehicleStatusEnum:
+      enum:
+      - active
+      - maintenance
+      - inactive
+      type: string
+      description: |-
+        * `active` - Active
+        * `maintenance` - Under Maintenance
+        * `inactive` - Inactive
+    VehicleTypeEnum:
+      enum:
+      - bus
+      - microbus
+      - van
+      - car
+      type: string
+      description: |-
+        * `bus` - Bus
+        * `microbus` - Microbus
+        * `van` - Van
+        * `car` - Car
     VerifyPickupOTPActionRequest:
       type: object
       description: Payload to verify OTP for authorized pickup.
