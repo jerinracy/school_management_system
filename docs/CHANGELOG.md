@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F05**: Full-Page Institutional Login & Dynamic Branding System (`apps/institutions/`, `frontend/`).
+  - Added public institutional branding API endpoint:
+    - `GET /api/v1/institutions/public-branding/` (`AllowAny`) returning institutional identity (`id`, `name_en`, `name_bn`, `eiin`, `board`, `type`, `logo`, `logo_url`, `phone`, `email`, `website`, `address_line`, `district`, `division`) for unauthenticated login screens.
+    - Added `@extend_schema` query parameters (`eiin`, `institution_id`) with fallback to primary active institution or unseeded defaults.
+    - Added unit and integration tests in `apps/institutions/tests/test_api.py` (`TestInstitutionPublicBrandingAPI`).
+    - Regenerated OpenAPI schema (`schema/schema.yml`) and frontend client types (`frontend/src/types/api.ts`).
+  - Full-Page Immersive Login Page Redesign (`frontend/src/features/auth/pages/LoginPage.tsx`):
+    - Replaced narrow centered login box with a responsive full-height split-screen experience (`min-h-screen`).
+    - **Left Hero Panel (`lg:flex`)**: Deep educational gradient with background glow, school crest/logo display, bold School Name in Bangla and English, Government EIIN badge, Education Board accreditation, and three institutional feature highlight cards (Biometric Attendance, GPA 5.0 National Grading, Digital Fee Collections).
+    - **Right Auth Workspace**: Fluid auth panel with mobile branding, language switcher (`EN` / `বাংলা`), theme toggle (Dark/Light), tabs for Password vs Phone OTP login, input prefix icons, password visibility toggle (`Eye`/`EyeOff`), and enterprise footer.
+  - Dynamic Branding Propagation System (`frontend/src/features/institutions/store/brandingStore.ts`):
+    - Zustand branding store with `localStorage` caching for zero-flicker instantaneous logo/name rendering.
+    - Updated `AppShell.tsx`: Propagated dynamic school logo (or initials crest fallback), active school name, and EIIN in sidebar header, collapsed sidebar state, and mobile navigation drawer.
+    - Updated `InstitutionProfilePage.tsx`: Live branding refresh (`fetchBranding(true)`) immediately upon updating institution profile or logo in the Admin Panel.
+  - Bilingual Parity & Verification:
+    - Added translation keys to `en.json` and `bn.json` (425 keys verified in parity).
+    - Added MSW handler in `frontend/src/test/msw/handlers.ts` and automated unit/integration tests in `LoginPage.test.tsx` (all 5 test suites pass).
 - **Task F04**: Institution Setup & Academic Structure Screens (`frontend/`).
   - Added Institution Management modules:
     - `InstitutionProfilePage` (`/institution/profile`): EIIN, school code, names EN/BN, phone, email, website, address, and logo/branding upload via `/api/v1/institutions/profile/`.

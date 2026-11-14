@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
@@ -27,6 +27,7 @@ import { setAppLanguage, type SupportedLanguage } from "@/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useBrandingStore } from "@/features/institutions/store/brandingStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +67,15 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
   const [session, setSession] = useState("2026");
 
   const currentLang: SupportedLanguage = i18n.language === "bn" ? "bn" : "en";
+  const { branding, fetchBranding, getLocalizedName, getLogoUrl } = useBrandingStore();
+
+  useEffect(() => {
+    void fetchBranding();
+  }, [fetchBranding]);
+
+  const schoolName = getLocalizedName(currentLang);
+  const schoolLogo = getLogoUrl();
+  const schoolEIIN = branding?.eiin;
 
   const visibleNavItems = SIDEBAR_NAV_ITEMS.filter((item) => {
     if (!item.permission || !permissions) return true;
@@ -118,17 +128,25 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
         aria-label="Primary Navigation"
       >
         <div className="flex h-12 items-center justify-between border-b border-border px-3">
-          <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "justify-center")}>
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-white">
-              বি
-            </span>
+          <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "justify-center w-full")}>
+            {schoolLogo ? (
+              <img
+                src={schoolLogo}
+                alt={schoolName}
+                className="h-7 w-7 shrink-0 rounded-md object-contain bg-canvas border border-border/40 p-0.5"
+              />
+            ) : (
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-white shadow-sm">
+                {currentLang === "bn" ? "বি" : schoolName.charAt(0).toUpperCase() || "S"}
+              </span>
+            )}
             {!collapsed ? (
               <div className="min-w-0">
-                <p className="truncate text-xs font-semibold leading-tight text-ink">
-                  {t("app.brandName")}
+                <p className="truncate text-xs font-bold leading-tight text-ink" title={schoolName}>
+                  {schoolName}
                 </p>
                 <p className="truncate text-[10px] leading-tight text-ink-subtle">
-                  {t("app.brandTag")}
+                  {schoolEIIN ? `${t("auth.eiinLabel")}: ${schoolEIIN}` : t("app.brandTag")}
                 </p>
               </div>
             ) : null}
@@ -160,8 +178,19 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
 
       <Drawer open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
         <DrawerContent side="left" closeLabel={t("ui.dialog.close")}>
-          <DrawerHeader>
-            <DrawerTitle>{t("app.brandName")}</DrawerTitle>
+          <DrawerHeader className="flex items-center gap-2.5 border-b border-border pb-3">
+            {schoolLogo ? (
+              <img
+                src={schoolLogo}
+                alt={schoolName}
+                className="h-8 w-8 shrink-0 rounded-md object-contain"
+              />
+            ) : (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-white">
+                {currentLang === "bn" ? "বি" : schoolName.charAt(0).toUpperCase() || "S"}
+              </span>
+            )}
+            <DrawerTitle className="text-sm font-bold truncate">{schoolName}</DrawerTitle>
           </DrawerHeader>
           <nav className="mt-3 space-y-0.5" aria-label="Mobile Navigation">
             {renderNavLinks(false, () => setMobileNavOpen(false))}

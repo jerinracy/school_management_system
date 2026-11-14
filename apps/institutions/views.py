@@ -1,10 +1,17 @@
 """DRF ViewSets and Views for institutions module."""
 
 from django.core.exceptions import ValidationError as DjangoValidationError
-from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,12 +24,81 @@ from .serializers import (
     AcademicSessionSerializer,
     BranchSerializer,
     HolidaySerializer,
+    InstitutionPublicBrandingSerializer,
     InstitutionSerializer,
     SessionCloseSerializer,
     ShiftSerializer,
     TermSerializer,
 )
 from .services import activate_academic_session, close_academic_session
+
+
+@extend_schema(tags=["Institution Branding"])
+class InstitutionPublicBrandingView(APIView):
+    """Retrieve public identity, logo, and metadata for the institution."""
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Get Public Institution Branding",
+        description="Returns school name (Bangla/English), logo, EIIN, and contact for login and header displays.",
+        parameters=[
+            OpenApiParameter(
+                name="eiin",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Optional institution EIIN",
+            ),
+            OpenApiParameter(
+                name="institution_id",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Optional institution UUID",
+            ),
+        ],
+        responses={200: InstitutionPublicBrandingSerializer},
+        auth=[],
+    )
+    def get(self, request: Request) -> Response:
+        eiin = request.query_params.get("eiin")
+        institution_id = request.query_params.get("institution_id")
+
+        inst = None
+        if eiin:
+            inst = Institution.objects.filter(eiin=eiin, is_active=True).first()
+        elif institution_id:
+            inst = Institution.objects.filter(id=institution_id, is_active=True).first()
+
+        if not inst:
+            # Fallback to the primary active institution
+            inst = Institution.objects.filter(is_active=True).first()
+
+        if not inst:
+            # Safe default fallback for unseeded databases
+            return Response(
+                {
+                    "id": None,
+                    "name_bn": "বিদ্যালয় ব্যবস্থাপনা পদ্ধতি",
+                    "name_en": "School Management System",
+                    "eiin": "",
+                    "board": "dhaka",
+                    "type": "secondary",
+                    "logo": None,
+                    "logo_url": None,
+                    "phone": "",
+                    "email": "",
+                    "website": "",
+                    "address_line": "",
+                    "district": "",
+                    "division": "",
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        serializer = InstitutionPublicBrandingSerializer(inst, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @extend_schema(tags=["Institution Profile"])

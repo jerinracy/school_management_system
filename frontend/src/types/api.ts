@@ -7830,6 +7830,26 @@ export interface paths {
         patch: operations["institutions_profile_partial_update"];
         trace?: never;
     };
+    "/api/v1/institutions/public-branding/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Public Institution Branding
+         * @description Returns school name (Bangla/English), logo, EIIN, and contact for login and header displays.
+         */
+        get: operations["institutions_public_branding_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/institutions/sessions/": {
         parameters: {
             query?: never;
@@ -15784,7 +15804,7 @@ export interface components {
             /** Education Board */
             board?: components["schemas"]["BoardEnum"];
             /** Institution Type */
-            type?: components["schemas"]["InstitutionTypeEnum"];
+            type?: components["schemas"]["TypeFfdEnum"];
             division: string;
             district: string;
             upazila: string;
@@ -15810,16 +15830,32 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
-        /**
-         * @description * `primary` - Primary (Class 1-5)
-         *     * `secondary` - Secondary (Class 6-10)
-         *     * `higher_secondary` - Higher Secondary (Class 11-12)
-         *     * `college` - Degree College
-         *     * `madrasa` - Madrasa (Dakhil/Alim)
-         *     * `kindergarten` - Kindergarten
-         * @enum {string}
-         */
-        InstitutionTypeEnum: "primary" | "secondary" | "higher_secondary" | "college" | "madrasa" | "kindergarten";
+        /** @description Publicly accessible branding and institutional identity serializer. */
+        InstitutionPublicBranding: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Name (Bangla) */
+            readonly name_bn: string;
+            /** Name (English) */
+            readonly name_en: string;
+            /** @description Educational Institute Identification Number (e.g. 134567) */
+            readonly eiin: string | null;
+            /** Education Board */
+            readonly board: components["schemas"]["BoardEnum"];
+            /** Institution Type */
+            readonly type: components["schemas"]["TypeFfdEnum"];
+            /** Format: uri */
+            readonly logo: string | null;
+            readonly logo_url: string | null;
+            readonly phone: string;
+            /** Format: email */
+            readonly email: string;
+            /** Format: uri */
+            readonly website: string;
+            readonly address_line: string;
+            readonly district: string;
+            readonly division: string;
+        };
         Invoice: {
             /** Format: uuid */
             readonly id: string;
@@ -20591,7 +20627,7 @@ export interface components {
             /** Education Board */
             board?: components["schemas"]["BoardEnum"];
             /** Institution Type */
-            type?: components["schemas"]["InstitutionTypeEnum"];
+            type?: components["schemas"]["TypeFfdEnum"];
             division?: string;
             district?: string;
             upazila?: string;
@@ -24964,6 +25000,16 @@ export interface components {
             /** @default  */
             notes: string;
         };
+        /**
+         * @description * `primary` - Primary (Class 1-5)
+         *     * `secondary` - Secondary (Class 6-10)
+         *     * `higher_secondary` - Higher Secondary (Class 11-12)
+         *     * `college` - Degree College
+         *     * `madrasa` - Madrasa (Dakhil/Alim)
+         *     * `kindergarten` - Kindergarten
+         * @enum {string}
+         */
+        TypeFfdEnum: "primary" | "secondary" | "higher_secondary" | "college" | "madrasa" | "kindergarten";
         UnifiedCalendarItem: {
             id: string;
             source_type: components["schemas"]["SourceTypeEnum"];
@@ -42798,6 +42844,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Institution"];
+                };
+            };
+        };
+    };
+    institutions_public_branding_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Optional institution EIIN */
+                eiin?: string;
+                /** @description Optional institution UUID */
+                institution_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstitutionPublicBranding"];
                 };
             };
         };

@@ -8,6 +8,40 @@ from .models import AcademicSession, Branch, Holiday, Institution, Shift, Term
 from .services import validate_institution_settings
 
 
+class InstitutionPublicBrandingSerializer(serializers.ModelSerializer):
+    """Publicly accessible branding and institutional identity serializer."""
+
+    logo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Institution
+        fields = [
+            "id",
+            "name_bn",
+            "name_en",
+            "eiin",
+            "board",
+            "type",
+            "logo",
+            "logo_url",
+            "phone",
+            "email",
+            "website",
+            "address_line",
+            "district",
+            "division",
+        ]
+        read_only_fields = fields
+
+    def get_logo_url(self, obj: Institution) -> str | None:
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(obj.logo.url)
+        return obj.logo.url
+
+
 class InstitutionSerializer(serializers.ModelSerializer):
     """Serializer for Institution profile read and update."""
 

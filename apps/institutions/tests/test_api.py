@@ -83,6 +83,33 @@ def admin_user_b(db: None, institution_b: Institution) -> Any:
 
 
 @pytest.mark.django_db
+class TestInstitutionPublicBrandingAPI:
+    def test_get_public_branding_unauthenticated(self, institution_a: Institution) -> None:
+        client = APIClient()
+        response = client.get("/api/v1/institutions/public-branding/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["name_en"] == "School A"
+        assert response.data["name_bn"] == "স্কুল এ"
+        assert response.data["eiin"] == "111111"
+
+    def test_get_public_branding_by_eiin(
+        self, institution_a: Institution, institution_b: Institution
+    ) -> None:
+        client = APIClient()
+        response = client.get(f"/api/v1/institutions/public-branding/?eiin={institution_b.eiin}")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["name_en"] == "School B"
+
+    def test_get_public_branding_empty_db_fallback(self) -> None:
+        Institution.objects.all().delete()
+        client = APIClient()
+        response = client.get("/api/v1/institutions/public-branding/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["name_en"] == "School Management System"
+        assert response.data["name_bn"] == "বিদ্যালয় ব্যবস্থাপনা পদ্ধতি"
+
+
+@pytest.mark.django_db
 class TestInstitutionProfileAPI:
     def test_get_institution_profile(self, admin_user_a: Any, institution_a: Institution) -> None:
         client = APIClient()

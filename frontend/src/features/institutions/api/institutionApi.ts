@@ -3,6 +3,7 @@ import { parseApiError } from "@/lib/errors";
 import type { paths } from "@/types/api";
 
 export type InstitutionProfile = paths["/api/v1/institutions/profile/"]["get"]["responses"]["200"]["content"]["application/json"];
+export type InstitutionPublicBranding = paths["/api/v1/institutions/public-branding/"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Branch = paths["/api/v1/institutions/branches/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number];
 export type Shift = paths["/api/v1/institutions/shifts/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number];
 export type AcademicSession = paths["/api/v1/institutions/sessions/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number];
@@ -23,6 +24,13 @@ function checkVoid(res: { error?: unknown; response: Response }): void {
 }
 
 export const institutionApi = {
+  async getPublicBranding(params?: { eiin?: string; institution_id?: string }): Promise<InstitutionPublicBranding> {
+    const res = await apiClient.GET("/api/v1/institutions/public-branding/", {
+      params: params ? { query: params } : undefined,
+    });
+    return checkResponse(res);
+  },
+
   async getProfile(): Promise<InstitutionProfile> {
     const res = await apiClient.GET("/api/v1/institutions/profile/");
     return checkResponse(res);

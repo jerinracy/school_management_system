@@ -9,12 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { institutionApi, type InstitutionProfile } from "@/features/institutions/api/institutionApi";
+import { useBrandingStore } from "@/features/institutions/store/brandingStore";
 
 export function InstitutionProfilePage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<InstitutionProfile | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const fetchBranding = useBrandingStore((s) => s.fetchBranding);
 
   const {
     register,
@@ -52,6 +54,7 @@ export function InstitutionProfilePage() {
 
       const updated = await institutionApi.updateProfile(formData);
       setProfile(updated);
+      void fetchBranding(true);
       toast.success(t("institution.profileSaved", "Institution details updated."));
     } catch {
       toast.error(t("institution.profileSaveError", "Failed to save profile changes."));

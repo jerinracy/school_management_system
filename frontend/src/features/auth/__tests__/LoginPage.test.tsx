@@ -49,6 +49,26 @@ describe("LoginPage & Auth Flows", () => {
     expect(screen.getByText("অ্যাডমিন সাইন ইন")).toBeInTheDocument();
   });
 
+  it("displays institutional branding and toggles password visibility", async () => {
+    renderAuth();
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Dhaka Model Academy/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/106601/i)[0]).toBeInTheDocument();
+    });
+
+    const passwordInput = screen.getByPlaceholderText("••••••••");
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    const toggleBtn = screen.getByRole("button", { name: /show password/i });
+    await userEvent.click(toggleBtn);
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    const hideBtn = screen.getByRole("button", { name: /hide password/i });
+    await userEvent.click(hideBtn);
+    expect(passwordInput).toHaveAttribute("type", "password");
+  });
+
   it("submits password login successfully and stores tokens", async () => {
     server.use(
       http.post(/\/api\/v1\/auth\/login\/$/, () => {

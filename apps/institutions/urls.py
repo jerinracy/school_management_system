@@ -8,6 +8,7 @@ from .views import (
     BranchViewSet,
     HolidayViewSet,
     InstitutionProfileView,
+    InstitutionPublicBrandingView,
     ShiftViewSet,
     TermViewSet,
 )
@@ -22,6 +23,7 @@ router.register(r"terms", TermViewSet, basename="term")
 router.register(r"holidays", HolidayViewSet, basename="holiday")
 
 urlpatterns = [
+    path("public-branding/", InstitutionPublicBrandingView.as_view(), name="public_branding"),
     path("profile/", InstitutionProfileView.as_view(), name="profile"),
     path("", include(router.urls)),
 ]

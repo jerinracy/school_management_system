@@ -22623,6 +22623,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/Institution'
           description: ''
+  /api/v1/institutions/public-branding/:
+    get:
+      operationId: institutions_public_branding_retrieve
+      description: Returns school name (Bangla/English), logo, EIIN, and contact for
+        login and header displays.
+      summary: Get Public Institution Branding
+      parameters:
+      - in: query
+        name: eiin
+        schema:
+          type: string
+        description: Optional institution EIIN
+      - in: query
+        name: institution_id
+        schema:
+          type: string
+          format: uuid
+        description: Optional institution UUID
+      tags:
+      - Institution Branding
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionPublicBranding'
+          description: ''
   /api/v1/institutions/sessions/:
     get:
       operationId: institutions_sessions_list
@@ -42219,7 +42246,7 @@ components:
           title: Education Board
         type:
           allOf:
-          - $ref: '#/components/schemas/InstitutionTypeEnum'
+          - $ref: '#/components/schemas/TypeFfdEnum'
           title: Institution Type
         division:
           type: string
@@ -42283,22 +42310,81 @@ components:
       - phone
       - upazila
       - updated_at
-    InstitutionTypeEnum:
-      enum:
-      - primary
-      - secondary
-      - higher_secondary
-      - college
-      - madrasa
-      - kindergarten
-      type: string
-      description: |-
-        * `primary` - Primary (Class 1-5)
-        * `secondary` - Secondary (Class 6-10)
-        * `higher_secondary` - Higher Secondary (Class 11-12)
-        * `college` - Degree College
-        * `madrasa` - Madrasa (Dakhil/Alim)
-        * `kindergarten` - Kindergarten
+    InstitutionPublicBranding:
+      type: object
+      description: Publicly accessible branding and institutional identity serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_bn:
+          type: string
+          readOnly: true
+          title: Name (Bangla)
+        name_en:
+          type: string
+          readOnly: true
+          title: Name (English)
+        eiin:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Educational Institute Identification Number (e.g. 134567)
+        board:
+          allOf:
+          - $ref: '#/components/schemas/BoardEnum'
+          readOnly: true
+          title: Education Board
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeFfdEnum'
+          readOnly: true
+          title: Institution Type
+        logo:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+        logo_url:
+          type: string
+          nullable: true
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        website:
+          type: string
+          format: uri
+          readOnly: true
+        address_line:
+          type: string
+          readOnly: true
+        district:
+          type: string
+          readOnly: true
+        division:
+          type: string
+          readOnly: true
+      required:
+      - address_line
+      - board
+      - district
+      - division
+      - eiin
+      - email
+      - id
+      - logo
+      - logo_url
+      - name_bn
+      - name_en
+      - phone
+      - type
+      - website
     Invoice:
       type: object
       properties:
@@ -50966,7 +51052,7 @@ components:
           title: Education Board
         type:
           allOf:
-          - $ref: '#/components/schemas/InstitutionTypeEnum'
+          - $ref: '#/components/schemas/TypeFfdEnum'
           title: Institution Type
         division:
           type: string
@@ -60325,6 +60411,22 @@ components:
           default: ''
       required:
       - route
+    TypeFfdEnum:
+      enum:
+      - primary
+      - secondary
+      - higher_secondary
+      - college
+      - madrasa
+      - kindergarten
+      type: string
+      description: |-
+        * `primary` - Primary (Class 1-5)
+        * `secondary` - Secondary (Class 6-10)
+        * `higher_secondary` - Higher Secondary (Class 11-12)
+        * `college` - Degree College
+        * `madrasa` - Madrasa (Dakhil/Alim)
+        * `kindergarten` - Kindergarten
     UnifiedCalendarItem:
       type: object
       properties:
