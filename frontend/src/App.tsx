@@ -30,6 +30,11 @@ import { PeriodsRoomsPage } from "@/features/academics/pages/PeriodsRoomsPage";
 import { RoutineBuilderPage } from "@/features/academics/pages/RoutineBuilderPage";
 import { SubstitutesPage } from "@/features/academics/pages/SubstitutesPage";
 import { CopySessionWizardPage } from "@/features/academics/pages/CopySessionWizardPage";
+import { StudentsListPage } from "@/features/students/pages/StudentsListPage";
+import { StudentDetailPage } from "@/features/students/pages/StudentDetailPage";
+import { StudentCreatePage } from "@/features/students/pages/StudentCreatePage";
+import { GuardiansListPage } from "@/features/students/pages/GuardiansListPage";
+import { AdmissionsOverviewPage } from "@/features/admissions/pages/AdmissionsOverviewPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { refreshToken, setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -207,11 +212,46 @@ export function AppRoutes() {
                   }
                 />
 
+                {/* Students Routes */}
                 <Route
                   path="/students"
                   element={
                     <ProtectedRoute perm="students.view">
-                      <ModulePlaceholderPage titleKey="nav.students" />
+                      <StudentsListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/students/new"
+                  element={
+                    <ProtectedRoute perm="students.manage">
+                      <StudentCreatePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/students/guardians"
+                  element={
+                    <ProtectedRoute perm="students.view">
+                      <GuardiansListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/students/:id"
+                  element={
+                    <ProtectedRoute perm="students.view">
+                      <StudentDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Admissions Routes */}
+                <Route
+                  path="/admissions"
+                  element={
+                    <ProtectedRoute perm="admissions.view">
+                      <AdmissionsOverviewPage />
                     </ProtectedRoute>
                   }
                 />

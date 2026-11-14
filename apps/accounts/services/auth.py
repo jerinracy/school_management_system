@@ -15,6 +15,7 @@ from apps.accounts.models import (
     LoginAttempt,
     OTPChallenge,
     OTPPurpose,
+    Role,
     User,
     UserSession,
 )
@@ -154,8 +155,20 @@ def issue_tokens_for_user(
     refresh["user_type"] = user.user_type
     refresh["institution_id"] = str(user.institution_id) if user.institution_id else None
 
-    # Role codes
+    # Role codes & permissions
     role_codes = list(user.user_roles.values_list("role__code", flat=True))
+    if user.is_superuser:
+        perms = ["*"]
+        if "SuperAdmin" not in role_codes:
+            role_codes.append("SuperAdmin")
+    else:
+        perms = list(
+            Role.objects.filter(assigned_users__user=user)
+            .values_list("permissions__codename", flat=True)
+            .distinct()
+        )
+        perms = [p for p in perms if p]
+
     refresh["roles"] = role_codes
 
     jti = str(refresh.get("jti"))
@@ -188,6 +201,7 @@ def issue_tokens_for_user(
             "user_type": user.user_type,
             "institution_id": str(user.institution_id) if user.institution_id else None,
             "roles": role_codes,
+            "permissions": perms,
             "must_change_password": user.must_change_password,
             "language_preference": user.language_preference,
         },

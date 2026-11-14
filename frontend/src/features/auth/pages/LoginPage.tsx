@@ -150,6 +150,13 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
           setGeneralError(
             t("auth.invalidCredentials", "Invalid username/phone or password."),
           );
+        } else if (err.details && typeof err.details === "object" && !Array.isArray(err.details)) {
+          const firstErr = Object.values(err.details).flat()[0];
+          setGeneralError(
+            typeof firstErr === "string"
+              ? firstErr
+              : err.message || t("auth.loginFailed", "Login failed."),
+          );
         } else {
           setGeneralError(err.message || t("auth.loginFailed", "Login failed."));
         }

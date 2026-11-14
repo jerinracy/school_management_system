@@ -10712,7 +10712,11 @@ export interface paths {
          */
         get: operations["students_enrollments_list"];
         put?: never;
-        post?: never;
+        /**
+         * Create a student enrollment
+         * @description Student enrollment records.
+         */
+        post: operations["students_enrollments_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10731,12 +10735,24 @@ export interface paths {
          * @description Student enrollment records.
          */
         get: operations["students_enrollments_retrieve"];
-        put?: never;
+        /**
+         * Update student enrollment
+         * @description Student enrollment records.
+         */
+        put: operations["students_enrollments_update"];
         post?: never;
-        delete?: never;
+        /**
+         * Delete student enrollment
+         * @description Student enrollment records.
+         */
+        delete: operations["students_enrollments_destroy"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Partially update student enrollment
+         * @description Student enrollment records.
+         */
+        patch: operations["students_enrollments_partial_update"];
         trace?: never;
     };
     "/api/v1/students/enrollments/auto-assign-rolls/": {
@@ -21376,7 +21392,6 @@ export interface components {
             is_active?: boolean;
         };
         PatchedStudentCreateUpdateRequest: {
-            /** @description Institution-configurable unique student roll/identifier (e.g. 2026100001). */
             student_id?: string;
             /** @description Full name in English. */
             name_en?: string;
@@ -21407,6 +21422,25 @@ export interface components {
             has_stipend?: boolean;
             emergency_contact_name?: string;
             emergency_contact_phone?: string;
+        };
+        PatchedStudentEnrollmentCreateUpdateRequest: {
+            /** Format: uuid */
+            student?: string;
+            /** Format: uuid */
+            session?: string;
+            /** Format: uuid */
+            class_level?: string;
+            /** Format: uuid */
+            section?: string;
+            /** Format: uuid */
+            group?: string | null;
+            /** Format: uuid */
+            shift?: string | null;
+            /** @description Class section roll number. */
+            roll_no?: number;
+            /** Format: date */
+            enrollment_date?: string;
+            status?: components["schemas"]["StatusCb2Enum"];
         };
         PatchedStudentFeeAssignmentRequest: {
             /** Format: uuid */
@@ -23897,6 +23931,17 @@ export interface components {
          */
         StatusC0dEnum: "present" | "late" | "absent" | "half_day" | "leave" | "holiday" | "weekend";
         /**
+         * @description * `active` - Active
+         *     * `promoted` - Promoted
+         *     * `demoted` - Demoted
+         *     * `repeated` - Repeated
+         *     * `transferred` - Transferred
+         *     * `dropped` - Dropped Out
+         *     * `graduated` - Graduated
+         * @enum {string}
+         */
+        StatusCb2Enum: "active" | "promoted" | "demoted" | "repeated" | "transferred" | "dropped" | "graduated";
+        /**
          * @description * `draft` - Draft
          *     * `submitted` - Submitted
          *     * `paid` - Application Fee Paid
@@ -23910,8 +23955,9 @@ export interface components {
          */
         StatusDf7Enum: "draft" | "submitted" | "paid" | "shortlisted" | "test_scheduled" | "admitted" | "waitlisted" | "rejected" | "withdrawn";
         StudentCreateUpdate: {
-            /** @description Institution-configurable unique student roll/identifier (e.g. 2026100001). */
-            student_id: string;
+            /** Format: uuid */
+            readonly id: string;
+            student_id?: string;
             /** @description Full name in English. */
             name_en: string;
             /** @description Full name in Bangla script. */
@@ -23943,8 +23989,7 @@ export interface components {
             emergency_contact_phone?: string;
         };
         StudentCreateUpdateRequest: {
-            /** @description Institution-configurable unique student roll/identifier (e.g. 2026100001). */
-            student_id: string;
+            student_id?: string;
             /** @description Full name in English. */
             name_en: string;
             /** @description Full name in Bangla script. */
@@ -24086,6 +24131,8 @@ export interface components {
             /** Format: uuid */
             readonly id: string;
             /** Format: uuid */
+            student: string;
+            /** Format: uuid */
             session: string;
             readonly session_name: string;
             /** Format: uuid */
@@ -24104,9 +24151,11 @@ export interface components {
             roll_no: number;
             /** Format: date */
             enrollment_date: string;
-            status?: components["schemas"]["StudentEnrollmentBriefStatusEnum"];
+            status?: components["schemas"]["StatusCb2Enum"];
         };
         StudentEnrollmentBriefRequest: {
+            /** Format: uuid */
+            student: string;
             /** Format: uuid */
             session: string;
             /** Format: uuid */
@@ -24121,19 +24170,48 @@ export interface components {
             roll_no: number;
             /** Format: date */
             enrollment_date: string;
-            status?: components["schemas"]["StudentEnrollmentBriefStatusEnum"];
+            status?: components["schemas"]["StatusCb2Enum"];
         };
-        /**
-         * @description * `active` - Active
-         *     * `promoted` - Promoted
-         *     * `demoted` - Demoted
-         *     * `repeated` - Repeated
-         *     * `transferred` - Transferred
-         *     * `dropped` - Dropped Out
-         *     * `graduated` - Graduated
-         * @enum {string}
-         */
-        StudentEnrollmentBriefStatusEnum: "active" | "promoted" | "demoted" | "repeated" | "transferred" | "dropped" | "graduated";
+        StudentEnrollmentCreateUpdate: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            student: string;
+            /** Format: uuid */
+            session: string;
+            /** Format: uuid */
+            class_level: string;
+            /** Format: uuid */
+            section: string;
+            /** Format: uuid */
+            group?: string | null;
+            /** Format: uuid */
+            shift?: string | null;
+            /** @description Class section roll number. */
+            roll_no: number;
+            /** Format: date */
+            enrollment_date?: string;
+            status?: components["schemas"]["StatusCb2Enum"];
+        };
+        StudentEnrollmentCreateUpdateRequest: {
+            /** Format: uuid */
+            student: string;
+            /** Format: uuid */
+            session: string;
+            /** Format: uuid */
+            class_level: string;
+            /** Format: uuid */
+            section: string;
+            /** Format: uuid */
+            group?: string | null;
+            /** Format: uuid */
+            shift?: string | null;
+            /** @description Class section roll number. */
+            roll_no: number;
+            /** Format: date */
+            enrollment_date?: string;
+            status?: components["schemas"]["StatusCb2Enum"];
+        };
         StudentExamEligibility: {
             /** Format: uuid */
             readonly id: string;
@@ -49535,6 +49613,7 @@ export interface operations {
                  *     * `graduated` - Graduated
                  */
                 status?: "active" | "demoted" | "dropped" | "graduated" | "promoted" | "repeated" | "transferred";
+                student?: string;
             };
             header?: never;
             path?: never;
@@ -49548,6 +49627,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedStudentEnrollmentBriefList"];
+                };
+            };
+        };
+    };
+    students_enrollments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentEnrollmentCreateUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentEnrollmentCreateUpdateRequest"];
+                "multipart/form-data": components["schemas"]["StudentEnrollmentCreateUpdateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentEnrollmentCreateUpdate"];
                 };
             };
         };
@@ -49570,6 +49674,83 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentEnrollmentBrief"];
+                };
+            };
+        };
+    };
+    students_enrollments_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student enrollment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentEnrollmentCreateUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentEnrollmentCreateUpdateRequest"];
+                "multipart/form-data": components["schemas"]["StudentEnrollmentCreateUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentEnrollmentCreateUpdate"];
+                };
+            };
+        };
+    };
+    students_enrollments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student enrollment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    students_enrollments_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student enrollment. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedStudentEnrollmentCreateUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStudentEnrollmentCreateUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedStudentEnrollmentCreateUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentEnrollmentCreateUpdate"];
                 };
             };
         };

@@ -37,6 +37,7 @@ from apps.students.serializers import (
     StudentCreateUpdateSerializer,
     StudentDetailSerializer,
     StudentEnrollmentBriefSerializer,
+    StudentEnrollmentCreateUpdateSerializer,
     StudentIDCardSerializer,
     StudentListSerializer,
     TestimonialSerializer,
@@ -215,8 +216,14 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(summary="List student enrollments", tags=["Students - Enrollments"]),
     retrieve=extend_schema(summary="Retrieve enrollment details", tags=["Students - Enrollments"]),
+    create=extend_schema(summary="Create a student enrollment", tags=["Students - Enrollments"]),
+    update=extend_schema(summary="Update student enrollment", tags=["Students - Enrollments"]),
+    partial_update=extend_schema(
+        summary="Partially update student enrollment", tags=["Students - Enrollments"]
+    ),
+    destroy=extend_schema(summary="Delete student enrollment", tags=["Students - Enrollments"]),
 )
-class StudentEnrollmentViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewSet):
+class StudentEnrollmentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     """Student enrollment records."""
 
     queryset = (
@@ -224,14 +231,20 @@ class StudentEnrollmentViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewSet)
         .select_related("student", "session", "class_level", "section", "shift", "group")
         .order_by("session", "class_level", "section", "roll_no")
     )
-    serializer_class = StudentEnrollmentBriefSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ["session", "class_level", "section", "status"]
+    filterset_fields = ["student", "session", "class_level", "section", "status"]
     ordering_fields = ["roll_no", "enrollment_date"]
 
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanViewStudents()]
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated(), CanViewStudents()]
+        return [IsAuthenticated(), CanManageStudents()]
+
+    def get_serializer_class(self) -> type[Any]:
+        if self.action in ["create", "update", "partial_update"]:
+            return StudentEnrollmentCreateUpdateSerializer
+        return StudentEnrollmentBriefSerializer
 
     @extend_schema(summary="Auto re-sequence rolls in a section", tags=["Students - Enrollments"])
     @action(detail=False, methods=["post"], url_path="auto-assign-rolls")

@@ -3,6 +3,7 @@
 from decimal import Decimal
 from typing import Any
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from apps.core.utils.phone import normalize_bd_phone
@@ -18,6 +19,7 @@ from apps.students.models import (
     Testimonial,
     TransferCertificate,
 )
+from apps.students.services.intake import generate_next_student_id
 
 
 class StudentEnrollmentBriefSerializer(serializers.ModelSerializer):
@@ -31,6 +33,7 @@ class StudentEnrollmentBriefSerializer(serializers.ModelSerializer):
         model = StudentEnrollment
         fields = [
             "id",
+            "student",
             "session",
             "session_name",
             "class_level",
@@ -45,6 +48,43 @@ class StudentEnrollmentBriefSerializer(serializers.ModelSerializer):
             "enrollment_date",
             "status",
         ]
+
+
+class StudentEnrollmentCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentEnrollment
+        fields = [
+            "id",
+            "student",
+            "session",
+            "class_level",
+            "section",
+            "group",
+            "shift",
+            "roll_no",
+            "enrollment_date",
+            "status",
+        ]
+        extra_kwargs = {
+            "enrollment_date": {"required": False},
+        }
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        from django.utils import timezone
+
+        if not attrs.get("enrollment_date"):
+            attrs["enrollment_date"] = timezone.localdate()
+
+        section = attrs.get("section")
+        class_level = attrs.get("class_level")
+        if section and class_level and section.class_level_id != class_level.id:
+            raise serializers.ValidationError(
+                {
+                    "section": f"Section '{section.name}' does not belong to class '{class_level.name}'."
+                }
+            )
+
+        return attrs
 
 
 class StudentListSerializer(serializers.ModelSerializer):
@@ -182,9 +222,12 @@ class StudentDetailSerializer(serializers.ModelSerializer):
 
 
 class StudentCreateUpdateSerializer(serializers.ModelSerializer):
+    student_id = serializers.CharField(max_length=32, required=False)
+
     class Meta:
         model = Student
         fields = [
+            "id",
             "student_id",
             "name_en",
             "name_bn",
@@ -206,6 +249,21 @@ class StudentCreateUpdateSerializer(serializers.ModelSerializer):
             "emergency_contact_name",
             "emergency_contact_phone",
         ]
+        read_only_fields = ["id"]
+
+    def create(self, validated_data: dict[str, Any]) -> Student:
+        if not validated_data.get("student_id"):
+            institution = validated_data.get("institution")
+            current_year = str(timezone.localdate().year)
+            if institution:
+                validated_data["student_id"] = generate_next_student_id(
+                    institution_id=institution.id,
+                    session_year=current_year,
+                    class_order=1,
+                )
+            else:
+                validated_data["student_id"] = f"{current_year}010001"
+        return super().create(validated_data)
 
     def validate_birth_reg_no(self, value: str | None) -> str | None:
         if value:

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F06**: Student Lifecycle & Information System (SIS) & Admissions Management (`apps/students/`, `frontend/`).
+  - Student Directory & Management (`frontend/src/features/students/`):
+    - `StudentsListPage` (`/students`): Student roster directory with search bar, gender/status filters, current academic placement tags, and quick export.
+    - `StudentDetailPage` (`/students/:id`): 360° student profile with demographic details, Bangladeshi 17-digit Birth Registration verification, emergency contacts, active and historical academic enrollment timeline, and new enrollment creation modal (`POST /api/v1/students/enrollments/`).
+    - `StudentIDCardPreview` (`/students/:id` - ID Card tab): Standard institutional CR80 student identity card preview with school crest branding, student demographic tags, photo frame, and printable layout (`window.print()` / PDF export).
+    - `StudentCreatePage` (`/students/new`): Comprehensive student admission wizard capturing demographics, government IDs, emergency contacts, and active academic session/class/section enrollment in a single workflow.
+    - `GuardiansListPage` (`/students/guardians`): Guardian roster with mobile search, NID tracking, new guardian registration modal, and portal account provisioning (`POST /api/v1/guardians/guardians/{id}/create-portal-account/`).
+  - Admissions Portal Management (`frontend/src/features/admissions/`):
+    - `AdmissionsOverviewPage` (`/admissions`): Tabbed overview for admission circulars and student applications with status transition actions, lottery draw trigger (`POST /api/v1/admissions/lottery/draw/`), and automated merit list generation (`POST /api/v1/admissions/merit-lists/generate/`).
+  - Backend & Contract Enhancements:
+    - Added `StudentEnrollmentCreateUpdateSerializer` and converted `StudentEnrollmentViewSet` to `ModelViewSet` in `apps/students/views.py` with granular role permissions (`CanViewStudents` / `CanManageStudents`).
+    - Enhanced `StudentCreateUpdateSerializer` to expose read-only `id` and auto-generate `student_id` sequential prefixes when omitted.
+    - Regenerated OpenAPI schema (`schema/schema.yml`) and frontend TypeScript bindings (`frontend/src/types/api.ts`).
+    - Added full English and Bangla i18n translations (552 keys in strict parity).
+    - Unit and integration tests with Vitest, React Testing Library, and MSW (`Students.test.tsx` - 33/33 tests passing).
 - **Task F05**: Full-Page Institutional Login & Dynamic Branding System (`apps/institutions/`, `frontend/`).
   - Redesigned Login Page to a Premium Institutional UI (`frontend/src/features/auth/pages/LoginPage.tsx`):
     - Recreated design based directly on official institutional portal visual specifications: white and pale mint-green canvas (`#F8FDF9`), deep institutional green (`#0F5C46`), subtle gradients, and soft shadows.

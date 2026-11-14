@@ -23,15 +23,15 @@ class LoginSerializer(serializers.Serializer):
         write_only=True,
         style={"input_type": "password"},
     )
-    device_id = serializers.CharField(required=False, default="")
-    device_name = serializers.CharField(required=False, default="")
+    device_id = serializers.CharField(required=False, allow_blank=True, default="")
+    device_name = serializers.CharField(required=False, allow_blank=True, default="")
     platform = serializers.ChoiceField(
         choices=PlatformType.choices,
         required=False,
         default=PlatformType.WEB,
     )
-    app_version = serializers.CharField(required=False, default="")
-    fcm_token = serializers.CharField(required=False, default="")
+    app_version = serializers.CharField(required=False, allow_blank=True, default="")
+    fcm_token = serializers.CharField(required=False, allow_blank=True, default="")
 
 
 class OTPRequestSerializer(serializers.Serializer):
@@ -58,7 +58,7 @@ class OTPVerifySerializer(serializers.Serializer):
         required=False,
         default="login",
     )
-    device_id = serializers.CharField(required=False, default="")
+    device_id = serializers.CharField(required=False, allow_blank=True, default="")
     platform = serializers.ChoiceField(
         choices=PlatformType.choices, required=False, default=PlatformType.WEB
     )

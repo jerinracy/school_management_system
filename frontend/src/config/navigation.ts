@@ -7,6 +7,7 @@ export interface NavItemConfig {
     | "institution"
     | "academics"
     | "students"
+    | "admissions"
     | "attendance"
     | "exams"
     | "fees"
@@ -39,6 +40,13 @@ export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
     labelKey: "nav.students",
     iconName: "students",
     permission: "students.view",
+  },
+  {
+    id: "admissions",
+    to: "/admissions",
+    labelKey: "nav.admissions",
+    iconName: "admissions",
+    permission: "admissions.view",
   },
   {
     id: "attendance",

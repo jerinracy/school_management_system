@@ -30992,6 +30992,11 @@ paths:
           * `transferred` - Transferred
           * `dropped` - Dropped Out
           * `graduated` - Graduated
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
       tags:
       - Students - Enrollments
       security:
@@ -31002,6 +31007,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedStudentEnrollmentBriefList'
+          description: ''
+    post:
+      operationId: students_enrollments_create
+      description: Student enrollment records.
+      summary: Create a student enrollment
+      tags:
+      - Students - Enrollments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentEnrollmentCreateUpdate'
           description: ''
   /api/v1/students/enrollments/{id}/:
     get:
@@ -31027,6 +31059,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/StudentEnrollmentBrief'
           description: ''
+    put:
+      operationId: students_enrollments_update
+      description: Student enrollment records.
+      summary: Update student enrollment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student enrollment.
+        required: true
+      tags:
+      - Students - Enrollments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentEnrollmentCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentEnrollmentCreateUpdate'
+          description: ''
+    patch:
+      operationId: students_enrollments_partial_update
+      description: Student enrollment records.
+      summary: Partially update student enrollment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student enrollment.
+        required: true
+      tags:
+      - Students - Enrollments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentEnrollmentCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentEnrollmentCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentEnrollmentCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentEnrollmentCreateUpdate'
+          description: ''
+    delete:
+      operationId: students_enrollments_destroy
+      description: Student enrollment records.
+      summary: Delete student enrollment
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student enrollment.
+        required: true
+      tags:
+      - Students - Enrollments
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/students/enrollments/auto-assign-rolls/:
     post:
       operationId: students_enrollments_auto_assign_rolls_create
@@ -44116,11 +44236,9 @@ components:
           minLength: 1
         device_id:
           type: string
-          minLength: 1
           default: ''
         device_name:
           type: string
-          minLength: 1
           default: ''
         platform:
           allOf:
@@ -44128,11 +44246,9 @@ components:
           default: web
         app_version:
           type: string
-          minLength: 1
           default: ''
         fcm_token:
           type: string
-          minLength: 1
           default: ''
       required:
       - identifier
@@ -45430,7 +45546,6 @@ components:
           default: login
         device_id:
           type: string
-          minLength: 1
           default: ''
         platform:
           allOf:
@@ -52464,8 +52579,6 @@ components:
         student_id:
           type: string
           minLength: 1
-          description: Institution-configurable unique student roll/identifier (e.g.
-            2026100001).
           maxLength: 32
         name_en:
           type: string
@@ -52525,6 +52638,39 @@ components:
         emergency_contact_phone:
           type: string
           maxLength: 20
+    PatchedStudentEnrollmentCreateUpdateRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+        group:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        roll_no:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Class section roll number.
+        enrollment_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/StatusCb2Enum'
     PatchedStudentFeeAssignmentRequest:
       type: object
       properties:
@@ -57887,6 +58033,24 @@ components:
         * `leave` - On Leave (ছুটি)
         * `holiday` - Holiday (ছুটির দিন)
         * `weekend` - Weekend (সাপ্তাহিক ছুটি)
+    StatusCb2Enum:
+      enum:
+      - active
+      - promoted
+      - demoted
+      - repeated
+      - transferred
+      - dropped
+      - graduated
+      type: string
+      description: |-
+        * `active` - Active
+        * `promoted` - Promoted
+        * `demoted` - Demoted
+        * `repeated` - Repeated
+        * `transferred` - Transferred
+        * `dropped` - Dropped Out
+        * `graduated` - Graduated
     StatusDf7Enum:
       enum:
       - draft
@@ -57912,10 +58076,12 @@ components:
     StudentCreateUpdate:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         student_id:
           type: string
-          description: Institution-configurable unique student roll/identifier (e.g.
-            2026100001).
           maxLength: 32
         name_en:
           type: string
@@ -57976,17 +58142,15 @@ components:
       - admission_date
       - dob
       - gender
+      - id
       - name_bn
       - name_en
-      - student_id
     StudentCreateUpdateRequest:
       type: object
       properties:
         student_id:
           type: string
           minLength: 1
-          description: Institution-configurable unique student roll/identifier (e.g.
-            2026100001).
           maxLength: 32
         name_en:
           type: string
@@ -58052,7 +58216,6 @@ components:
       - gender
       - name_bn
       - name_en
-      - student_id
     StudentDetail:
       type: object
       properties:
@@ -58315,6 +58478,9 @@ components:
           type: string
           format: uuid
           readOnly: true
+        student:
+          type: string
+          format: uuid
         session:
           type: string
           format: uuid
@@ -58356,7 +58522,7 @@ components:
           type: string
           format: date
         status:
-          $ref: '#/components/schemas/StudentEnrollmentBriefStatusEnum'
+          $ref: '#/components/schemas/StatusCb2Enum'
       required:
       - class_level
       - class_name
@@ -58369,9 +58535,13 @@ components:
       - session
       - session_name
       - shift_name
+      - student
     StudentEnrollmentBriefRequest:
       type: object
       properties:
+        student:
+          type: string
+          format: uuid
         session:
           type: string
           format: uuid
@@ -58398,31 +58568,97 @@ components:
           type: string
           format: date
         status:
-          $ref: '#/components/schemas/StudentEnrollmentBriefStatusEnum'
+          $ref: '#/components/schemas/StatusCb2Enum'
       required:
       - class_level
       - enrollment_date
       - roll_no
       - section
       - session
-    StudentEnrollmentBriefStatusEnum:
-      enum:
-      - active
-      - promoted
-      - demoted
-      - repeated
-      - transferred
-      - dropped
-      - graduated
-      type: string
-      description: |-
-        * `active` - Active
-        * `promoted` - Promoted
-        * `demoted` - Demoted
-        * `repeated` - Repeated
-        * `transferred` - Transferred
-        * `dropped` - Dropped Out
-        * `graduated` - Graduated
+      - student
+    StudentEnrollmentCreateUpdate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+        group:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        roll_no:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Class section roll number.
+        enrollment_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/StatusCb2Enum'
+      required:
+      - class_level
+      - id
+      - roll_no
+      - section
+      - session
+      - student
+    StudentEnrollmentCreateUpdateRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        session:
+          type: string
+          format: uuid
+        class_level:
+          type: string
+          format: uuid
+        section:
+          type: string
+          format: uuid
+        group:
+          type: string
+          format: uuid
+          nullable: true
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+        roll_no:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Class section roll number.
+        enrollment_date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/StatusCb2Enum'
+      required:
+      - class_level
+      - roll_no
+      - section
+      - session
+      - student
     StudentExamEligibility:
       type: object
       properties:

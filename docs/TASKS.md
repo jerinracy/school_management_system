@@ -46,3 +46,4 @@ Legend:
 | **Task F03** | Auth, API Client & Permissions | DONE | Backend Task 03 | 2026-11-14 |
 | **Task F04** | Institution Setup & Academic Structure Screens | DONE | Task F03, Backend Task 02, Task 04 | 2026-11-14 |
 | **Task F05** | Full-Page Institutional Login & Dynamic Branding System | DONE | Task F03, Task F04 | 2026-11-14 |
+| **Task F06** | Student Lifecycle & Information System (SIS) & Admissions Management | DONE | Task F04, Task F05, Backend Task 05, Task 06, Task 07 | 2026-11-14 |

@@ -20,6 +20,7 @@ import {
   Moon,
   Sun,
   User,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { SIDEBAR_NAV_ITEMS, type NavItemConfig } from "@/config/navigation";
@@ -44,6 +45,7 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   institution: <Building2 className="h-4 w-4 shrink-0" />,
   academics: <Calendar className="h-4 w-4 shrink-0" />,
   students: <GraduationCap className="h-4 w-4 shrink-0" />,
+  admissions: <UserPlus className="h-4 w-4 shrink-0" />,
   attendance: <CalendarCheck className="h-4 w-4 shrink-0" />,
   exams: <Award className="h-4 w-4 shrink-0" />,
   fees: <Banknote className="h-4 w-4 shrink-0" />,
