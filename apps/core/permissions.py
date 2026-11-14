@@ -5,7 +5,6 @@ from typing import Any
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
-from rest_framework.views import APIView
 
 from apps.core.middleware import check_admin_security
 
@@ -13,8 +12,9 @@ from apps.core.middleware import check_admin_security
 class AdminSecurityPermission(BasePermission):
     """DRF permission enforcing Admin 2FA and IP allowlist for JWT/API requests."""
 
-    def has_permission(self, request: Request, view: APIView) -> bool:
-        violation = check_admin_security(request._request, getattr(request, "user", None))
+    def has_permission(self, request: Request, view: Any) -> bool:
+        django_req = getattr(request, "_request", request)
+        violation = check_admin_security(django_req, getattr(request, "user", None))
         if violation is not None:
             code, message = violation
             raise PermissionDenied(detail=message, code=code)
@@ -24,21 +24,21 @@ class AdminSecurityPermission(BasePermission):
 class DenyAll(BasePermission):
     """Denies all requests. Default strict fallback."""
 
-    def has_permission(self, request: Request, view: APIView) -> bool:
+    def has_permission(self, request: Request, view: Any) -> bool:
         return False
 
 
 class IsSuperAdmin(BasePermission):
     """Allows access only to global platform superusers."""
 
-    def has_permission(self, request: Request, view: APIView) -> bool:
+    def has_permission(self, request: Request, view: Any) -> bool:
         return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
 
 
 class IsTenantUser(BasePermission):
     """Allows access only to authenticated users attached to an institution."""
 
-    def has_permission(self, request: Request, view: APIView) -> bool:
+    def has_permission(self, request: Request, view: Any) -> bool:
         return bool(
             request.user
             and request.user.is_authenticated
@@ -52,7 +52,7 @@ class IsTenantUser(BasePermission):
 class IsSameTenant(BasePermission):
     """Ensures object belongs to the user's institution."""
 
-    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
+    def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
         if not request.user or not request.user.is_authenticated:
             return False
 

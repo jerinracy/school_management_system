@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F03**: Auth, API Client & Permissions (`frontend/`).
+  - Added typed API client wrapper (`src/lib/api-client.ts`) with Bearer token injection, request correlation IDs (`X-Request-ID`), `Accept-Language` headers, single-flight concurrent 401 token refresh mutex, automatic request retries, and typed `ApiError` mapping (`src/lib/errors.ts`).
+  - Implemented Zustand authentication store (`src/features/auth/store/authStore.ts`) with in-memory access token storage and `sessionStorage` refresh token persistence for session restoration on reload.
+  - Implemented full auth pages: `LoginPage` (password login + phone OTP flow, account lockout and 2FA handling), `ForceChangePasswordPage` (mandatory temporary password update), `ForgotPasswordPage` (OTP dispatch), `ForbiddenPage` (403 Access Denied), and `ProfilePage` (profile details, language switcher, change password, and active login sessions management with revoke/logout-all).
+  - Implemented RBAC and route protection layer (`src/features/auth/permissions.tsx`): `usePermission`, `<Can>`, `<ProtectedRoute>` with return-path redirection, and `IdleTimeoutDialog` warning with auto-logout.
+  - Added parity i18n keys for English and Bangla (`src/i18n/locales/en.json`, `src/i18n/locales/bn.json`), Bangla number/date/currency formatters (`src/lib/format.ts`), and MSW + RTL unit/integration tests for token refresh, login, and permissions.
 - **Task F02**: Design System, Layout & Theming (`frontend/`, `config/urls.py`, `templates/spa_shell.html`).
   - Added CSS variable design tokens with Light theme default + Dark mode toggle (`ThemeProvider`), self-hosted offline fonts (`@fontsource/inter`, `@fontsource/noto-sans-bengali`), and A4 `@page` print styles.
   - Added themed shadcn/ui base components (`Button`, `Input`, `Select`, `Combobox`, `DatePicker` with Bangla month/weekday names, `Dialog`, `Drawer`, `Tabs`, `Tooltip`, `Toast`, `Badge`, `Card`, `Table`, `Skeleton`, `Dropdown`, `Checkbox`, `Form`, `Breadcrumbs`, `Pagination`) and composite components (`PageHeader`, `DataTable`, `FilterBar`, `ConfirmDialog`, `StatusChip`, `StatCard`, `EmptyState`, `ErrorBoundary`/`ErrorPage`, `FileUpload`, `PrintLayout`).

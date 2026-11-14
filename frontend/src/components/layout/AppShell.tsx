@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   Activity,
   Award,
@@ -26,6 +26,7 @@ import { SIDEBAR_NAV_ITEMS, type NavItemConfig } from "@/config/navigation";
 import { setAppLanguage, type SupportedLanguage } from "@/i18n";
 import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -292,11 +293,27 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
                   className="inline-flex items-center gap-1.5 rounded-md border border-border bg-canvas px-2 py-1 text-xs font-medium text-ink transition-colors hover:border-border-strong"
                 >
                   <User className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  <span className="hidden sm:inline">{t("topbar.adminRole")}</span>
+                  <span className="hidden sm:inline">
+                    {useAuthStore.getState().user?.full_name || useAuthStore.getState().user?.username || t("topbar.adminRole")}
+                  </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{t("topbar.adminRole")}</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  <p className="font-semibold text-ink leading-tight">
+                    {useAuthStore.getState().user?.full_name || useAuthStore.getState().user?.username || t("topbar.adminRole")}
+                  </p>
+                  <p className="text-[10px] text-ink-muted leading-tight font-normal">
+                    {useAuthStore.getState().user?.email || useAuthStore.getState().user?.phone || useAuthStore.getState().user?.user_type}
+                  </p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    <span>{t("topbar.profile", "Profile & Security")}</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={onLogout}>
                   <LogOut className="h-3.5 w-3.5 text-rose-600" aria-hidden="true" />

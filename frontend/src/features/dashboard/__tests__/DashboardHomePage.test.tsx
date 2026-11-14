@@ -8,6 +8,7 @@ import { AppRoutes } from "@/App";
 import i18n, { LANGUAGE_STORAGE_KEY } from "@/i18n";
 import { ThemeProvider } from "@/lib/theme";
 import { server } from "@/test/msw/server";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 function renderDashboard(initialEntry = "/", isAuthenticated = true) {
   const queryClient = new QueryClient({
@@ -18,11 +19,29 @@ function renderDashboard(initialEntry = "/", isAuthenticated = true) {
     },
   });
 
+  if (isAuthenticated) {
+    useAuthStore.getState().setTokens("mock-access", "mock-refresh");
+    useAuthStore.getState().setUser({
+      id: "test-admin-id",
+      username: "admin",
+      full_name: "Admin User",
+      phone: "+8801700000000",
+      email: "admin@example.com",
+      user_type: "admin",
+      institution_id: "inst-1",
+      roles: ["Admin"],
+      permissions: ["students.view", "attendance.view", "exams.view", "fees.view", "staff.view", "devices.view", "system.view"],
+    });
+  } else {
+    useAuthStore.getState().logout();
+  }
+  useAuthStore.getState().setIsRestoring(false);
+
   return render(
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={[initialEntry]}>
-          <AppRoutes isAuthenticated={isAuthenticated} />
+          <AppRoutes />
         </MemoryRouter>
       </QueryClientProvider>
     </ThemeProvider>,
