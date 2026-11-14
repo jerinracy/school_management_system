@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F07**: Staff & HR Management Dashboard (`frontend/src/features/staff/`).
+  - Employee Roster & Directory (`frontend/src/features/staff/pages/StaffListPage.tsx`):
+    - Full searchable and multi-filtered staff directory (`/staff`) by department, role category (Teacher, Admin, Support, Driver, Security, Other), status (Active, On Leave, Resigned, Retired), and MPO entitlement.
+    - Server-side pagination, quick Excel roster export (`/api/v1/staff/staff/export/`), and navigation to onboarding wizard and sub-modules.
+  - New Employee Onboarding Wizard (`frontend/src/features/staff/pages/StaffCreatePage.tsx`):
+    - Clean 3-section onboarding wizard (`/staff/new`) with Zod validation:
+      - Demographics (English & Bangla names, NID 10/13/17 digits validation, DOB, Gender, Blood Group).
+      - Employment & Service Record (Role Category, Department, Designation, Joining Date, Confirmation Date, TIN Number, Government MPO enrollment and Index number).
+      - Contacts & Emergency Profile (Bangladeshi phone regex validation, email, address, emergency contact person and phone).
+  - 360° Staff Profile & Tabbed Workspace (`frontend/src/features/staff/pages/StaffDetailPage.tsx`):
+    - Comprehensive profile view (`/staff/:id`) with 4 dedicated functional tabs:
+      - Profile Overview: demographic cards, MPO status badge, employment records, contact channels, and emergency profile.
+      - Teacher Curriculum Assignments: assigned subject courses, classes, sections, academic sessions, and weekly period load.
+      - Leave Records & Balances: annual quota breakdown cards (used vs. remaining days) and leave application history.
+      - CR80 ID Card Preview: printable institutional employee card with one-click PDF download link.
+  - Departments & Designations Management (`frontend/src/features/staff/pages/DepartmentsDesignationsPage.tsx`):
+    - Dedicated management dashboard (`/staff/departments`) with live search:
+      - Tab 1: Departments table with department code, name, head of department, and Add Department modal dialog.
+      - Tab 2: Designations table with rank order, designation codes, English/Bangla titles, role categories, and Add Designation modal dialog.
+  - Leave Applications & Approval Workflow (`frontend/src/features/staff/pages/LeaveManagementPage.tsx`):
+    - Comprehensive leave management portal (`/staff/leaves`):
+      - Annual leave category quota indicators (yearly quotas, codes, and policy summaries).
+      - Pending Approvals tab with Approve dialog (with optional notes) and Reject dialog (with mandatory rejection reason).
+      - All Applications tab with multi-status filter (Pending, Approved, Rejected, Cancelled).
+      - Apply / Grant Leave modal dialog for self or employee leave submission with date range and emergency contact.
+  - Printable CR80 Staff Identity Card (`frontend/src/features/staff/components/StaffIDCardPreview.tsx`):
+    - Standard CR80 ID card layout (3.370 × 2.125 inches) with emerald institutional branding, school crest, EIIN badge, photo frame, designation, blood group, MPO indicator, and print/PDF export actions.
+  - Route & Navigation Wiring (`frontend/src/App.tsx`, `frontend/src/config/navigation.ts`):
+    - Wired `/staff`, `/staff/new`, `/staff/departments`, `/staff/leaves`, and `/staff/:id` with permission guards (`staff.view`, `staff.manage`).
+  - Bilingual i18n & Test Suite:
+    - Added complete English and Bangla translation strings in `en.json` and `bn.json` (712 keys in exact parity verified via `check-i18n.mjs`).
+    - Added unit and component integration tests in `frontend/src/features/staff/__tests__/Staff.test.tsx` (all 36 vitest frontend tests passing).
+    - Verified with `tsc --noEmit`, `eslint .`, `vite build`, and `pytest apps/staff` (15/15 passed).
+    - Graphify persistent knowledge graph updated (6491 nodes, 17271 edges).
 - **Task F06**: Student Lifecycle & Information System (SIS) & Admissions Management (`apps/students/`, `frontend/`).
   - Student Directory & Management (`frontend/src/features/students/`):
     - `StudentsListPage` (`/students`): Student roster directory with search bar, gender/status filters, current academic placement tags, and quick export.

@@ -35,6 +35,11 @@ import { StudentDetailPage } from "@/features/students/pages/StudentDetailPage";
 import { StudentCreatePage } from "@/features/students/pages/StudentCreatePage";
 import { GuardiansListPage } from "@/features/students/pages/GuardiansListPage";
 import { AdmissionsOverviewPage } from "@/features/admissions/pages/AdmissionsOverviewPage";
+import StaffListPage from "@/features/staff/pages/StaffListPage";
+import StaffCreatePage from "@/features/staff/pages/StaffCreatePage";
+import StaffDetailPage from "@/features/staff/pages/StaffDetailPage";
+import DepartmentsDesignationsPage from "@/features/staff/pages/DepartmentsDesignationsPage";
+import LeaveManagementPage from "@/features/staff/pages/LeaveManagementPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { refreshToken, setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -279,11 +284,44 @@ export function AppRoutes() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Staff & HR Routes */}
                 <Route
                   path="/staff"
                   element={
                     <ProtectedRoute perm="staff.view">
-                      <ModulePlaceholderPage titleKey="nav.staff" />
+                      <StaffListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/staff/new"
+                  element={
+                    <ProtectedRoute perm="staff.manage">
+                      <StaffCreatePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/staff/departments"
+                  element={
+                    <ProtectedRoute perm="staff.view">
+                      <DepartmentsDesignationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/staff/leaves"
+                  element={
+                    <ProtectedRoute perm="staff.view">
+                      <LeaveManagementPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/staff/:id"
+                  element={
+                    <ProtectedRoute perm="staff.view">
+                      <StaffDetailPage />
                     </ProtectedRoute>
                   }
                 />
