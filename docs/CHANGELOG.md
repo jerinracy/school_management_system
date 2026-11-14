@@ -8,22 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - **Task F05**: Full-Page Institutional Login & Dynamic Branding System (`apps/institutions/`, `frontend/`).
-  - Added public institutional branding API endpoint:
-    - `GET /api/v1/institutions/public-branding/` (`AllowAny`) returning institutional identity (`id`, `name_en`, `name_bn`, `eiin`, `board`, `type`, `logo`, `logo_url`, `phone`, `email`, `website`, `address_line`, `district`, `division`) for unauthenticated login screens.
-    - Added `@extend_schema` query parameters (`eiin`, `institution_id`) with fallback to primary active institution or unseeded defaults.
-    - Added unit and integration tests in `apps/institutions/tests/test_api.py` (`TestInstitutionPublicBrandingAPI`).
-    - Regenerated OpenAPI schema (`schema/schema.yml`) and frontend client types (`frontend/src/types/api.ts`).
-  - Full-Page Immersive Login Page Redesign (`frontend/src/features/auth/pages/LoginPage.tsx`):
-    - Replaced narrow centered login box with a responsive full-height split-screen experience (`min-h-screen`).
-    - **Left Hero Panel (`lg:flex`)**: Deep educational gradient with background glow, school crest/logo display, bold School Name in Bangla and English, Government EIIN badge, Education Board accreditation, and three institutional feature highlight cards (Biometric Attendance, GPA 5.0 National Grading, Digital Fee Collections).
-    - **Right Auth Workspace**: Fluid auth panel with mobile branding, language switcher (`EN` / `বাংলা`), theme toggle (Dark/Light), tabs for Password vs Phone OTP login, input prefix icons, password visibility toggle (`Eye`/`EyeOff`), and enterprise footer.
-  - Dynamic Branding Propagation System (`frontend/src/features/institutions/store/brandingStore.ts`):
-    - Zustand branding store with `localStorage` caching for zero-flicker instantaneous logo/name rendering.
-    - Updated `AppShell.tsx`: Propagated dynamic school logo (or initials crest fallback), active school name, and EIIN in sidebar header, collapsed sidebar state, and mobile navigation drawer.
-    - Updated `InstitutionProfilePage.tsx`: Live branding refresh (`fetchBranding(true)`) immediately upon updating institution profile or logo in the Admin Panel.
-  - Bilingual Parity & Verification:
-    - Added translation keys to `en.json` and `bn.json` (425 keys verified in parity).
-    - Added MSW handler in `frontend/src/test/msw/handlers.ts` and automated unit/integration tests in `LoginPage.test.tsx` (all 5 test suites pass).
+  - Redesigned Login Page to a Premium Institutional UI (`frontend/src/features/auth/pages/LoginPage.tsx`):
+    - Recreated design based directly on official institutional portal visual specifications: white and pale mint-green canvas (`#F8FDF9`), deep institutional green (`#0F5C46`), subtle gradients, and soft shadows.
+    - **Left Institutional Branding Panel (~55% width)**:
+      - Pill-shaped Official Portal Badge ("Government EIIN Compliant Official Portal") with graduation cap.
+      - Dynamic school logo in clean mint container with academic crest fallback (`AcademicLogo.tsx`).
+      - Bold School Name with responsive typography and green accent rule.
+      - Three compact institutional badges: `EIIN: 134567`, `Dhaka Board`, `Authorized Portal`.
+      - Institutional description and 4 horizontally aligned feature indicators: Student Management, Academic Management, Attendance & Leave, Reports & Analytics.
+      - Dynamic School Background Image in the lower-left area with multi-directional CSS gradient mask (soft white fade to top, right, and bottom) and carousel indicator dots.
+      - Fluid SVG waves overlapping at the bottom behind the campus photograph.
+    - **Right Authentication Workspace (~45% width)**:
+      - Top navigation with Administrative Access indicator, green pill language switcher (`EN` / `বাংলা`), and light/dark theme toggle.
+      - Centered authentication card with school logo header, school name, "School Management System" subtitle, and "Admin Sign In" divider.
+      - Segmented tabs for `[Password]` and `[Phone OTP]` with active mint styling.
+      - Modern 48px inputs (`h-12`) with lighter placeholder color, prefix icons, and password visibility toggle.
+      - Deep institutional green full-width `Sign In →` action button.
+    - **Full-Width Institutional Footer**:
+      - Left: "Ministry of Education Curriculum Compliant" with graduation cap.
+      - Center: Dynamic year + School Name copyright notice.
+      - Right: System status indicator + "v1.0.0 Enterprise".
+  - Dynamic Background Image Upload & Branding System:
+    - Added `login_background` ImageField (`institutions/backgrounds/`) to `Institution` in `apps/institutions/models.py`.
+    - Generated and applied Django migration `0003_institution_login_background.py`.
+    - Added `login_background` and `login_background_url` to `InstitutionPublicBrandingSerializer` and `InstitutionSerializer`.
+    - Added background image upload, preview, and removal in `InstitutionProfilePage.tsx` and Django Admin.
+    - Updated `brandingStore.ts` with `getLoginBackgroundUrl()`, `getEIIN()`, `getBoard()`, and default institutional values.
+    - Regenerated OpenAPI schema (`schema/schema.yml`) and frontend TypeScript definitions (`frontend/src/types/api.ts`).
+    - Added bilingual translation keys to `en.json` and `bn.json` (438 keys in full parity).
 - **Task F04**: Institution Setup & Academic Structure Screens (`frontend/`).
   - Added Institution Management modules:
     - `InstitutionProfilePage` (`/institution/profile`): EIIN, school code, names EN/BN, phone, email, website, address, and logo/branding upload via `/api/v1/institutions/profile/`.

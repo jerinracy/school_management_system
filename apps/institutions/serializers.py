@@ -12,6 +12,7 @@ class InstitutionPublicBrandingSerializer(serializers.ModelSerializer):
     """Publicly accessible branding and institutional identity serializer."""
 
     logo_url = serializers.SerializerMethodField()
+    login_background_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Institution
@@ -24,6 +25,8 @@ class InstitutionPublicBrandingSerializer(serializers.ModelSerializer):
             "type",
             "logo",
             "logo_url",
+            "login_background",
+            "login_background_url",
             "phone",
             "email",
             "website",
@@ -40,6 +43,14 @@ class InstitutionPublicBrandingSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.logo.url)
         return obj.logo.url
+
+    def get_login_background_url(self, obj: Institution) -> str | None:
+        if not obj.login_background:
+            return None
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(obj.login_background.url)
+        return obj.login_background.url
 
 
 class InstitutionSerializer(serializers.ModelSerializer):
@@ -65,6 +76,7 @@ class InstitutionSerializer(serializers.ModelSerializer):
             "logo",
             "seal",
             "signature",
+            "login_background",
             "timezone",
             "currency",
             "weekend_days",

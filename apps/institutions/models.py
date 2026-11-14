@@ -130,6 +130,13 @@ class Institution(BaseModel):
     logo = models.ImageField(upload_to="institutions/logos/", null=True, blank=True)
     seal = models.ImageField(upload_to="institutions/seals/", null=True, blank=True)
     signature = models.ImageField(upload_to="institutions/signatures/", null=True, blank=True)
+    login_background = models.ImageField(
+        upload_to="institutions/backgrounds/",
+        null=True,
+        blank=True,
+        verbose_name="Login Page Background Image",
+        help_text="School building or campus photograph displayed on the login page.",
+    )
 
     # Localization Defaults
     timezone = models.CharField(max_length=50, default="Asia/Dhaka")

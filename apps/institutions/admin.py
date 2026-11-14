@@ -10,6 +10,48 @@ class InstitutionAdmin(admin.ModelAdmin):
     list_display = ("name_en", "name_bn", "eiin", "board", "type", "is_active", "created_at")
     list_filter = ("board", "type", "mpo_status", "is_active")
     search_fields = ("name_en", "name_bn", "eiin", "phone", "email")
+    fieldsets = (
+        (
+            "Basic Info",
+            {
+                "fields": (
+                    "name_en",
+                    "name_bn",
+                    "eiin",
+                    "mpo_status",
+                    "board",
+                    "type",
+                    "is_active",
+                ),
+            },
+        ),
+        (
+            "Contact & Address",
+            {
+                "fields": (
+                    "phone",
+                    "email",
+                    "website",
+                    "address_line",
+                    "upazila",
+                    "district",
+                    "division",
+                ),
+            },
+        ),
+        (
+            "Brand Assets",
+            {
+                "fields": ("logo", "seal", "signature", "login_background"),
+            },
+        ),
+        (
+            "Settings & Localization",
+            {
+                "fields": ("timezone", "currency", "weekend_days", "settings"),
+            },
+        ),
+    )
 
 
 @admin.register(Branch)

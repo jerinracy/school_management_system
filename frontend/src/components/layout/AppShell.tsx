@@ -28,6 +28,7 @@ import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useBrandingStore } from "@/features/institutions/store/brandingStore";
+import { AcademicLogo } from "@/features/institutions/components/AcademicLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -129,17 +130,12 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
       >
         <div className="flex h-12 items-center justify-between border-b border-border px-3">
           <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "justify-center w-full")}>
-            {schoolLogo ? (
-              <img
-                src={schoolLogo}
-                alt={schoolName}
-                className="h-7 w-7 shrink-0 rounded-md object-contain bg-canvas border border-border/40 p-0.5"
-              />
-            ) : (
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-white shadow-sm">
-                {currentLang === "bn" ? "বি" : schoolName.charAt(0).toUpperCase() || "S"}
-              </span>
-            )}
+            <AcademicLogo
+              logoUrl={schoolLogo}
+              name={schoolName}
+              size="sm"
+              className="h-7 w-7 rounded-md"
+            />
             {!collapsed ? (
               <div className="min-w-0">
                 <p className="truncate text-xs font-bold leading-tight text-ink" title={schoolName}>
@@ -179,17 +175,12 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
       <Drawer open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
         <DrawerContent side="left" closeLabel={t("ui.dialog.close")}>
           <DrawerHeader className="flex items-center gap-2.5 border-b border-border pb-3">
-            {schoolLogo ? (
-              <img
-                src={schoolLogo}
-                alt={schoolName}
-                className="h-8 w-8 shrink-0 rounded-md object-contain"
-              />
-            ) : (
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-white">
-                {currentLang === "bn" ? "বি" : schoolName.charAt(0).toUpperCase() || "S"}
-              </span>
-            )}
+            <AcademicLogo
+              logoUrl={schoolLogo}
+              name={schoolName}
+              size="sm"
+              className="h-8 w-8 rounded-md"
+            />
             <DrawerTitle className="text-sm font-bold truncate">{schoolName}</DrawerTitle>
           </DrawerHeader>
           <nav className="mt-3 space-y-0.5" aria-label="Mobile Navigation">

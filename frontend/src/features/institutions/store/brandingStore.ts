@@ -3,6 +3,13 @@ import { institutionApi, type InstitutionPublicBranding } from "../api/instituti
 
 const BRANDING_STORAGE_KEY = "sms_public_branding_cache";
 
+export const DEMO_INSTITUTION = {
+  name_en: "Dhaka Model Academy",
+  name_bn: "ঢাকা মডেল একাডেমি",
+  eiin: "106601",
+  board: "Dhaka",
+} as const;
+
 interface BrandingState {
   branding: InstitutionPublicBranding | null;
   isLoading: boolean;
@@ -11,6 +18,9 @@ interface BrandingState {
   setBranding: (branding: InstitutionPublicBranding) => void;
   getLocalizedName: (lang: string) => string;
   getLogoUrl: () => string | null;
+  getEIIN: () => string;
+  getBoard: () => string;
+  getLoginBackgroundUrl: () => string | null;
 }
 
 function getStoredBranding(): InstitutionPublicBranding | null {
@@ -79,16 +89,34 @@ export const useBrandingStore = create<BrandingState>((set, get) => ({
 
   getLocalizedName: (lang: string) => {
     const b = get().branding;
-    if (!b) return lang === "bn" ? "বিদ্যালয় ব্যবস্থাপনা পদ্ধতি" : "School Management System";
-    if (lang === "bn") {
-      return b.name_bn || b.name_en || "বিদ্যালয় ব্যবস্থাপনা পদ্ধতি";
+    if (!b) {
+      return lang === "bn" ? DEMO_INSTITUTION.name_bn : DEMO_INSTITUTION.name_en;
     }
-    return b.name_en || b.name_bn || "School Management System";
+    if (lang === "bn") {
+      return b.name_bn || b.name_en || DEMO_INSTITUTION.name_bn;
+    }
+    return b.name_en || b.name_bn || DEMO_INSTITUTION.name_en;
   },
 
   getLogoUrl: () => {
     const b = get().branding;
     if (!b) return null;
     return b.logo_url || b.logo || null;
+  },
+
+  getEIIN: () => {
+    const b = get().branding;
+    return b?.eiin || DEMO_INSTITUTION.eiin;
+  },
+
+  getBoard: () => {
+    const b = get().branding;
+    return b?.board || DEMO_INSTITUTION.board;
+  },
+
+  getLoginBackgroundUrl: () => {
+    const b = get().branding;
+    if (!b) return null;
+    return b.login_background_url || b.login_background || null;
   },
 }));

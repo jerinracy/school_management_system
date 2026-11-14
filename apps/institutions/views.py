@@ -87,6 +87,8 @@ class InstitutionPublicBrandingView(APIView):
                     "type": "secondary",
                     "logo": None,
                     "logo_url": None,
+                    "login_background": None,
+                    "login_background_url": None,
                     "phone": "",
                     "email": "",
                     "website": "",

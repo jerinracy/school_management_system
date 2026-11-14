@@ -15820,6 +15820,12 @@ export interface components {
             seal?: string | null;
             /** Format: uri */
             signature?: string | null;
+            /**
+             * Login Page Background Image
+             * Format: uri
+             * @description School building or campus photograph displayed on the login page.
+             */
+            login_background?: string | null;
             timezone?: string;
             currency?: string;
             weekend_days?: unknown;
@@ -15847,6 +15853,13 @@ export interface components {
             /** Format: uri */
             readonly logo: string | null;
             readonly logo_url: string | null;
+            /**
+             * Login Page Background Image
+             * Format: uri
+             * @description School building or campus photograph displayed on the login page.
+             */
+            readonly login_background: string | null;
+            readonly login_background_url: string | null;
             readonly phone: string;
             /** Format: email */
             readonly email: string;
@@ -20643,6 +20656,12 @@ export interface components {
             seal?: string | null;
             /** Format: binary */
             signature?: string | null;
+            /**
+             * Login Page Background Image
+             * Format: binary
+             * @description School building or campus photograph displayed on the login page.
+             */
+            login_background?: string | null;
             timezone?: string;
             currency?: string;
             weekend_days?: unknown;

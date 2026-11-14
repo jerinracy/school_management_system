@@ -42282,6 +42282,13 @@ components:
           type: string
           format: uri
           nullable: true
+        login_background:
+          type: string
+          format: uri
+          nullable: true
+          title: Login Page Background Image
+          description: School building or campus photograph displayed on the login
+            page.
         timezone:
           type: string
           maxLength: 50
@@ -42350,6 +42357,18 @@ components:
           type: string
           nullable: true
           readOnly: true
+        login_background:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          title: Login Page Background Image
+          description: School building or campus photograph displayed on the login
+            page.
+        login_background_url:
+          type: string
+          nullable: true
+          readOnly: true
         phone:
           type: string
           readOnly: true
@@ -42378,6 +42397,8 @@ components:
       - eiin
       - email
       - id
+      - login_background
+      - login_background_url
       - logo
       - logo_url
       - name_bn
@@ -51092,6 +51113,13 @@ components:
           type: string
           format: binary
           nullable: true
+        login_background:
+          type: string
+          format: binary
+          nullable: true
+          title: Login Page Background Image
+          description: School building or campus photograph displayed on the login
+            page.
         timezone:
           type: string
           minLength: 1
