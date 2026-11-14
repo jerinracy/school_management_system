@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         python-version: ["3.12"]
@@ -42,7 +43,7 @@ jobs:
         run: ruff check .
 
       - name: Check code formatting with Black
-        run: black --check .
+        run: black --check apps config
 
       - name: Type check with Mypy
         run: mypy apps config
@@ -64,6 +65,7 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: frontend

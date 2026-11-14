@@ -42,7 +42,7 @@ class Command(BaseCommand):
         if "sqlite3" in engine:
             db_name = str(db_cfg["NAME"])
             target = backup_dir / f"db_backup_{stamp}.sqlite3"
-            if db_name == ":memory:":
+            if db_name == ":memory:" or "memorydb_" in db_name or "mode=memory" in db_name:
                 target.write_bytes(b"")
             else:
                 src_conn = sqlite3.connect(db_name)

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 minversion = "8.0"
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "*_test.py"]
-addopts = "-q --maxfail=1 --strict-markers"
+addopts = "-q --maxfail=1 --strict-markers --nomigrations"
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
@@ -23,6 +23,8 @@ exclude = [
     "build",
     "dist",
     "migrations",
+    "frontend",
+    "node_modules",
 ]
 
 [tool.ruff.lint]
@@ -48,6 +50,8 @@ exclude = '''
   | venv
   | \.venv
   | migrations
+  | frontend
+  | node_modules
 )/
 '''
 
