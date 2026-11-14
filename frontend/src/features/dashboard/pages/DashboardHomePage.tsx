@@ -17,6 +17,8 @@ import { useHealth } from "@/features/dashboard/api/useHealth";
 import { formatTimeShort, toLocaleDigits } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { SetupProgressCard } from "@/features/dashboard/components/SetupProgressCard";
+
 const MODULE_LINKS = [
   {
     to: "/students",
@@ -125,6 +127,9 @@ export function DashboardHomePage() {
           </button>
         </div>
       ) : null}
+
+      {/* Setup Checklist Progress */}
+      <SetupProgressCard />
 
       <section aria-label={t("dashboard.title")} className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard

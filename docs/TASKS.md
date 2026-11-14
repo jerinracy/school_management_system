@@ -44,3 +44,4 @@ Legend:
 | **Task F01** | Vite + React + django-vite Setup | DONE | Backend Task 01 | 2026-11-12 |
 | **Task F02** | Design System, Layout & Theming | DONE | Task F01 | 2026-11-12 |
 | **Task F03** | Auth, API Client & Permissions | DONE | Backend Task 03 | 2026-11-14 |
+| **Task F04** | Institution Setup & Academic Structure Screens | DONE | Task F03, Backend Task 02, Task 04 | 2026-11-14 |

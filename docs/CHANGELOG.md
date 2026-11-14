@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F04**: Institution Setup & Academic Structure Screens (`frontend/`).
+  - Added Institution Management modules:
+    - `InstitutionProfilePage` (`/institution/profile`): EIIN, school code, names EN/BN, phone, email, website, address, and logo/branding upload via `/api/v1/institutions/profile/`.
+    - `BranchesShiftsPage` (`/institution/branches`): Multi-branch campus management with tabs for branches (`/api/v1/institutions/branches/`) and daily operating shifts (`/api/v1/institutions/shifts/`).
+    - `SessionsTermsPage` (`/institution/sessions`): Academic session manager with active status badge, session activation confirmation dialog (`POST /sessions/{id}/activate/`), session closing impact dialog (`POST /sessions/{id}/close/`), and nested evaluation terms directory (`/api/v1/institutions/terms/`).
+    - `HolidaysPage` (`/institution/holidays`): Annual holiday calendar and list with type badges (Govt, Religious, Institutional) via `/api/v1/institutions/holidays/`.
+  - Added Academic Structure modules:
+    - `ClassesSectionsPage` (`/academics/classes`): Class grades 1-12 listing, section capacity roster, and **Batch Create Sections** modal (`POST /api/v1/academics/sections/bulk-create/`).
+    - `SubjectsPage` (`/academics/subjects`): Master catalog subjects (`/api/v1/academics/subjects/`) and Class-Subject curriculum offering manager (`/api/v1/academics/class-subjects/`) with full marks.
+    - `PeriodsRoomsPage` (`/academics/periods`): Tabbed management of daily period timings (`/api/v1/academics/periods/`) and campus rooms directory (`/api/v1/academics/rooms/`).
+    - `RoutineBuilderPage` (`/academics/routine`): Interactive weekly timetable grid (Weekday × Period) with live conflict pre-check calling `POST /api/v1/academics/routine/validate/` to detect teacher double-booking, room clash, and capacity constraints before saving.
+    - `SubstitutesPage` (`/academics/substitutes`): Daily cover teacher allocation and assignment roster (`/api/v1/academics/substitutes/`).
+    - `CopySessionWizardPage` (`/academics/copy-session`): 3-step wizard with simulation dry-run preview (`POST /api/v1/academics/copy-session/` with `dry_run: true`) followed by confirmed execution (`dry_run: false`).
+  - Added Dashboard Home Onboarding:
+    - Embedded `SetupProgressCard` on `DashboardHomePage` showing step-by-step completion tracking with deep links to institution profile, branches, sessions, classes, and weekly routine.
+  - Integration & Verification:
+    - Updated navigation menu (`src/config/navigation.ts`, `AppShell.tsx`) and application routing (`src/App.tsx`) with strict RBAC permission guards.
+    - Added full English and Bangla translation parity in `en.json` and `bn.json` (412 keys verified).
+    - Added comprehensive unit and integration tests with MSW in `Sessions.test.tsx`, `RoutineValidation.test.tsx`, and `CopySessionWizard.test.tsx` (all 29 Vitest tests passing).
 - **Task F03**: Auth, API Client & Permissions (`frontend/`).
   - Added typed API client wrapper (`src/lib/api-client.ts`) with Bearer token injection, request correlation IDs (`X-Request-ID`), `Accept-Language` headers, single-flight concurrent 401 token refresh mutex, automatic request retries, and typed `ApiError` mapping (`src/lib/errors.ts`).
   - Implemented Zustand authentication store (`src/features/auth/store/authStore.ts`) with in-memory access token storage and `sessionStorage` refresh token persistence for session restoration on reload.

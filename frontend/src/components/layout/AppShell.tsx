@@ -39,6 +39,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 
 const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   overview: <LayoutDashboard className="h-4 w-4 shrink-0" />,
+  institution: <Building2 className="h-4 w-4 shrink-0" />,
+  academics: <Calendar className="h-4 w-4 shrink-0" />,
   students: <GraduationCap className="h-4 w-4 shrink-0" />,
   attendance: <CalendarCheck className="h-4 w-4 shrink-0" />,
   exams: <Award className="h-4 w-4 shrink-0" />,

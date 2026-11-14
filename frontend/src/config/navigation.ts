@@ -4,6 +4,8 @@ export interface NavItemConfig {
   labelKey: string;
   iconName:
     | "overview"
+    | "institution"
+    | "academics"
     | "students"
     | "attendance"
     | "exams"
@@ -17,6 +19,20 @@ export interface NavItemConfig {
 
 export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
   { id: "overview", to: "/", labelKey: "nav.overview", iconName: "overview", end: true },
+  {
+    id: "institution",
+    to: "/institution/profile",
+    labelKey: "nav.institution",
+    iconName: "institution",
+    permission: "institutions.view",
+  },
+  {
+    id: "academics",
+    to: "/academics/classes",
+    labelKey: "nav.academics",
+    iconName: "academics",
+    permission: "academics.view",
+  },
   {
     id: "students",
     to: "/students",

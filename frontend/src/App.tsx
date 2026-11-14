@@ -20,6 +20,17 @@ import { DashboardHomePage } from "@/features/dashboard/pages/DashboardHomePage"
 import { ModulePlaceholderPage } from "@/features/dashboard/pages/ModulePlaceholderPage";
 import { DesignSystemPage } from "@/features/design-system/pages/DesignSystemPage";
 
+import { InstitutionProfilePage } from "@/features/institutions/pages/InstitutionProfilePage";
+import { BranchesShiftsPage } from "@/features/institutions/pages/BranchesShiftsPage";
+import { SessionsTermsPage } from "@/features/institutions/pages/SessionsTermsPage";
+import { HolidaysPage } from "@/features/institutions/pages/HolidaysPage";
+import { ClassesSectionsPage } from "@/features/academics/pages/ClassesSectionsPage";
+import { SubjectsPage } from "@/features/academics/pages/SubjectsPage";
+import { PeriodsRoomsPage } from "@/features/academics/pages/PeriodsRoomsPage";
+import { RoutineBuilderPage } from "@/features/academics/pages/RoutineBuilderPage";
+import { SubstitutesPage } from "@/features/academics/pages/SubstitutesPage";
+import { CopySessionWizardPage } from "@/features/academics/pages/CopySessionWizardPage";
+
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { refreshToken, setTokens, setUser, logout, setIsRestoring } = useAuthStore();
 
@@ -111,6 +122,91 @@ export function AppRoutes() {
               <Routes>
                 <Route path="/" element={<DashboardHomePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+
+                {/* Institution Routes */}
+                <Route
+                  path="/institution/profile"
+                  element={
+                    <ProtectedRoute perm="institutions.view">
+                      <InstitutionProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institution/branches"
+                  element={
+                    <ProtectedRoute perm="institutions.view">
+                      <BranchesShiftsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institution/sessions"
+                  element={
+                    <ProtectedRoute perm="institutions.view">
+                      <SessionsTermsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/institution/holidays"
+                  element={
+                    <ProtectedRoute perm="institutions.view">
+                      <HolidaysPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Academics Routes */}
+                <Route
+                  path="/academics/classes"
+                  element={
+                    <ProtectedRoute perm="academics.view">
+                      <ClassesSectionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academics/subjects"
+                  element={
+                    <ProtectedRoute perm="academics.view">
+                      <SubjectsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academics/periods"
+                  element={
+                    <ProtectedRoute perm="academics.view">
+                      <PeriodsRoomsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academics/routine"
+                  element={
+                    <ProtectedRoute perm="academics.view">
+                      <RoutineBuilderPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academics/substitutes"
+                  element={
+                    <ProtectedRoute perm="academics.view">
+                      <SubstitutesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/academics/copy-session"
+                  element={
+                    <ProtectedRoute perm="academics.manage">
+                      <CopySessionWizardPage />
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path="/students"
                   element={
