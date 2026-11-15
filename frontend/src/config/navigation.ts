@@ -20,6 +20,7 @@ export interface NavItemConfig {
     | "exams"
     | "results"
     | "fees"
+    | "accounting"
     | "staff"
     | "devices"
     | "system";
@@ -117,10 +118,28 @@ export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
   },
   {
     id: "fees",
-    to: "/fees",
+    to: "/fees/invoices",
     labelKey: "nav.fees",
     iconName: "fees",
     permission: "fees.view",
+    children: [
+      { id: "fees-invoices", to: "/fees/invoices", labelKey: "nav.invoicesList" },
+      { id: "fees-collect", to: "/fees/collect", labelKey: "nav.counterCollect" },
+      { id: "fees-receipts", to: "/fees/receipts", labelKey: "nav.moneyReceipts" },
+      { id: "fees-structures", to: "/fees/structures", labelKey: "nav.feeStructures" },
+      { id: "fees-waivers", to: "/fees/waivers", labelKey: "nav.waivers" },
+      { id: "fees-due-list", to: "/fees/due-list", labelKey: "nav.dueList" },
+    ],
+  },
+  {
+    id: "accounting",
+    to: "/accounting/cashbook",
+    labelKey: "nav.accounting",
+    iconName: "accounting",
+    permission: "accounting.view",
+    children: [
+      { id: "acc-cashbook", to: "/accounting/cashbook", labelKey: "nav.cashbook" },
+    ],
   },
   {
     id: "staff",

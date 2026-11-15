@@ -18,6 +18,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restored `INTERNAL_IPS = ["127.0.0.1", "localhost"]` in `config/settings/dev.py`.
 
 ### Added
+- **Task F10**: Fees, Billing & Financial Accounting Dashboard (`frontend/src/features/fees/`, `frontend/src/features/accounting/`).
+  - Fee Structures & Fee Heads Workspace (`frontend/src/features/fees/pages/FeeStructuresPage.tsx`):
+    - Full fee head catalogue (`/fees/heads`) supporting recurring, admission, session, exam, and penalty fee categories.
+    - Class-level fee structure templates (`/fees/structures`) with line-item amount breakdowns and frequency schedules.
+  - Student Invoices & Billing Directory (`frontend/src/features/fees/pages/InvoicesListPage.tsx`):
+    - Invoice register (`/fees/invoices`) with status filtering (`PAID`, `PARTIAL`, `UNPAID`, `OVERDUE`, `VOID`) and search.
+    - KPI Overview banner displaying total billed amount, collections, outstanding dues, and overdue invoice count.
+    - Bulk invoice generation modal dialog (`POST /api/v1/fees/invoices/bulk-generate/`) for class/session batches.
+  - Detailed Invoice Workspace (`frontend/src/features/fees/pages/InvoiceDetailPage.tsx`):
+    - Comprehensive invoice breakdown (`/fees/invoices/:id`) with fee line items, waiver credits, late fines, and payments list.
+    - Invoice voiding modal dialog with audit reason tracking.
+  - Over-the-Counter POS Fee Collection (`frontend/src/features/fees/pages/CounterCollectionPage.tsx`):
+    - Fast cashier Point-of-Sale interface (`/fees/collect`) with live student lookup (admission number/roll).
+    - Unpaid invoice selector with auto-computed total dues, amount to pay input, and payment method selection (Cash, bKash, Nagad, Rocket, Bank).
+    - MFS/Bank transaction reference input and instant post-collection receipt modal.
+  - Printable 3-Part Bangladeshi Money Receipt (`frontend/src/features/fees/components/MoneyReceiptPreview.tsx`):
+    - Standard Bangladeshi 3-copy tear-off voucher (Student Copy, Office Copy, Bank Copy) with institutional header (EIIN, Board, Logo, Affiliation), receipt serial, fee head table, and authorized cashier signature line.
+    - Re-printable money receipts directory (`/fees/receipts`, `MoneyReceiptsPage.tsx`).
+  - Waivers & Scholarship Concessions Management (`frontend/src/features/fees/pages/WaiversPage.tsx`):
+    - Institutional waiver policies and student concession register (`/fees/waivers`) with status-based approval workflow.
+  - Overdue Dues & Defaulters Register (`frontend/src/features/fees/pages/DueListPage.tsx`):
+    - Overdue student dues list (`/fees/due-list`) with class filtering, overdue aging filter, and direct collection shortcuts.
+  - Daily Day Book & Cashbook Statement (`frontend/src/features/accounting/pages/CashbookPage.tsx`):
+    - Comprehensive daily financial statement (`/accounting/cashbook`) with date selection, debit/credit ledger breakdown, drawer reconciliation, and print view.
+  - Full Bilingual Localization & Navigation Integration:
+    - Added 1,019 keys in exact parity across `frontend/src/i18n/locales/en.json` and `bn.json`.
+    - Wired all fee and accounting routes in `frontend/src/App.tsx`, `navigation.ts`, and `AppShell.tsx`.
+    - Integrated Vitest suite in `frontend/src/features/fees/__tests__/Fees.test.tsx`.
 - **Task F09**: Examinations, Continuous Assessment & GPA 5.0 Result Processing Dashboard (`frontend/src/features/exams/`, `frontend/src/features/results/`).
   - Examinations Inventory & Lifecycle Management (`frontend/src/features/exams/pages/ExamListPage.tsx`):
     - Full examination directory (`/exams`) with session, status, and term filtering.

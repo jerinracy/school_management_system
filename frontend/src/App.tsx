@@ -17,7 +17,6 @@ import { ForceChangePasswordPage } from "@/features/auth/pages/ForceChangePasswo
 import { ProfilePage } from "@/features/auth/pages/ProfilePage";
 import { ForbiddenPage } from "@/features/auth/pages/ForbiddenPage";
 import { DashboardHomePage } from "@/features/dashboard/pages/DashboardHomePage";
-import { ModulePlaceholderPage } from "@/features/dashboard/pages/ModulePlaceholderPage";
 import { DesignSystemPage } from "@/features/design-system/pages/DesignSystemPage";
 
 import { InstitutionProfilePage } from "@/features/institutions/pages/InstitutionProfilePage";
@@ -53,6 +52,14 @@ import ResultsDashboardPage from "@/features/results/pages/ResultsDashboardPage"
 import TabulationSheetPage from "@/features/results/pages/TabulationSheetPage";
 import ReportCardsPage from "@/features/results/pages/ReportCardsPage";
 import GradingScalesPage from "@/features/results/pages/GradingScalesPage";
+import InvoicesListPage from "@/features/fees/pages/InvoicesListPage";
+import InvoiceDetailPage from "@/features/fees/pages/InvoiceDetailPage";
+import CounterCollectionPage from "@/features/fees/pages/CounterCollectionPage";
+import MoneyReceiptsPage from "@/features/fees/pages/MoneyReceiptsPage";
+import FeeStructuresPage from "@/features/fees/pages/FeeStructuresPage";
+import WaiversPage from "@/features/fees/pages/WaiversPage";
+import DueListPage from "@/features/fees/pages/DueListPage";
+import CashbookPage from "@/features/accounting/pages/CashbookPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -372,11 +379,78 @@ export function AppRoutes() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Fees & Billing Routes */}
                 <Route
                   path="/fees"
+                  element={<Navigate to="/fees/invoices" replace />}
+                />
+                <Route
+                  path="/fees/invoices"
                   element={
                     <ProtectedRoute perm="fees.view">
-                      <ModulePlaceholderPage titleKey="nav.fees" />
+                      <InvoicesListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fees/invoices/:id"
+                  element={
+                    <ProtectedRoute perm="fees.view">
+                      <InvoiceDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fees/collect"
+                  element={
+                    <ProtectedRoute perm="fees.change">
+                      <CounterCollectionPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fees/receipts"
+                  element={
+                    <ProtectedRoute perm="fees.view">
+                      <MoneyReceiptsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fees/structures"
+                  element={
+                    <ProtectedRoute perm="fees.view">
+                      <FeeStructuresPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fees/waivers"
+                  element={
+                    <ProtectedRoute perm="fees.view">
+                      <WaiversPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fees/due-list"
+                  element={
+                    <ProtectedRoute perm="fees.view">
+                      <DueListPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Accounting Routes */}
+                <Route
+                  path="/accounting"
+                  element={<Navigate to="/accounting/cashbook" replace />}
+                />
+                <Route
+                  path="/accounting/cashbook"
+                  element={
+                    <ProtectedRoute perm="accounting.view">
+                      <CashbookPage />
                     </ProtectedRoute>
                   }
                 />
