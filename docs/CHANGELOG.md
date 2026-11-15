@@ -6,7 +6,55 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **Persistent JWT Authentication & Session Restoration**:
+  - Replaced tab-scoped `sessionStorage` with error-safe `localStorage` persistence for `accessToken`, `refreshToken`, and cached `user` profile in `authStore.ts`.
+  - Initialized Zustand auth store directly from persistent storage so visiting the base URL (`/` or `/dashboard/`) or opening a new browser tab immediately loads the authenticated session without screen flicker or forced redirect to `/login`.
+  - Fixed React 18 StrictMode cancellation race in `SessionBootstrap` that previously discarded rotated refresh tokens and triggered HTTP 401 loops on subsequent requests.
+  - Retained single-flight deduplicated 401 interceptor in `api-client.ts` to automatically refresh expired 60-minute access tokens silently in the background and persist rotated tokens to `localStorage`.
+- **Vite React Refresh & Preamble Injection (Blank Page Fix)**:
+  - Fixed blank page issue caused by missing React refresh runtime preamble in `spa_shell.html`.
+  - Removed erroneous `{% if debug %}` guard around `{% vite_react_refresh %}` and `{% vite_hmr_client %}` in `templates/spa_shell.html` (django-vite handles dev/prod mode checking internally).
+  - Restored `INTERNAL_IPS = ["127.0.0.1", "localhost"]` in `config/settings/dev.py`.
+
 ### Added
+- **Task F09**: Examinations, Continuous Assessment & GPA 5.0 Result Processing Dashboard (`frontend/src/features/exams/`, `frontend/src/features/results/`).
+  - Examinations Inventory & Lifecycle Management (`frontend/src/features/exams/pages/ExamListPage.tsx`):
+    - Full examination directory (`/exams`) with session, status, and term filtering.
+    - KPI Overview banner tracking Total Exams, Active Evaluations, Finalized Broadsheets, and Published Results.
+    - Term creation modal dialog (`POST /api/v1/exams/exams/`) with start/end date bounds, term category, and session linkage.
+  - Comprehensive Exam Detail Workspace (`frontend/src/features/exams/pages/ExamDetailPage.tsx`):
+    - Multi-tab examination management workspace (`/exams/:id`) with 4 dedicated functional tabs:
+      - Subjects & Component Marks (CQ, MCQ, Practical, Passing thresholds, 4th subject elective status, and mark entry shortcuts).
+      - Candidate Eligibility & Clearances (Attendance threshold &ge;75%, financial dues check, and principal clearance status).
+      - Hall Passes & Admit Cards (Generated hall pass directory with printable slip preview).
+      - Examination Timetable & Routines (Date, start/end windows, and examination hall allocation).
+    - Status lifecycle controller (Lock/Unlock evaluation marks, Publish official results).
+  - Continuous Assessment Mark Entry Sheet (`frontend/src/features/exams/pages/MarkEntryPage.tsx`):
+    - High-density spreadsheet evaluation interface (`/exams/marks`) with keyboard-friendly navigation.
+    - Real-time client-side CQ/MCQ/PR validation against subject component limits.
+    - Live Bangladeshi NCTB GPA 5.0 grade point and letter grade calculator per student row.
+    - Bulk save mutation (`POST /api/v1/exams/mark-entries/bulk-save/`) with dirty tracking and absent toggle.
+  - Hall Passes & Admit Cards Roster (`frontend/src/features/exams/pages/AdmitCardsPage.tsx`):
+    - Filterable admit cards directory (`/exams/admit-cards`) with bulk card generation (`POST /api/v1/exams/admit-cards/bulk-generate/`).
+    - Printable CR80/A4 examination pass preview dialog with candidate details, security serial, and student instructions.
+  - GPA 5.0 Result Processing & Merit Positioning Hub (`frontend/src/features/results/pages/ResultsDashboardPage.tsx`):
+    - Central results management portal (`/results`) with class and section filtering.
+    - Async GPA calculation engine trigger (`POST /api/v1/results/exam-results/calculate/`) executing NCTB GPA 5.0 rules with 4th subject bonus points.
+    - Class and section merit rank ordering (#1, #2, #3 badges) and pass/fail summary indicators.
+    - Formal institutional publication and rollback workflow.
+  - Official Tabulation Broadsheet Register (`frontend/src/features/results/pages/TabulationSheetPage.tsx`):
+    - Comprehensive class broadsheet viewer (`/results/tabulation`) with landscape print styling.
+    - Generation mutation for downloadable PDF, Excel, and CSV registers (`POST /api/v1/results/tabulation-sheets/`).
+  - Academic Progress Report Cards (`frontend/src/features/results/pages/ReportCardsPage.tsx`):
+    - Student progress report card repository (`/results/report-cards`) with bulk ZIP generator (`POST /api/v1/results/report-cards/bulk-pdf/`).
+    - Printable A4 academic progress report card (`ReportCardPreview.tsx`) with institutional header (EIIN, Board, Name), CQ/MCQ/PR breakdown, 4th subject bonus display, final CGPA/grade, and teacher/guardian/principal signature sections.
+  - NCTB Curriculum Grading Scales Viewer (`frontend/src/features/results/pages/GradingScalesPage.tsx`):
+    - Grading tiers visualizer (`/results/grading-scales`) detailing marks ranges, GPA points (5.00 to 0.00), letter grades (A+ to F), and institutional defaults seeder.
+  - Bilingual i18n & Test Suite:
+    - Added complete English and Bangla translation strings in `en.json` and `bn.json` (833 keys in exact parity verified via `check-i18n.mjs`).
+    - Unit and component integration tests in `frontend/src/features/exams/__tests__/Exams.test.tsx` and `frontend/src/features/results/__tests__/Results.test.tsx`.
+    - Full test suite verified: `tsc --noEmit` (0 errors), `eslint .` (0 errors), `vite build` (0 errors), `vitest` (15 test files, 44 tests passed), and backend `pytest apps/exams apps/results` (54/54 passed).
 - **Task F08**: Biometric Devices & Attendance Engine Dashboard (`frontend/src/features/devices/`, `frontend/src/features/attendance/`).
   - Terminal Hardware Inventory & Live Monitor (`frontend/src/features/devices/pages/DeviceListPage.tsx`):
     - Full biometric terminal directory (`/devices`) with real-time status badges (Online, Offline, Warning), IP address, port, protocol (push/pull/adms/mqtt), location, and last heartbeat tracking.

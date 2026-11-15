@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Cpu,
+  FileSpreadsheet,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -48,6 +49,7 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   admissions: <UserPlus className="h-4 w-4 shrink-0" />,
   attendance: <CalendarCheck className="h-4 w-4 shrink-0" />,
   exams: <Award className="h-4 w-4 shrink-0" />,
+  results: <FileSpreadsheet className="h-4 w-4 shrink-0" />,
   fees: <Banknote className="h-4 w-4 shrink-0" />,
   staff: <Users className="h-4 w-4 shrink-0" />,
   devices: <Cpu className="h-4 w-4 shrink-0" />,
@@ -57,10 +59,11 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
 interface AppShellProps {
   children: ReactNode;
   permissions?: string[];
+  userType?: string;
   onLogout?: () => void;
 }
 
-export function AppShell({ children, permissions, onLogout }: AppShellProps) {
+export function AppShell({ children, permissions, userType, onLogout }: AppShellProps) {
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -80,10 +83,58 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
   const schoolLogo = getLogoUrl();
   const schoolEIIN = branding?.eiin;
 
-  const visibleNavItems = SIDEBAR_NAV_ITEMS.filter((item) => {
-    if (!item.permission || !permissions) return true;
-    return permissions.includes(item.permission);
-  });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const user = useAuthStore((s) => s.user);
+  const effectivePermissions = permissions !== undefined ? permissions : user?.permissions;
+  const effectiveUserType = userType !== undefined ? userType : user?.user_type;
+
+  const isSuper =
+    effectivePermissions?.includes("*") ||
+    effectiveUserType === "superadmin" ||
+    effectiveUserType === "super_admin" ||
+    effectiveUserType === "admin";
+
+  const hasPerm = useCallback((requiredPerm?: string) => {
+    if (!requiredPerm) return true;
+    if (effectivePermissions === undefined) return true;
+    if (isSuper) return true;
+    return effectivePermissions.includes(requiredPerm);
+  }, [effectivePermissions, isSuper]);
+
+  const visibleNavItems = useMemo(
+    () =>
+      SIDEBAR_NAV_ITEMS.map((item) => {
+        if (!hasPerm(item.permission)) {
+          return null;
+        }
+        const filteredChildren = item.children?.filter((child) => hasPerm(child.permission));
+        return {
+          ...item,
+          children: filteredChildren,
+        };
+      }).filter(Boolean) as NavItemConfig[],
+    [hasPerm],
+  );
+
+  // Auto-expand the active section based on current location
+  useEffect(() => {
+    visibleNavItems.forEach((item) => {
+      if (item.children) {
+        const matchesChild = item.children.some(
+          (child) => location.pathname === child.to || location.pathname.startsWith(child.to + "/"),
+        );
+        const matchesParent = location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+        if (matchesChild || matchesParent) {
+          setOpenSections((prev) => ({ ...prev, [item.id]: true }));
+        }
+      }
+    });
+  }, [location.pathname, visibleNavItems]);
+
+  const toggleSection = (id: string) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const handleLanguageChange = (nextLang: SupportedLanguage) => {
     if (nextLang !== currentLang) {
@@ -92,27 +143,123 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
   };
 
   const renderNavLinks = (isCollapsed: boolean, onNavigate?: () => void) =>
-    visibleNavItems.map((item) => (
-      <NavLink
-        key={item.id}
-        to={item.to}
-        end={item.end}
-        onClick={onNavigate}
-        title={isCollapsed ? t(item.labelKey) : undefined}
-        className={({ isActive }) =>
-          cn(
-            "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-xs font-medium transition-colors",
-            isActive
-              ? "bg-primary-soft text-primary"
-              : "text-ink-muted hover:bg-canvas hover:text-ink",
-            isCollapsed && "justify-center px-2",
-          )
-        }
-      >
-        {NAV_ICONS[item.iconName]}
-        {!isCollapsed ? <span className="truncate">{t(item.labelKey)}</span> : null}
-      </NavLink>
-    ));
+    visibleNavItems.map((item) => {
+      const hasChildren = Boolean(item.children && item.children.length > 0);
+      const isOpen = Boolean(openSections[item.id]);
+      const isParentActive =
+        location.pathname === item.to ||
+        Boolean(item.children?.some((c) => location.pathname === c.to || location.pathname.startsWith(c.to + "/")));
+
+      if (isCollapsed) {
+        return (
+          <NavLink
+            key={item.id}
+            to={item.to}
+            end={item.end}
+            onClick={onNavigate}
+            title={t(item.labelKey)}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center justify-center rounded-md p-2 text-xs font-medium transition-colors",
+                isActive || isParentActive
+                  ? "bg-primary-soft text-primary"
+                  : "text-ink-muted hover:bg-canvas hover:text-ink",
+              )
+            }
+          >
+            {NAV_ICONS[item.iconName]}
+          </NavLink>
+        );
+      }
+
+      if (!hasChildren) {
+        return (
+          <NavLink
+            key={item.id}
+            to={item.to}
+            end={item.end}
+            onClick={onNavigate}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                isActive
+                  ? "bg-primary-soft text-primary font-semibold"
+                  : "text-ink-muted hover:bg-canvas hover:text-ink",
+              )
+            }
+          >
+            {NAV_ICONS[item.iconName]}
+            <span className="truncate">{t(item.labelKey)}</span>
+          </NavLink>
+        );
+      }
+
+      return (
+        <div key={item.id} className="space-y-0.5">
+          <div
+            className={cn(
+              "group flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+              isParentActive
+                ? "bg-primary-soft/60 text-primary font-semibold"
+                : "text-ink-muted hover:bg-canvas hover:text-ink",
+            )}
+          >
+            <NavLink
+              to={item.to}
+              end={item.end}
+              onClick={() => {
+                setOpenSections((prev) => ({ ...prev, [item.id]: true }));
+                if (onNavigate) onNavigate();
+              }}
+              className="flex flex-1 items-center gap-2.5 min-w-0"
+            >
+              {NAV_ICONS[item.iconName]}
+              <span className="truncate">{t(item.labelKey)}</span>
+            </NavLink>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSection(item.id);
+              }}
+              aria-label={isOpen ? `Collapse ${t(item.labelKey)}` : `Expand ${t(item.labelKey)}`}
+              className="ml-1 p-0.5 rounded text-ink-subtle hover:text-ink hover:bg-surface transition-colors"
+            >
+              <ChevronDown
+                className={cn(
+                  "h-3.5 w-3.5 transition-transform duration-200",
+                  isOpen ? "rotate-0" : "-rotate-90",
+                )}
+              />
+            </button>
+          </div>
+
+          {isOpen && item.children && (
+            <div className="ml-4 pl-2.5 border-l border-border/70 space-y-0.5 py-0.5">
+              {item.children.map((child) => (
+                <NavLink
+                  key={child.id}
+                  to={child.to}
+                  end={child.end}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      "block rounded-md px-2 py-1 text-[11px] font-medium transition-colors truncate",
+                      isActive
+                        ? "bg-primary-soft text-primary font-semibold"
+                        : "text-ink-muted hover:bg-canvas hover:text-ink",
+                    )
+                  }
+                >
+                  {t(child.labelKey)}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    });
 
   return (
     <div className="flex min-h-screen bg-canvas text-ink">
@@ -126,7 +273,7 @@ export function AppShell({ children, permissions, onLogout }: AppShellProps) {
       <aside
         className={cn(
           "no-print sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-surface transition-[width] duration-200 ease-out md:flex",
-          collapsed ? "w-16" : "w-56",
+          collapsed ? "w-16" : "w-60",
         )}
         aria-label="Primary Navigation"
       >

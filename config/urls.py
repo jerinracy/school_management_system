@@ -52,16 +52,9 @@ urlpatterns = [
     re_path(r"^dashboard/(?:.*)/?$", SpaDashboardView.as_view(), name="dashboard_spa"),
 ]
 
-# Development-only documentation and debug routes
+# Development-only documentation routes
 if settings.DEBUG:
     urlpatterns += [
         path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
         path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     ]
-    # Django Debug Toolbar
-    if "debug_toolbar" in settings.INSTALLED_APPS:
-        import debug_toolbar
-
-        urlpatterns = [
-            path("__debug__/", include(debug_toolbar.urls)),
-        ] + urlpatterns

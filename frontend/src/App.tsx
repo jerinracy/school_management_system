@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
@@ -45,44 +45,51 @@ import DailyAttendancePage from "@/features/attendance/pages/DailyAttendancePage
 import AttendanceCorrectionsPage from "@/features/attendance/pages/AttendanceCorrectionsPage";
 import PeriodAttendancePage from "@/features/attendance/pages/PeriodAttendancePage";
 import AttendancePoliciesPage from "@/features/attendance/pages/AttendancePoliciesPage";
+import ExamListPage from "@/features/exams/pages/ExamListPage";
+import ExamDetailPage from "@/features/exams/pages/ExamDetailPage";
+import MarkEntryPage from "@/features/exams/pages/MarkEntryPage";
+import AdmitCardsPage from "@/features/exams/pages/AdmitCardsPage";
+import ResultsDashboardPage from "@/features/results/pages/ResultsDashboardPage";
+import TabulationSheetPage from "@/features/results/pages/TabulationSheetPage";
+import ReportCardsPage from "@/features/results/pages/ReportCardsPage";
+import GradingScalesPage from "@/features/results/pages/GradingScalesPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
-  const { refreshToken, setTokens, setUser, logout, setIsRestoring } = useAuthStore();
+  const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
+  const hasBootstrapped = useRef(false);
 
   useEffect(() => {
-    let isCancelled = false;
+    if (hasBootstrapped.current) return;
+    hasBootstrapped.current = true;
 
     async function restoreSession() {
+      const { refreshToken, accessToken } = useAuthStore.getState();
       if (!refreshToken) {
         setIsRestoring(false);
         return;
       }
 
       try {
-        const refreshData = await authApi.refresh(refreshToken);
-        if (isCancelled) return;
-        setTokens(refreshData.access, refreshData.refresh);
+        // If access token is missing, refresh tokens first
+        if (!accessToken) {
+          const refreshData = await authApi.refresh(refreshToken);
+          setTokens(refreshData.access, refreshData.refresh);
+        }
 
+        // Background sync to verify session validity and refresh user profile & permissions
         const me = await authApi.getMe();
-        if (isCancelled) return;
         setUser(me as never);
       } catch {
-        if (!isCancelled) {
-          logout();
-        }
+        // Token refresh or profile fetch failed (token expired/blacklisted)
+        // Only log out if we don't even have a valid session
+        logout();
       } finally {
-        if (!isCancelled) {
-          setIsRestoring(false);
-        }
+        setIsRestoring(false);
       }
     }
 
     void restoreSession();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [refreshToken, setTokens, setUser, logout, setIsRestoring]);
+  }, [setTokens, setUser, logout, setIsRestoring]);
 
   return <>{children}</>;
 }
@@ -133,7 +140,7 @@ export function AppRoutes() {
         path="/*"
         element={
           <ProtectedRoute>
-            <AppShell permissions={user?.permissions} onLogout={handleLogout}>
+            <AppShell permissions={user?.permissions} userType={user?.user_type} onLogout={handleLogout}>
               <Routes>
                 <Route path="/" element={<DashboardHomePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
@@ -298,11 +305,70 @@ export function AppRoutes() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Examination Routes */}
                 <Route
                   path="/exams"
                   element={
                     <ProtectedRoute perm="exams.view">
-                      <ModulePlaceholderPage titleKey="nav.exams" />
+                      <ExamListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/exams/marks"
+                  element={
+                    <ProtectedRoute perm="exams.view">
+                      <MarkEntryPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/exams/admit-cards"
+                  element={
+                    <ProtectedRoute perm="exams.view">
+                      <AdmitCardsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/exams/:id"
+                  element={
+                    <ProtectedRoute perm="exams.view">
+                      <ExamDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Results & Tabulation Routes */}
+                <Route
+                  path="/results"
+                  element={
+                    <ProtectedRoute perm="results.view">
+                      <ResultsDashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/results/tabulation"
+                  element={
+                    <ProtectedRoute perm="results.view">
+                      <TabulationSheetPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/results/report-cards"
+                  element={
+                    <ProtectedRoute perm="results.view">
+                      <ReportCardsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/results/grading-scales"
+                  element={
+                    <ProtectedRoute perm="results.view">
+                      <GradingScalesPage />
                     </ProtectedRoute>
                   }
                 />

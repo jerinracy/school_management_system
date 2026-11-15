@@ -11,8 +11,13 @@ export function usePermission(perm?: string): boolean {
   const user = useAuthStore((s) => s.user);
   if (!user || !perm) return !perm;
 
-  // Superadmin or admin bypass
-  if (user.user_type === "superadmin" || user.user_type === "admin") {
+  // Superadmin, admin, or wildcard permissions bypass
+  if (
+    user.user_type === "superadmin" ||
+    user.user_type === "super_admin" ||
+    user.user_type === "admin" ||
+    user.permissions?.includes("*")
+  ) {
     return true;
   }
 

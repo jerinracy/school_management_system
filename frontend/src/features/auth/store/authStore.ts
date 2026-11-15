@@ -27,39 +27,71 @@ interface AuthState {
   setIsRestoring: (loading: boolean) => void;
 }
 
+const ACCESS_STORAGE_KEY = "sms_auth_access_token";
 const REFRESH_STORAGE_KEY = "sms_auth_refresh_token";
+const USER_STORAGE_KEY = "sms_auth_user";
 
-function getStoredRefreshToken(): string | null {
+function getStoredItem(key: string): string | null {
   if (typeof window === "undefined") return null;
   try {
-    return window.sessionStorage.getItem(REFRESH_STORAGE_KEY);
+    return window.localStorage.getItem(key) ?? window.sessionStorage.getItem(key);
   } catch {
     return null;
   }
 }
 
-function persistRefreshToken(token: string | null): void {
+function setStoredItem(key: string, value: string | null): void {
   if (typeof window === "undefined") return;
   try {
-    if (token) {
-      window.sessionStorage.setItem(REFRESH_STORAGE_KEY, token);
+    if (value) {
+      window.localStorage.setItem(key, value);
     } else {
-      window.sessionStorage.removeItem(REFRESH_STORAGE_KEY);
+      window.localStorage.removeItem(key);
+      try {
+        window.sessionStorage.removeItem(key);
+      } catch {
+        // ignore
+      }
     }
   } catch {
-    // sessionStorage unavailable or quota exceeded
+    // In restricted browsing / quota exceeded, fallback to sessionStorage
+    try {
+      if (value) {
+        window.sessionStorage.setItem(key, value);
+      } else {
+        window.sessionStorage.removeItem(key);
+      }
+    } catch {
+      // Storage completely unavailable
+    }
   }
 }
 
+function getStoredUser(): AuthUser | null {
+  const raw = getStoredItem(USER_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+const initialRefreshToken = getStoredItem(REFRESH_STORAGE_KEY);
+const initialAccessToken = getStoredItem(ACCESS_STORAGE_KEY);
+const initialUser = getStoredUser();
+const hasInitialAuth = Boolean(initialRefreshToken && initialUser);
+
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
-  refreshToken: getStoredRefreshToken(),
-  user: null,
-  isAuthenticated: false,
-  isRestoring: true,
+  accessToken: initialAccessToken,
+  refreshToken: initialRefreshToken,
+  user: initialUser,
+  isAuthenticated: hasInitialAuth,
+  isRestoring: false,
 
   setTokens: (access: string, refresh: string) => {
-    persistRefreshToken(refresh);
+    setStoredItem(ACCESS_STORAGE_KEY, access);
+    setStoredItem(REFRESH_STORAGE_KEY, refresh);
     set({
       accessToken: access,
       refreshToken: refresh,
@@ -68,20 +100,25 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setUser: (user: AuthUser | null) => {
-    set({
-      user,
-      isAuthenticated: Boolean(user),
-    });
-  },
-
-  updateUserPreferences: (prefs: Partial<AuthUser>) => {
+    setStoredItem(USER_STORAGE_KEY, user ? JSON.stringify(user) : null);
     set((state) => ({
-      user: state.user ? { ...state.user, ...prefs } : null,
+      user,
+      isAuthenticated: Boolean(user && state.refreshToken),
     }));
   },
 
+  updateUserPreferences: (prefs: Partial<AuthUser>) => {
+    set((state) => {
+      const updated = state.user ? { ...state.user, ...prefs } : null;
+      setStoredItem(USER_STORAGE_KEY, updated ? JSON.stringify(updated) : null);
+      return { user: updated };
+    });
+  },
+
   logout: () => {
-    persistRefreshToken(null);
+    setStoredItem(ACCESS_STORAGE_KEY, null);
+    setStoredItem(REFRESH_STORAGE_KEY, null);
+    setStoredItem(USER_STORAGE_KEY, null);
     set({
       accessToken: null,
       refreshToken: null,
