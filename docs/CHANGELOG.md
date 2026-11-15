@@ -18,6 +18,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restored `INTERNAL_IPS = ["127.0.0.1", "localhost"]` in `config/settings/dev.py`.
 
 ### Added
+- **Task F11**: Staff Payroll Management Dashboard (`frontend/src/features/payroll/`).
+  - Salary Structures & Components Workspace (`frontend/src/features/payroll/pages/SalaryStructuresPage.tsx`):
+    - Configurable earnings and deductions catalog (`/payroll/components`) supporting Fixed BDT amount, % of Basic Salary, and % of Gross Salary calculation rules.
+    - Grade-level salary structure templates (`/payroll/structures`) with nested line-item breakdown.
+    - One-click standard Bangladeshi school components and grade templates seeding (`POST /api/v1/payroll/components/seed_defaults/`, `POST /api/v1/payroll/structures/seed_defaults/`).
+  - Staff Salary Profiles & Compensation Allocation (`frontend/src/features/payroll/pages/SalaryProfilesPage.tsx`):
+    - Employee compensation directory (`/payroll/profiles`) linking staff to salary structures and custom monthly baselines.
+    - Government MPO portion tracking vs. institutional top-up funding.
+    - Disbursement channel management: Bank Transfer (BEFTN with Bank name, Branch, Account number, Routing number), Mobile Financial Services (bKash/Nagad), Cash in Hand, and Cheque.
+    - Provident Fund (PF) enrollment toggle and employee contribution percentage.
+  - Monthly Payroll Generation & Batch Processing (`frontend/src/features/payroll/pages/PayrollRunsListPage.tsx`):
+    - Monthly payroll batches directory (`/payroll/runs`) filterable by Year, Month, and Status (`DRAFT`, `REVIEWED`, `APPROVED`, `PAID`, `LOCKED`).
+    - Aggregated KPI Overview banner displaying total gross earnings, biometric absence/loan deductions, net disbursed salary, and payslips count.
+    - Calculation modal (`POST /api/v1/payroll/runs/generate/`) auto-linking attendance engine records and pro-rata absence rules.
+  - Interactive Payroll Batch Workspace (`frontend/src/features/payroll/pages/PayrollRunDetailPage.tsx`):
+    - Complete staff payslip broadsheet register (`/payroll/runs/:id`) with component breakdown and attendance stats.
+    - Batch Eid / Festival bonus calculator modal (`POST /api/v1/payroll/runs/:id/apply_bonus/`) supporting percentage of basic or flat amount presets.
+    - Multi-stage approval workflow controls: *Review*, *Approve*, *Mark Disbursed / Paid*, and *Lock Period*.
+    - General Ledger integration modal (`POST /api/v1/payroll/runs/:id/post_to_accounting/`) automatically posting double-entry Journal Vouchers to institutional Day Book.
+    - Downloadable BEFTN / Bank Advice export sheets in XLSX and CSV formats.
+  - Staff Loans & Salary Advances Register (`frontend/src/features/payroll/pages/StaffLoansPage.tsx`):
+    - Welfare loans and emergency advance tracker (`/payroll/loans`) with monthly payroll installment recovery schedules.
+    - Loan disbursement modal dialog (`POST /api/v1/payroll/loans/`).
+  - Individual Printable Payslip Vouchers & Archive (`frontend/src/features/payroll/pages/PayslipsListPage.tsx`, `PayslipVoucherModal.tsx`):
+    - Comprehensive searchable payslip directory (`/payroll/payslips`) with status and payment channel filtering.
+    - Printable bilingual salary slip voucher dialog with institutional header, employee attendance summary, earnings vs deductions breakdown, net payout in BDT (৳), and authorized signature lines.
+    - Direct integration with backend WeasyPrint PDF generator (`GET /api/v1/payroll/payslips/:id/pdf/`).
+  - Bilingual Localization & Navigation Integration:
+    - Added 165 new translation keys in exact 1:1 parity (1,184 total keys) across `frontend/src/i18n/locales/en.json` and `bn.json`.
+    - Wired all payroll routes in `frontend/src/App.tsx`, `navigation.ts`, and `AppShell.tsx`.
+    - Vitest unit and component integration test suite in `frontend/src/features/payroll/__tests__/Payroll.test.tsx`.
 - **Task F10**: Fees, Billing & Financial Accounting Dashboard (`frontend/src/features/fees/`, `frontend/src/features/accounting/`).
   - Fee Structures & Fee Heads Workspace (`frontend/src/features/fees/pages/FeeStructuresPage.tsx`):
     - Full fee head catalogue (`/fees/heads`) supporting recurring, admission, session, exam, and penalty fee categories.

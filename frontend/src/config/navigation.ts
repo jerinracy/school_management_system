@@ -21,6 +21,7 @@ export interface NavItemConfig {
     | "results"
     | "fees"
     | "accounting"
+    | "payroll"
     | "staff"
     | "devices"
     | "system";
@@ -139,6 +140,20 @@ export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
     permission: "accounting.view",
     children: [
       { id: "acc-cashbook", to: "/accounting/cashbook", labelKey: "nav.cashbook" },
+    ],
+  },
+  {
+    id: "payroll",
+    to: "/payroll/runs",
+    labelKey: "nav.payroll",
+    iconName: "payroll",
+    permission: "payroll.view",
+    children: [
+      { id: "payroll-runs", to: "/payroll/runs", labelKey: "nav.payrollRuns" },
+      { id: "payroll-profiles", to: "/payroll/profiles", labelKey: "nav.salaryProfiles" },
+      { id: "payroll-structures", to: "/payroll/structures", labelKey: "nav.salaryStructures" },
+      { id: "payroll-loans", to: "/payroll/loans", labelKey: "nav.staffLoans" },
+      { id: "payroll-payslips", to: "/payroll/payslips", labelKey: "nav.payslipsArchive" },
     ],
   },
   {

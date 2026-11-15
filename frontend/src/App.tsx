@@ -60,6 +60,12 @@ import FeeStructuresPage from "@/features/fees/pages/FeeStructuresPage";
 import WaiversPage from "@/features/fees/pages/WaiversPage";
 import DueListPage from "@/features/fees/pages/DueListPage";
 import CashbookPage from "@/features/accounting/pages/CashbookPage";
+import PayrollRunsListPage from "@/features/payroll/pages/PayrollRunsListPage";
+import PayrollRunDetailPage from "@/features/payroll/pages/PayrollRunDetailPage";
+import SalaryProfilesPage from "@/features/payroll/pages/SalaryProfilesPage";
+import SalaryStructuresPage from "@/features/payroll/pages/SalaryStructuresPage";
+import StaffLoansPage from "@/features/payroll/pages/StaffLoansPage";
+import PayslipsListPage from "@/features/payroll/pages/PayslipsListPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -451,6 +457,59 @@ export function AppRoutes() {
                   element={
                     <ProtectedRoute perm="accounting.view">
                       <CashbookPage />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Payroll Routes */}
+                <Route
+                  path="/payroll"
+                  element={<Navigate to="/payroll/runs" replace />}
+                />
+                <Route
+                  path="/payroll/runs"
+                  element={
+                    <ProtectedRoute perm="payroll.view">
+                      <PayrollRunsListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payroll/runs/:id"
+                  element={
+                    <ProtectedRoute perm="payroll.view">
+                      <PayrollRunDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payroll/profiles"
+                  element={
+                    <ProtectedRoute perm="payroll.view">
+                      <SalaryProfilesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payroll/structures"
+                  element={
+                    <ProtectedRoute perm="payroll.view">
+                      <SalaryStructuresPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payroll/loans"
+                  element={
+                    <ProtectedRoute perm="payroll.view">
+                      <StaffLoansPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payroll/payslips"
+                  element={
+                    <ProtectedRoute perm="payroll.view">
+                      <PayslipsListPage />
                     </ProtectedRoute>
                   }
                 />

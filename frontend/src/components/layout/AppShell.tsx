@@ -24,6 +24,7 @@ import {
   User,
   UserPlus,
   Users,
+  Wallet,
 } from "lucide-react";
 import { SIDEBAR_NAV_ITEMS, type NavItemConfig } from "@/config/navigation";
 import { setAppLanguage, type SupportedLanguage } from "@/i18n";
@@ -53,6 +54,7 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   results: <FileSpreadsheet className="h-4 w-4 shrink-0" />,
   fees: <Banknote className="h-4 w-4 shrink-0" />,
   accounting: <BookOpen className="h-4 w-4 shrink-0" />,
+  payroll: <Wallet className="h-4 w-4 shrink-0" />,
   staff: <Users className="h-4 w-4 shrink-0" />,
   devices: <Cpu className="h-4 w-4 shrink-0" />,
   system: <Activity className="h-4 w-4 shrink-0" />,
