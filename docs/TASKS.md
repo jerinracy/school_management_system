@@ -48,3 +48,4 @@ Legend:
 | **Task F05** | Full-Page Institutional Login & Dynamic Branding System | DONE | Task F03, Task F04 | 2026-11-14 |
 | **Task F06** | Student Lifecycle & Information System (SIS) & Admissions Management | DONE | Task F04, Task F05, Backend Task 05, Task 06, Task 07 | 2026-11-14 |
 | **Task F07** | Staff & HR Management Dashboard (Roster, Onboarding, 360° Profile, Leaves & CR80 ID Cards) | DONE | Task F06, Backend Task 08 | 2026-11-14 |
+| **Task F08** | Biometric Devices & Attendance Engine Dashboard (Hardware Terminals, Punch Logs, Corrections, Period Register, Policies) | DONE | Task F07, Backend Task 09 | 2026-11-15 |

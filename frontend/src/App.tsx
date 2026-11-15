@@ -40,6 +40,11 @@ import StaffCreatePage from "@/features/staff/pages/StaffCreatePage";
 import StaffDetailPage from "@/features/staff/pages/StaffDetailPage";
 import DepartmentsDesignationsPage from "@/features/staff/pages/DepartmentsDesignationsPage";
 import LeaveManagementPage from "@/features/staff/pages/LeaveManagementPage";
+import DeviceListPage from "@/features/devices/pages/DeviceListPage";
+import DailyAttendancePage from "@/features/attendance/pages/DailyAttendancePage";
+import AttendanceCorrectionsPage from "@/features/attendance/pages/AttendanceCorrectionsPage";
+import PeriodAttendancePage from "@/features/attendance/pages/PeriodAttendancePage";
+import AttendancePoliciesPage from "@/features/attendance/pages/AttendancePoliciesPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { refreshToken, setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -260,11 +265,36 @@ export function AppRoutes() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Attendance Routes */}
                 <Route
                   path="/attendance"
                   element={
                     <ProtectedRoute perm="attendance.view">
-                      <ModulePlaceholderPage titleKey="nav.attendance" />
+                      <DailyAttendancePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/attendance/corrections"
+                  element={
+                    <ProtectedRoute perm="attendance.view">
+                      <AttendanceCorrectionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/attendance/periods"
+                  element={
+                    <ProtectedRoute perm="attendance.view">
+                      <PeriodAttendancePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/attendance/policies"
+                  element={
+                    <ProtectedRoute perm="attendance.view">
+                      <AttendancePoliciesPage />
                     </ProtectedRoute>
                   }
                 />
@@ -325,11 +355,12 @@ export function AppRoutes() {
                     </ProtectedRoute>
                   }
                 />
+                {/* Devices Routes */}
                 <Route
                   path="/devices"
                   element={
                     <ProtectedRoute perm="devices.view">
-                      <ModulePlaceholderPage titleKey="nav.devices" />
+                      <DeviceListPage />
                     </ProtectedRoute>
                   }
                 />

@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Task F08**: Biometric Devices & Attendance Engine Dashboard (`frontend/src/features/devices/`, `frontend/src/features/attendance/`).
+  - Terminal Hardware Inventory & Live Monitor (`frontend/src/features/devices/pages/DeviceListPage.tsx`):
+    - Full biometric terminal directory (`/devices`) with real-time status badges (Online, Offline, Warning), IP address, port, protocol (push/pull/adms/mqtt), location, and last heartbeat tracking.
+    - Live terminal connectivity ping test (`POST /api/v1/devices/terminals/{id}/test-connection/`) with immediate visual heartbeat confirmation.
+    - Terminal registration and configuration modal dialog (`POST /api/v1/devices/terminals/`) with vendor selection (ZKTeco, Realtime, Hikvision, Dahua, Biomax, Generic).
+    - Remote hardware command dispatch queue with live status tracking (`queued`, `sent`, `acknowledged`, `failed`).
+    - Raw biometric punch logs viewer (`GET /api/v1/devices/punches/`) with timestamp, punch type (in/out/break), verification type, and device tags.
+    - Unmapped punch resolver modal (`GET /api/v1/devices/unmapped-punches/`, `POST /api/v1/devices/unmapped-punches/{id}/resolve/`) allowing administrators to map unrecognized biometric PINs to students or staff members and trigger automatic punch reprocessing.
+  - Daily Attendance Register & Management (`frontend/src/features/attendance/pages/DailyAttendancePage.tsx`):
+    - Interactive daily roll call and punch register (`/attendance`) with dual Student/Staff perspective tabs and date navigation.
+    - Real-time KPI summary banner (Total Present, Late Arrivals, Absentees, Half-Day, On Leave, and overall Present Percentage).
+    - Academic class and department filters with live search.
+    - In-place quick status override buttons (Present, Late, Absent, Half-Day, Excused) with immediate backend mutation.
+    - Batch Roll Call modal for fast bulk assignment across classes or shifts.
+    - Daily attendance recomputation engine modal (`POST /api/v1/attendance/records/recompute/`) to reconcile raw device logs against institutional shifts and grace rules.
+  - Attendance Correction Requests Queue (`frontend/src/features/attendance/pages/AttendanceCorrectionsPage.tsx`):
+    - Dedicated correction review portal (`/attendance/corrections`) with filterable status tabs (Pending, Approved, Rejected).
+    - Review decision modal with approval or mandatory rejection remarks (`POST /api/v1/attendance/corrections/{id}/decide/`).
+  - Subject Period Attendance Register (`frontend/src/features/attendance/pages/PeriodAttendancePage.tsx`):
+    - Course period roll call portal (`/attendance/periods`) with class, section, and subject selector ribbon.
+    - Quick "Mark All Present" action and individual per-student status toggles with bulk submission (`POST /api/v1/attendance/period-attendance/bulk-mark/`).
+  - Attendance & Shift Policies Management (`frontend/src/features/attendance/pages/AttendancePoliciesPage.tsx`):
+    - Institutional shift and grace rules management (`/attendance/policies`) with configurable shift start/end times, grace periods (minutes), late thresholds, half-day cutoffs, and weekend day indicators.
+    - Interactive punch evaluator simulator to test biometric timestamps against grace periods before saving rules.
+  - Bilingual i18n & Test Suite:
+    - Added complete English and Bangla translation strings in `en.json` and `bn.json` (811 keys in exact parity verified via `check-i18n.mjs`).
+    - Added unit and component integration tests in `frontend/src/features/devices/__tests__/Devices.test.tsx` and `frontend/src/features/attendance/__tests__/Attendance.test.tsx`.
+    - Full suite verified: `tsc --noEmit` (0 errors), `eslint .` (0 errors), `vite build` (0 errors), `vitest` (13 test files, 40 tests passed), and backend `pytest apps/devices apps/attendance` (47/47 passed).
 - **Task F07**: Staff & HR Management Dashboard (`frontend/src/features/staff/`).
   - Employee Roster & Directory (`frontend/src/features/staff/pages/StaffListPage.tsx`):
     - Full searchable and multi-filtered staff directory (`/staff`) by department, role category (Teacher, Admin, Support, Driver, Security, Other), status (Active, On Leave, Resigned, Retired), and MPO entitlement.
