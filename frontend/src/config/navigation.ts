@@ -24,6 +24,8 @@ export interface NavItemConfig {
     | "payroll"
     | "staff"
     | "devices"
+    | "communications"
+    | "calendar"
     | "system";
   end?: boolean;
   permission?: string;
@@ -173,6 +175,27 @@ export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
     labelKey: "nav.devices",
     iconName: "devices",
     permission: "devices.view",
+  },
+  {
+    id: "communications",
+    to: "/communications/sms",
+    labelKey: "nav.communications",
+    iconName: "communications",
+    permission: "communications.view",
+    children: [
+      { id: "comm-sms", to: "/communications/sms", labelKey: "nav.smsGateway" },
+      { id: "comm-notices", to: "/communications/notices", labelKey: "nav.noticeBoard" },
+      { id: "comm-templates", to: "/communications/templates", labelKey: "nav.messageTemplates" },
+      { id: "comm-deliveries", to: "/communications/deliveries", labelKey: "nav.deliveryLogs" },
+      { id: "comm-emergency", to: "/communications/emergency", labelKey: "nav.emergencyAlerts" },
+    ],
+  },
+  {
+    id: "calendar",
+    to: "/events/calendar",
+    labelKey: "nav.calendar",
+    iconName: "calendar",
+    permission: "events.view",
   },
   {
     id: "system",

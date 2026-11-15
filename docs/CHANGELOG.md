@@ -18,6 +18,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restored `INTERNAL_IPS = ["127.0.0.1", "localhost"]` in `config/settings/dev.py`.
 
 ### Added
+- **Task F12**: Communications & Notice Board Dashboard (`frontend/src/features/communications/`, `frontend/src/features/events/`).
+  - SMS Gateway Hub & Campaign Composer (`frontend/src/features/communications/pages/SMSCampaignPage.tsx`):
+    - Configured BTRC-registered SMS gateways (SSL Wireless, Greenweb, Banglalink, GP, Robi, Teletalk, Mock Console) with live remote balance fetcher (`/api/v1/communications/gateways/{id}/check-balance/`).
+    - Audience segment targeting: All Active Guardians, All Teaching & Non-Teaching Staff, Specific Class/Section, or Custom mobile numbers.
+    - Real-time GSM 7-bit ASCII vs. Bangla Unicode (UTF-16) character counter and multi-part billable segment calculator (70/67 chars for Bangla vs. 160/153 chars for English).
+    - Dynamic variable placeholder chips (`{{student_name}}`, `{{guardian_name}}`, `{{due_amount}}`, etc.) and single-number test dispatch dialog.
+  - Institutional Notice Board (`frontend/src/features/communications/pages/NoticeBoardPage.tsx`):
+    - Category filtering (General, Academic, Exam, Fee, Holiday, Emergency) and audience targeting.
+    - Pinned notice priority sorting and one-click pin/unpin toggles (`/api/v1/communications/notices/{id}/pin/`).
+    - Modal dialog for drafting bilingual circulars with attachment support and expiration dates.
+    - Printable institutional circular view with letterhead, reference number, date, and authorized signature block.
+  - Notification Message Templates Directory (`frontend/src/features/communications/pages/TemplatesPage.tsx`):
+    - Multi-channel template repository (`SMS`, `Push`, `Email`, `In-App`, `Omnichannel`) with event codes (e.g. `FEE_DUE_REMINDER`, `ABSENT_ALERT`).
+    - Dynamic tag chips and interactive variable replacement modal for live bilingual preview (Bangla/English).
+    - Template creation dialog with instant activation.
+  - Outbound Delivery Logs & Audit Trail (`frontend/src/features/communications/pages/DeliveryLogsPage.tsx`):
+    - Delivery records table tracking recipient, mobile, channel, segment count, billable cost (৳), dispatched timestamp, and status (`Delivered`, `Sent`, `Queued`, `Failed`).
+    - Filterable by channel and delivery status, with instant search by recipient name or phone number.
+    - Detailed message inspection dialog with gateway error diagnostics.
+  - Campus Emergency Broadcast Suite (`frontend/src/features/communications/pages/EmergencyAlertsPage.tsx`):
+    - Urgent multi-channel broadcast modal overriding quiet hours across active SMS gateways and mobile push devices.
+    - Severity classification: Warning (Amber), Critical (Orange), and Disaster (Red pulse).
+    - Mandatory risk verification checkbox before broadcast dispatch, with real-time recipient delivery tracking.
+  - Unified Academic Calendar (`frontend/src/features/events/pages/UnifiedCalendarPage.tsx`):
+    - Consolidated calendar view fetching `/api/v1/events/calendar/` merging Academic Events, School Holidays, and Published Circulars.
+    - Month grid view with Friday/Saturday Bangladeshi weekend highlighting, plus an agenda list view.
+    - Event creation modal for scheduling sports competitions, cultural functions, and examinations.
+  - Full Sidebar Navigation, i18n Parity (1,286 keys), and Vitest Suite (`frontend/src/features/communications/__tests__/Communications.test.tsx`):
+    - 5/5 unit & integration tests passing; full frontend suite (18 test files, 53 tests) passing; zero TypeScript and zero ESLint errors; production build validated.
 - **Task F11**: Staff Payroll Management Dashboard (`frontend/src/features/payroll/`).
   - Salary Structures & Components Workspace (`frontend/src/features/payroll/pages/SalaryStructuresPage.tsx`):
     - Configurable earnings and deductions catalog (`/payroll/components`) supporting Fixed BDT amount, % of Basic Salary, and % of Gross Salary calculation rules.

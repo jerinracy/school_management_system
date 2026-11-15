@@ -10,6 +10,7 @@ import {
   Building2,
   Calendar,
   CalendarCheck,
+  CalendarDays,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -19,6 +20,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Moon,
   Sun,
   User,
@@ -57,6 +59,8 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   payroll: <Wallet className="h-4 w-4 shrink-0" />,
   staff: <Users className="h-4 w-4 shrink-0" />,
   devices: <Cpu className="h-4 w-4 shrink-0" />,
+  communications: <MessageSquare className="h-4 w-4 shrink-0" />,
+  calendar: <CalendarDays className="h-4 w-4 shrink-0" />,
   system: <Activity className="h-4 w-4 shrink-0" />,
 };
 

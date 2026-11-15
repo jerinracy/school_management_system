@@ -66,6 +66,12 @@ import SalaryProfilesPage from "@/features/payroll/pages/SalaryProfilesPage";
 import SalaryStructuresPage from "@/features/payroll/pages/SalaryStructuresPage";
 import StaffLoansPage from "@/features/payroll/pages/StaffLoansPage";
 import PayslipsListPage from "@/features/payroll/pages/PayslipsListPage";
+import { SMSCampaignPage } from "@/features/communications/pages/SMSCampaignPage";
+import { NoticeBoardPage } from "@/features/communications/pages/NoticeBoardPage";
+import { TemplatesPage } from "@/features/communications/pages/TemplatesPage";
+import { DeliveryLogsPage } from "@/features/communications/pages/DeliveryLogsPage";
+import { EmergencyAlertsPage } from "@/features/communications/pages/EmergencyAlertsPage";
+import { UnifiedCalendarPage } from "@/features/events/pages/UnifiedCalendarPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -560,6 +566,56 @@ export function AppRoutes() {
                   element={
                     <ProtectedRoute perm="devices.view">
                       <DeviceListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Communications Routes */}
+                <Route
+                  path="/communications/sms"
+                  element={
+                    <ProtectedRoute perm="communications.view">
+                      <SMSCampaignPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/communications/notices"
+                  element={
+                    <ProtectedRoute perm="communications.view">
+                      <NoticeBoardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/communications/templates"
+                  element={
+                    <ProtectedRoute perm="communications.view">
+                      <TemplatesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/communications/deliveries"
+                  element={
+                    <ProtectedRoute perm="communications.view">
+                      <DeliveryLogsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/communications/emergency"
+                  element={
+                    <ProtectedRoute perm="communications.view">
+                      <EmergencyAlertsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Events / Calendar Routes */}
+                <Route
+                  path="/events/calendar"
+                  element={
+                    <ProtectedRoute perm="events.view">
+                      <UnifiedCalendarPage />
                     </ProtectedRoute>
                   }
                 />
