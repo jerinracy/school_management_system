@@ -54,4 +54,4 @@ Legend:
 | **Task F11** | Staff Payroll Management Dashboard (Salary Structures, Biometric Attendance-linked Payslip Generation, Allowances, Deductions, Bank/Cash Disbursement, Salary Registers) | DONE | Task F07, Task F08, Task F10, Backend Task 18 | 2026-11-15 |
 | **Task F12** | Communications & Notice Board Dashboard (Bulk Bangla Unicode SMS Campaigns, Dynamic Placeholders, SMS Gateway Balance/DLR Logs, Push Notifications, Notice Board & Academic Event Calendar) | DONE | Task F03, Task F04, Backend Task 16, Task 23 | 2026-11-15 |
 | **Task F13** | Institutional Operations & Student Services Dashboard (Homework & Assignment Evaluation, Library Catalog & Circulation, Transport Fleet & Routes, Hostel Dorms & Allocation) | DONE | Task F04, Task F06, Backend Tasks 19, 20, 21, 22 | 2026-11-15 |
-| **Task F14** | Enterprise Audit Logging, Dynamic Reporting Engine & CSV/Excel/PDF Exports | TODO | All Prior Tasks, Backend Tasks 24, 25 | - |
+| **Task F14** | Enterprise Audit Logging, Dynamic Reporting Engine & CSV/Excel/PDF Exports | DONE | All Prior Tasks, Backend Tasks 24, 25 | 2026-11-15 |

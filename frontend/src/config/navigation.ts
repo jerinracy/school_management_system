@@ -27,6 +27,8 @@ export interface NavItemConfig {
     | "communications"
     | "calendar"
     | "operations"
+    | "reports"
+    | "audit"
     | "system";
   end?: boolean;
   permission?: string;
@@ -212,6 +214,29 @@ export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
       { id: "ops-routes", to: "/operations/transport/routes", labelKey: "nav.transportRoutes" },
       { id: "ops-hostel", to: "/operations/hostel/rooms", labelKey: "nav.hostelDorms" },
       { id: "ops-allocations", to: "/operations/hostel/allocations", labelKey: "nav.hostelAllocations" },
+    ],
+  },
+  {
+    id: "reports",
+    to: "/reports/definitions",
+    labelKey: "nav.reports",
+    iconName: "reports",
+    permission: "reports.view",
+    children: [
+      { id: "rep-definitions", to: "/reports/definitions", labelKey: "nav.reportDefinitions" },
+      { id: "rep-exports", to: "/reports/exports", labelKey: "nav.reportExports" },
+      { id: "rep-imports", to: "/reports/imports", labelKey: "nav.bulkImports" },
+    ],
+  },
+  {
+    id: "audit",
+    to: "/audit/logs",
+    labelKey: "nav.audit",
+    iconName: "audit",
+    permission: "audit.view",
+    children: [
+      { id: "aud-logs", to: "/audit/logs", labelKey: "nav.auditLogs" },
+      { id: "aud-activities", to: "/audit/activities", labelKey: "nav.activityLogs" },
     ],
   },
   {

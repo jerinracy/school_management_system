@@ -18,6 +18,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restored `INTERNAL_IPS = ["127.0.0.1", "localhost"]` in `config/settings/dev.py`.
 
 ### Added
+- **Task F14**: Enterprise Audit Logging, Dynamic Reporting Engine & CSV/Excel/PDF Exports (`frontend/src/features/reports/`).
+  - **Audit Logs Explorer & Activity Tracking Workspace** (`/audit/logs`, `/audit/activities`):
+    - Immutable audit trail explorer (`AuditLogsPage.tsx`) with action badges (`create`, `update`, `delete`, `bulk_import`), module filter, date range filters, and text search across actors and resources.
+    - JSON Change Diff Inspector modal: interactive before vs. after comparison highlighting modified fields, IP address, user agent, and request correlation ID.
+    - User operational activity stream (`ActivityLogsPage.tsx`) tracking logins, report exports, bulk imports, and status transitions with metadata detail modal.
+  - **Dynamic Reporting & Export Center** (`/reports/definitions`, `/reports/exports`):
+    - Whitelisted report query builder (`ReportDefinitionsPage.tsx`) covering 5 core datasets (`students`, `daily_attendance`, `fee_invoices`, `fee_payments`, `exam_results`) with selectable field checklist, default format selector (`csv`, `xlsx`, `pdf`), shared visibility toggle, and instant "Export Now" trigger.
+    - Export jobs queue (`ReportExportsPage.tsx`) tracking status lifecycle (`completed`, `processing`, `pending`, `failed`), quick on-demand export modal, and binary file download handler (`/api/v1/reports/exports/{id}/download/`).
+  - **Bulk Data Importer Workspace** (`/reports/imports`):
+    - Batch CSV importer (`BulkImportsPage.tsx`) with target selectors (`students`, `staff`), official CSV template download (`/api/v1/reports/imports/template/?target_type={type}`), and drag-and-drop CSV upload with dry-run validation switch.
+    - Import validation breakdown modal displaying total rows, valid rows, error counts, and row-by-row validation error table with commit action.
+  - **Bilingual i18n & Navigation Integration**:
+    - Sidebar navigation under `reports` and `audit` groups with `BarChart3` and `ShieldCheck` icons and 5 sub-routes.
+    - Registered 73 translation keys with 100% key parity (1474 keys in `en.json` and `bn.json` verified via `check-i18n.mjs`).
+  - **Testing & Verification**:
+    - Vitest unit & integration test suite (`AuditReports.test.tsx`) covering audit log inspection, activity tracking, report builder, export jobs, and bulk CSV import (5/5 passing).
+    - Full frontend test suite (66/66 tests passing across 20 test files), zero lint errors (`eslint .`), clean strict TypeScript typecheck (`tsc --noEmit`), and successful production build (`vite build`).
+
 - **Task F13**: Institutional Operations & Student Services Dashboard (`frontend/src/features/operations/`).
   - **Homework & Learning Management Workspace** (`/operations/homework`, `/operations/homework/:id/submissions`):
     - Coursework roster with academic filters (Class, Section, Subject), due deadline badges, max marks, and status lifecycle toggles (`draft`, `published`, `closed`).

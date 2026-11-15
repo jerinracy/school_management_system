@@ -80,6 +80,11 @@ import { TransportFleetPage } from "@/features/operations/pages/TransportFleetPa
 import { TransportRoutesPage } from "@/features/operations/pages/TransportRoutesPage";
 import { HostelDormsPage } from "@/features/operations/pages/HostelDormsPage";
 import { HostelAllocationsPage } from "@/features/operations/pages/HostelAllocationsPage";
+import { AuditLogsPage } from "@/features/reports/pages/AuditLogsPage";
+import { ActivityLogsPage } from "@/features/reports/pages/ActivityLogsPage";
+import { ReportDefinitionsPage } from "@/features/reports/pages/ReportDefinitionsPage";
+import { ReportExportsPage } from "@/features/reports/pages/ReportExportsPage";
+import { BulkImportsPage } from "@/features/reports/pages/BulkImportsPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -689,6 +694,48 @@ export function AppRoutes() {
                   element={
                     <ProtectedRoute perm="hostel.view">
                       <HostelAllocationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Reports & Audit */}
+                <Route
+                  path="/reports/definitions"
+                  element={
+                    <ProtectedRoute perm="reports.view">
+                      <ReportDefinitionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reports/exports"
+                  element={
+                    <ProtectedRoute perm="reports.view">
+                      <ReportExportsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reports/imports"
+                  element={
+                    <ProtectedRoute perm="reports.manage">
+                      <BulkImportsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/audit/logs"
+                  element={
+                    <ProtectedRoute perm="audit.view">
+                      <AuditLogsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/audit/activities"
+                  element={
+                    <ProtectedRoute perm="audit.view">
+                      <ActivityLogsPage />
                     </ProtectedRoute>
                   }
                 />

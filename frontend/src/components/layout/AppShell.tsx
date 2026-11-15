@@ -5,6 +5,7 @@ import {
   Activity,
   Award,
   Banknote,
+  BarChart3,
   Bell,
   BookOpen,
   Briefcase,
@@ -23,6 +24,7 @@ import {
   Menu,
   MessageSquare,
   Moon,
+  ShieldCheck,
   Sun,
   User,
   UserPlus,
@@ -63,6 +65,8 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   communications: <MessageSquare className="h-4 w-4 shrink-0" />,
   calendar: <CalendarDays className="h-4 w-4 shrink-0" />,
   operations: <Briefcase className="h-4 w-4 shrink-0" />,
+  reports: <BarChart3 className="h-4 w-4 shrink-0" />,
+  audit: <ShieldCheck className="h-4 w-4 shrink-0" />,
   system: <Activity className="h-4 w-4 shrink-0" />,
 };
 
