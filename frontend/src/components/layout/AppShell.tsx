@@ -7,6 +7,7 @@ import {
   Banknote,
   Bell,
   BookOpen,
+  Briefcase,
   Building2,
   Calendar,
   CalendarCheck,
@@ -61,6 +62,7 @@ const NAV_ICONS: Record<NavItemConfig["iconName"], ReactNode> = {
   devices: <Cpu className="h-4 w-4 shrink-0" />,
   communications: <MessageSquare className="h-4 w-4 shrink-0" />,
   calendar: <CalendarDays className="h-4 w-4 shrink-0" />,
+  operations: <Briefcase className="h-4 w-4 shrink-0" />,
   system: <Activity className="h-4 w-4 shrink-0" />,
 };
 

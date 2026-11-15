@@ -26,6 +26,7 @@ export interface NavItemConfig {
     | "devices"
     | "communications"
     | "calendar"
+    | "operations"
     | "system";
   end?: boolean;
   permission?: string;
@@ -196,6 +197,22 @@ export const SIDEBAR_NAV_ITEMS: NavItemConfig[] = [
     labelKey: "nav.calendar",
     iconName: "calendar",
     permission: "events.view",
+  },
+  {
+    id: "operations",
+    to: "/operations/homework",
+    labelKey: "nav.operations",
+    iconName: "operations",
+    permission: "homework.view",
+    children: [
+      { id: "ops-homework", to: "/operations/homework", labelKey: "nav.homework" },
+      { id: "ops-library", to: "/operations/library/books", labelKey: "nav.libraryCatalog" },
+      { id: "ops-circulation", to: "/operations/library/circulation", labelKey: "nav.libraryCirculation" },
+      { id: "ops-transport", to: "/operations/transport/vehicles", labelKey: "nav.transportFleet" },
+      { id: "ops-routes", to: "/operations/transport/routes", labelKey: "nav.transportRoutes" },
+      { id: "ops-hostel", to: "/operations/hostel/rooms", labelKey: "nav.hostelDorms" },
+      { id: "ops-allocations", to: "/operations/hostel/allocations", labelKey: "nav.hostelAllocations" },
+    ],
   },
   {
     id: "system",

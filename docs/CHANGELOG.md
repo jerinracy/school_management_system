@@ -18,6 +18,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Restored `INTERNAL_IPS = ["127.0.0.1", "localhost"]` in `config/settings/dev.py`.
 
 ### Added
+- **Task F13**: Institutional Operations & Student Services Dashboard (`frontend/src/features/operations/`).
+  - **Homework & Learning Management Workspace** (`/operations/homework`, `/operations/homework/:id/submissions`):
+    - Coursework roster with academic filters (Class, Section, Subject), due deadline badges, max marks, and status lifecycle toggles (`draft`, `published`, `closed`).
+    - Assignment authoring modal (`HomeworkListPage.tsx`) with title, description, class offering, late submission policy, and instructions.
+    - Submissions review queue (`HomeworkSubmissionsPage.tsx`) with student roll, submission timestamps, late flags, and grading modal (`/api/v1/homework/submissions/{id}/grade/`) with marks and teacher feedback.
+  - **Library Catalog & Circulation Desk** (`/operations/library/books`, `/operations/library/circulation`):
+    - Book catalog (`LibraryCatalogPage.tsx`) with title/author/ISBN search, Dewey call numbers, reference-only badges, and total vs. available copy counters.
+    - Circulation desk (`LibraryCirculationPage.tsx`) tracking active loans, issue book modal (`/api/v1/library/issues/`), one-click book returns (`/api/v1/library/issues/{id}/return/`), and loan renewals (+7 days).
+    - Overdue fine ledger in BDT (৳) with days overdue tracking, pay fine modal (`/api/v1/library/fines/{id}/pay/`), and fine waiving action.
+  - **Transport Fleet & Routes Manager** (`/operations/transport/vehicles`, `/operations/transport/routes`):
+    - Vehicle fleet directory (`TransportFleetPage.tsx`) tracking BRTA registration numbers, vehicle type (`bus`, `minibus`, `van`), seat capacity, and BRTA fitness / tax token expiry compliance warning badges (<30 days).
+    - Driver & helper roster (`TransportFleetPage.tsx`) with driving license numbers, license expiry dates, contact numbers, and status.
+    - Route itinerary planner (`TransportRoutesPage.tsx`) with sequential pickup/drop stop points, schedules, monthly student transit fares in BDT (৳), and add route modal.
+  - **Hostel Dormitory & Allocation Management** (`/operations/hostel/rooms`, `/operations/hostel/allocations`):
+    - Dormitory buildings directory (`HostelDormsPage.tsx`) with warden contact, curfew schedules, and room matrix with live bed status grid (`free`, `occupied`, `reserved`, `maintenance`).
+    - Student resident allocation roster (`HostelAllocationsPage.tsx`) with check-in dates, bed status, allocate bed modal, and one-click vacate bed action (`/api/v1/hostel/allocations/{id}/vacate/`).
+    - Student gate pass out-leave queue (`HostelAllocationsPage.tsx`) tracking departure time, expected return time, destination, and warden approval status.
+  - **Bilingual i18n & Navigation**:
+    - Sidebar navigation under `operations` group with 7 sub-items and `Briefcase` icon.
+    - Added 115 operations and navigation localization keys with 100% key parity (1401 keys in `en.json` and `bn.json` verified via `check-i18n.mjs`).
+  - **Testing & Verification**:
+    - Vitest unit & integration test suite (`Operations.test.tsx`) covering assignment publishing, submission grading, book circulation, fleet compliance, and hostel allocations (8/8 passing).
+    - Full frontend test suite (61/61 tests passing across 19 test files), zero lint errors (`eslint .`), clean strict TypeScript typecheck (`tsc --noEmit`), and successful production build (`vite build`).
 - **Task F12**: Communications & Notice Board Dashboard (`frontend/src/features/communications/`, `frontend/src/features/events/`).
   - SMS Gateway Hub & Campaign Composer (`frontend/src/features/communications/pages/SMSCampaignPage.tsx`):
     - Configured BTRC-registered SMS gateways (SSL Wireless, Greenweb, Banglalink, GP, Robi, Teletalk, Mock Console) with live remote balance fetcher (`/api/v1/communications/gateways/{id}/check-balance/`).

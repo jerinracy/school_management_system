@@ -72,6 +72,14 @@ import { TemplatesPage } from "@/features/communications/pages/TemplatesPage";
 import { DeliveryLogsPage } from "@/features/communications/pages/DeliveryLogsPage";
 import { EmergencyAlertsPage } from "@/features/communications/pages/EmergencyAlertsPage";
 import { UnifiedCalendarPage } from "@/features/events/pages/UnifiedCalendarPage";
+import { HomeworkListPage } from "@/features/operations/pages/HomeworkListPage";
+import { HomeworkSubmissionsPage } from "@/features/operations/pages/HomeworkSubmissionsPage";
+import { LibraryCatalogPage } from "@/features/operations/pages/LibraryCatalogPage";
+import { LibraryCirculationPage } from "@/features/operations/pages/LibraryCirculationPage";
+import { TransportFleetPage } from "@/features/operations/pages/TransportFleetPage";
+import { TransportRoutesPage } from "@/features/operations/pages/TransportRoutesPage";
+import { HostelDormsPage } from "@/features/operations/pages/HostelDormsPage";
+import { HostelAllocationsPage } from "@/features/operations/pages/HostelAllocationsPage";
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -616,6 +624,71 @@ export function AppRoutes() {
                   element={
                     <ProtectedRoute perm="events.view">
                       <UnifiedCalendarPage />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Operations & Student Services Routes */}
+                <Route
+                  path="/operations/homework"
+                  element={
+                    <ProtectedRoute perm="homework.view">
+                      <HomeworkListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/homework/:id/submissions"
+                  element={
+                    <ProtectedRoute perm="homework.view">
+                      <HomeworkSubmissionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/library/books"
+                  element={
+                    <ProtectedRoute perm="library.view">
+                      <LibraryCatalogPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/library/circulation"
+                  element={
+                    <ProtectedRoute perm="library.view">
+                      <LibraryCirculationPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/transport/vehicles"
+                  element={
+                    <ProtectedRoute perm="transport.view">
+                      <TransportFleetPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/transport/routes"
+                  element={
+                    <ProtectedRoute perm="transport.view">
+                      <TransportRoutesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/hostel/rooms"
+                  element={
+                    <ProtectedRoute perm="hostel.view">
+                      <HostelDormsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/operations/hostel/allocations"
+                  element={
+                    <ProtectedRoute perm="hostel.view">
+                      <HostelAllocationsPage />
                     </ProtectedRoute>
                   }
                 />
