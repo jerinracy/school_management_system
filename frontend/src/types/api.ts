@@ -10499,8 +10499,31 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Provision or reset portal access credentials for this staff member. */
+        /**
+         * Provision portal access credentials for this staff member
+         * @description Provision or reset portal access credentials for this staff member.
+         */
         post: operations["staff_staff_create_portal_account_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/staff/{id}/reset-password/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset portal login password for an employee
+         * @description Reset portal login password for an employee (Super Admin and Admin only).
+         */
+        post: operations["staff_staff_reset_password_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10533,6 +10556,23 @@ export interface paths {
         };
         /** @description Retrieve profile of the currently authenticated staff member. */
         get: operations["staff_staff_me_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/staff/summary/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Aggregated staff category counts in a single query. */
+        get: operations["staff_staff_summary_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -13231,11 +13271,13 @@ export interface components {
         };
         BulkCreateSectionsRequest: {
             /** Format: uuid */
-            class_level_id: string;
+            class_id?: string;
             /** Format: uuid */
-            shift_id: string;
+            class_level_id?: string;
             /** Format: uuid */
-            session_id: string;
+            shift_id?: string | null;
+            /** Format: uuid */
+            session_id?: string | null;
             /** @description List of section names (e.g. ['A', 'B', 'C'] or ['Padma', 'Meghna']) */
             names: string[];
             /** @default 50 */
@@ -13474,6 +13516,23 @@ export interface components {
             readonly medium_display: string;
             /** @description Whether students branch into streams/groups (typically Class 9+ in Bangladesh) */
             has_groups?: boolean;
+            /**
+             * Format: uuid
+             * @description Associated shift (optional; null means common across all shifts)
+             */
+            shift?: string | null;
+            readonly shift_name: string;
+            /**
+             * Format: uuid
+             * @description Associated academic session (optional; null means common across all sessions)
+             */
+            session?: string | null;
+            readonly session_name: string;
+            /**
+             * Format: uuid
+             * @description Associated branch (optional; null means common across all branches)
+             */
+            branch?: string | null;
             readonly sections_count: number;
             /** Format: date-time */
             readonly created_at: string;
@@ -13490,6 +13549,21 @@ export interface components {
             medium?: components["schemas"]["MediumEnum"];
             /** @description Whether students branch into streams/groups (typically Class 9+ in Bangladesh) */
             has_groups?: boolean;
+            /**
+             * Format: uuid
+             * @description Associated shift (optional; null means common across all shifts)
+             */
+            shift?: string | null;
+            /**
+             * Format: uuid
+             * @description Associated academic session (optional; null means common across all sessions)
+             */
+            session?: string | null;
+            /**
+             * Format: uuid
+             * @description Associated branch (optional; null means common across all branches)
+             */
+            branch?: string | null;
         };
         ClassSubject: {
             /** Format: uuid */
@@ -13497,11 +13571,8 @@ export interface components {
             /** Format: uuid */
             class_level: string;
             readonly class_level_name: string;
-            /**
-             * Format: uuid
-             * @description Required when class_level.has_groups is True; null for common subjects
-             */
-            group: string | null;
+            /** Format: uuid */
+            group?: string | null;
             readonly group_name: string;
             /** Format: uuid */
             session: string;
@@ -13533,11 +13604,8 @@ export interface components {
         ClassSubjectRequest: {
             /** Format: uuid */
             class_level: string;
-            /**
-             * Format: uuid
-             * @description Required when class_level.has_groups is True; null for common subjects
-             */
-            group: string | null;
+            /** Format: uuid */
+            group?: string | null;
             /** Format: uuid */
             session: string;
             /** Format: uuid */
@@ -15338,6 +15406,7 @@ export interface components {
             photo?: string | null;
             /** @description Default emergency call contact flag */
             is_emergency_contact?: boolean;
+            readonly student_relations: components["schemas"]["StudentGuardian"][];
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -15379,11 +15448,11 @@ export interface components {
             photo?: string | null;
             /** @description Default emergency call contact flag */
             is_emergency_contact?: boolean;
+            readonly student_relations: components["schemas"]["StudentGuardian"][];
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
-            readonly student_relations: components["schemas"]["StudentGuardian"][];
         };
         /** @description Standard serializer for Guardian profiles. */
         GuardianRequest: {
@@ -15413,6 +15482,7 @@ export interface components {
             photo?: string | null;
             /** @description Default emergency call contact flag */
             is_emergency_contact?: boolean;
+            student_links?: components["schemas"]["StudentLinkInputRequest"][];
         };
         /** @description Serializer for Holiday. */
         Holiday: {
@@ -20080,14 +20150,26 @@ export interface components {
             medium?: components["schemas"]["MediumEnum"];
             /** @description Whether students branch into streams/groups (typically Class 9+ in Bangladesh) */
             has_groups?: boolean;
+            /**
+             * Format: uuid
+             * @description Associated shift (optional; null means common across all shifts)
+             */
+            shift?: string | null;
+            /**
+             * Format: uuid
+             * @description Associated academic session (optional; null means common across all sessions)
+             */
+            session?: string | null;
+            /**
+             * Format: uuid
+             * @description Associated branch (optional; null means common across all branches)
+             */
+            branch?: string | null;
         };
         PatchedClassSubjectRequest: {
             /** Format: uuid */
             class_level?: string;
-            /**
-             * Format: uuid
-             * @description Required when class_level.has_groups is True; null for common subjects
-             */
+            /** Format: uuid */
             group?: string | null;
             /** Format: uuid */
             session?: string;
@@ -20555,6 +20637,7 @@ export interface components {
             photo?: string | null;
             /** @description Default emergency call contact flag */
             is_emergency_contact?: boolean;
+            student_links?: components["schemas"]["StudentLinkInputRequest"][];
         };
         /** @description Serializer for Holiday. */
         PatchedHolidayRequest: {
@@ -21176,11 +21259,10 @@ export interface components {
             period?: string;
             /** Format: uuid */
             subject?: string;
-            /**
-             * Format: uuid
-             * @description Assigned teacher user account
-             */
+            /** Format: uuid */
             teacher_user?: string | null;
+            /** Format: uuid */
+            teacher_staff?: string | null;
             /** Format: uuid */
             room?: string | null;
         };
@@ -21311,6 +21393,8 @@ export interface components {
             department?: string | null;
             /** Format: uuid */
             designation?: string | null;
+            /** Format: uuid */
+            branch?: string | null;
             staff_type?: components["schemas"]["StaffTypeEnum"];
             status?: components["schemas"]["Status31cEnum"];
             /** @description Designates whether salary is government-subsidized under Monthly Pay Order */
@@ -21322,6 +21406,10 @@ export interface components {
             emergency_contact_name?: string;
             emergency_contact_phone?: string;
             emergency_contact_relation?: string;
+            /** @default false */
+            give_portal_access: boolean;
+            portal_username?: string;
+            portal_password?: string;
         };
         /** @description Serializer for salary advances and staff loans. */
         PatchedStaffLoanRequest: {
@@ -21534,7 +21622,11 @@ export interface components {
             /** Format: uuid */
             original_teacher?: string | null;
             /** Format: uuid */
-            substitute_teacher?: string;
+            original_staff?: string | null;
+            /** Format: uuid */
+            substitute_teacher?: string | null;
+            /** Format: uuid */
+            substitute_staff?: string | null;
             reason?: string;
         };
         /** @description Serializer for curriculum SyllabusTopics. */
@@ -22285,6 +22377,11 @@ export interface components {
          * @enum {string}
          */
         ProviderEnum: "ssl_wireless" | "greenweb" | "onnorokom" | "teletalk" | "mock_console";
+        /** @description Payload to create or provision portal login credentials for an employee. */
+        ProvisionPortalAccountRequest: {
+            username?: string;
+            password?: string;
+        };
         /**
          * @description * `login` - login
          *     * `password_reset` - password_reset
@@ -22827,6 +22924,10 @@ export interface components {
          * @enum {string}
          */
         ReservationStatusEnum: "queued" | "ready_for_pickup" | "fulfilled" | "cancelled" | "expired";
+        /** @description Payload to reset a user's portal login password. */
+        ResetPasswordRequest: {
+            password: string;
+        };
         ResultApproveRequest: {
             /** Format: uuid */
             exam_id: string;
@@ -22894,7 +22995,8 @@ export interface components {
             readonly updated_at: string;
         };
         /**
-         * @description * `teacher` - Teacher (শিক্ষক)
+         * @description * `superadmin` - Super Admin (সুপার অ্যাডমিন)
+         *     * `teacher` - Teacher (শিক্ষক)
          *     * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
          *     * `support` - Support Staff (সহায়ক কর্মচারী)
          *     * `driver` - Driver (চালক)
@@ -22902,7 +23004,7 @@ export interface components {
          *     * `other` - Other (অন্যান্য)
          * @enum {string}
          */
-        RoleCategoryEnum: "teacher" | "admin" | "support" | "driver" | "security" | "other";
+        RoleCategoryEnum: "superadmin" | "teacher" | "admin" | "support" | "driver" | "security" | "other";
         /**
          * @description * `member` - Member
          *     * `president` - President
@@ -23067,14 +23169,13 @@ export interface components {
             subject: string;
             readonly subject_code: string;
             readonly subject_name_en: string;
-            /**
-             * Format: uuid
-             * @description Assigned teacher user account
-             */
-            teacher_user: string | null;
-            readonly teacher_name: string;
             /** Format: uuid */
-            room: string | null;
+            teacher_user?: string | null;
+            /** Format: uuid */
+            teacher_staff?: string | null;
+            readonly teacher_name: string | null;
+            /** Format: uuid */
+            room?: string | null;
             readonly room_name: string;
             /** Format: date-time */
             readonly created_at: string;
@@ -23100,22 +23201,23 @@ export interface components {
             period: string;
             /** Format: uuid */
             subject: string;
-            /**
-             * Format: uuid
-             * @description Assigned teacher user account
-             */
-            teacher_user: string | null;
             /** Format: uuid */
-            room: string | null;
+            teacher_user?: string | null;
+            /** Format: uuid */
+            teacher_staff?: string | null;
+            /** Format: uuid */
+            room?: string | null;
         };
         RoutineValidationInputRequest: {
             /** Format: uuid */
-            section_id: string;
+            section_id?: string;
             weekday: components["schemas"]["WeekdayEnum"];
             /** Format: uuid */
-            period_id: string;
+            period_id?: string;
             /** Format: uuid */
             teacher_user_id?: string | null;
+            /** Format: uuid */
+            teacher_staff_id?: string | null;
             /** Format: uuid */
             room_id?: string | null;
             /** Format: uuid */
@@ -23470,6 +23572,8 @@ export interface components {
             department?: string | null;
             /** Format: uuid */
             designation?: string | null;
+            /** Format: uuid */
+            branch?: string | null;
             staff_type?: components["schemas"]["StaffTypeEnum"];
             status?: components["schemas"]["Status31cEnum"];
             /** @description Designates whether salary is government-subsidized under Monthly Pay Order */
@@ -23515,6 +23619,8 @@ export interface components {
             department?: string | null;
             /** Format: uuid */
             designation?: string | null;
+            /** Format: uuid */
+            branch?: string | null;
             staff_type?: components["schemas"]["StaffTypeEnum"];
             status?: components["schemas"]["Status31cEnum"];
             /** @description Designates whether salary is government-subsidized under Monthly Pay Order */
@@ -23526,6 +23632,10 @@ export interface components {
             emergency_contact_name?: string;
             emergency_contact_phone?: string;
             emergency_contact_relation?: string;
+            /** @default false */
+            give_portal_access: boolean;
+            portal_username?: string;
+            portal_password?: string;
         };
         /** @description Rich staff view with nested educations, documents, and cards. */
         StaffDetail: {
@@ -23562,6 +23672,8 @@ export interface components {
             department?: string | null;
             /** Format: uuid */
             designation?: string | null;
+            /** Format: uuid */
+            branch?: string | null;
             staff_type?: components["schemas"]["StaffTypeEnum"];
             status?: components["schemas"]["Status31cEnum"];
             /** @description Designates whether salary is government-subsidized under Monthly Pay Order */
@@ -23575,6 +23687,12 @@ export interface components {
             emergency_contact_relation?: string;
             readonly department_name: string;
             readonly designation_title: string;
+            readonly branch_name: string;
+            /** Format: uuid */
+            readonly user_id: string;
+            readonly username: string;
+            readonly user_type: string;
+            readonly has_portal_access: boolean;
             readonly educations: components["schemas"]["StaffEducation"][];
             readonly documents: components["schemas"]["StaffDocument"][];
             readonly id_cards: components["schemas"]["StaffIDCard"][];
@@ -23641,7 +23759,17 @@ export interface components {
             /** Format: uuid */
             designation?: string | null;
             readonly designation_title: string;
+            /**
+             * Format: uuid
+             * @description Primary campus/branch where this staff member is assigned
+             */
+            branch?: string | null;
+            readonly branch_name: string;
             staff_type?: components["schemas"]["StaffTypeEnum"];
+            /** Format: uuid */
+            readonly user_id: string;
+            readonly user_type: string;
+            readonly username: string;
             /** @description Primary mobile number in normalized format (+8801XXXXXXXXX) */
             phone: string;
             /** Format: email */
@@ -23829,7 +23957,8 @@ export interface components {
             is_active?: boolean;
         };
         /**
-         * @description * `teacher` - Teacher (শিক্ষক)
+         * @description * `superadmin` - Super Admin (সুপার অ্যাডমিন)
+         *     * `teacher` - Teacher (শিক্ষক)
          *     * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
          *     * `support` - Support Staff (সহায়ক কর্মচারী)
          *     * `driver` - Driver (চালক)
@@ -23837,7 +23966,7 @@ export interface components {
          *     * `other` - Other (অন্যান্য)
          * @enum {string}
          */
-        StaffTypeEnum: "teacher" | "admin" | "support" | "driver" | "security" | "other";
+        StaffTypeEnum: "superadmin" | "teacher" | "admin" | "support" | "driver" | "security" | "other";
         /**
          * @description * `draft` - Draft
          *     * `published` - Published
@@ -24058,6 +24187,7 @@ export interface components {
             readonly previous_school: components["schemas"]["PreviousSchool"];
             readonly documents: components["schemas"]["StudentDocument"][];
             readonly id_cards: components["schemas"]["StudentIDCard"][];
+            readonly guardians: components["schemas"]["StudentLinkedGuardian"][];
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -24280,6 +24410,7 @@ export interface components {
             /** Format: uuid */
             student: string;
             readonly student_name: string;
+            readonly student_id_number: string;
             /** Format: uuid */
             guardian: string;
             readonly guardian_name: string;
@@ -24295,6 +24426,22 @@ export interface components {
             financial_responsible?: boolean;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer for Student-Guardian relationship links. */
+        StudentGuardianRequest: {
+            /** Format: uuid */
+            student: string;
+            /** Format: uuid */
+            guardian: string;
+            relation?: components["schemas"]["RelationEnum"];
+            /** @description Indicates primary contact receiving report cards and primary calls */
+            is_primary?: boolean;
+            /** @description Authorized to collect the student from school premises */
+            can_pickup?: boolean;
+            /** @description Receives automated attendance and notification SMS */
+            receives_sms?: boolean;
+            /** @description Responsible for paying academic fees and dues */
+            financial_responsible?: boolean;
         };
         StudentIDCard: {
             /** Format: uuid */
@@ -24321,6 +24468,65 @@ export interface components {
             is_active?: boolean;
             /** Format: date-time */
             printed_at?: string | null;
+        };
+        /** @description Input payload for linking a student during guardian creation/update. */
+        StudentLinkInput: {
+            /** Format: uuid */
+            student_id: string;
+            /** @default father */
+            relation: components["schemas"]["RelationEnum"];
+            /** @default false */
+            is_primary: boolean;
+            /** @default true */
+            can_pickup: boolean;
+            /** @default true */
+            receives_sms: boolean;
+            /** @default false */
+            financial_responsible: boolean;
+        };
+        /** @description Input payload for linking a student during guardian creation/update. */
+        StudentLinkInputRequest: {
+            /** Format: uuid */
+            student_id: string;
+            /** @default father */
+            relation: components["schemas"]["RelationEnum"];
+            /** @default false */
+            is_primary: boolean;
+            /** @default true */
+            can_pickup: boolean;
+            /** @default true */
+            receives_sms: boolean;
+            /** @default false */
+            financial_responsible: boolean;
+        };
+        /** @description Serializer for a guardian linked to a student with demographic details. */
+        StudentLinkedGuardian: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly guardian_id: string;
+            readonly name_en: string;
+            readonly name_bn: string;
+            readonly relation: components["schemas"]["RelationEnum"];
+            readonly phone: string;
+            readonly alt_phone: string;
+            /** Format: email */
+            readonly email: string;
+            readonly nid: string;
+            readonly occupation: string;
+            readonly present_address: string;
+            /** Format: uri */
+            readonly photo: string;
+            /** @description Indicates primary contact receiving report cards and primary calls */
+            readonly is_primary: boolean;
+            /** @description Authorized to collect the student from school premises */
+            readonly can_pickup: boolean;
+            /** @description Receives automated attendance and notification SMS */
+            readonly receives_sms: boolean;
+            /** @description Responsible for paying academic fees and dues */
+            readonly financial_responsible: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
         };
         StudentList: {
             /** Format: uuid */
@@ -24588,6 +24794,17 @@ export interface components {
             /** Format: uuid */
             routine_slot: string;
             readonly routine_summary: string;
+            readonly class_level_name: string;
+            readonly section_name: string;
+            readonly subject_name_en: string;
+            readonly subject_name_bn: string;
+            readonly subject_code: string;
+            readonly period_name: string;
+            /** Format: time */
+            readonly period_start: string;
+            /** Format: time */
+            readonly period_end: string;
+            readonly room_name: string;
             /**
              * Format: date
              * @description Calendar date for this substitution
@@ -24595,10 +24812,14 @@ export interface components {
             slot_date: string;
             /** Format: uuid */
             original_teacher?: string | null;
-            readonly original_teacher_name: string;
             /** Format: uuid */
-            substitute_teacher: string;
-            readonly substitute_teacher_name: string;
+            original_staff?: string | null;
+            readonly original_teacher_name: string | null;
+            /** Format: uuid */
+            substitute_teacher?: string | null;
+            /** Format: uuid */
+            substitute_staff?: string | null;
+            readonly substitute_teacher_name: string | null;
             reason?: string;
             /** Format: date-time */
             readonly created_at: string;
@@ -24616,7 +24837,11 @@ export interface components {
             /** Format: uuid */
             original_teacher?: string | null;
             /** Format: uuid */
-            substitute_teacher: string;
+            original_staff?: string | null;
+            /** Format: uuid */
+            substitute_teacher?: string | null;
+            /** Format: uuid */
+            substitute_staff?: string | null;
             reason?: string;
         };
         /**
@@ -25179,6 +25404,8 @@ export interface components {
         };
         /** @description Serializer for creating a new user by Admin. */
         UserCreateRequest: {
+            /** Format: uuid */
+            branch?: string | null;
             username: string;
             /** @description Normalized BD mobile number (+8801XXXXXXXXX). */
             phone: string | null;
@@ -25660,6 +25887,7 @@ export interface operations {
     academics_classes_list: {
         parameters: {
             query?: {
+                branch?: string;
                 has_groups?: boolean;
                 /**
                  * @description * `bangla` - Bangla Medium
@@ -25676,6 +25904,8 @@ export interface operations {
                 page_size?: number;
                 /** @description A search term. */
                 search?: string;
+                session?: string;
+                shift?: string;
             };
             header?: never;
             path?: never;
@@ -26509,8 +26739,6 @@ export interface operations {
                 page_size?: number;
                 /** @description A search term. */
                 search?: string;
-                session?: string;
-                shift?: string;
             };
             header?: never;
             path?: never;
@@ -26688,8 +26916,6 @@ export interface operations {
                 page_size?: number;
                 /** @description A search term. */
                 search?: string;
-                session?: string;
-                shift?: string;
             };
             header?: never;
             path?: never;
@@ -26878,12 +27104,16 @@ export interface operations {
             query?: {
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
+                original_staff?: string;
                 original_teacher?: string;
                 /** @description A page number within the paginated result set. */
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                /** @description A search term. */
+                search?: string;
                 slot_date?: string;
+                substitute_staff?: string;
                 substitute_teacher?: string;
             };
             header?: never;
@@ -48247,14 +48477,15 @@ export interface operations {
                 /** @description Number of results to return per page. */
                 page_size?: number;
                 /**
-                 * @description * `teacher` - Teacher (শিক্ষক)
+                 * @description * `superadmin` - Super Admin (সুপার অ্যাডমিন)
+                 *     * `teacher` - Teacher (শিক্ষক)
                  *     * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
                  *     * `support` - Support Staff (সহায়ক কর্মচারী)
                  *     * `driver` - Driver (চালক)
                  *     * `security` - Security (নিরাপত্তা কর্মী)
                  *     * `other` - Other (অন্যান্য)
                  */
-                role_category?: "admin" | "driver" | "other" | "security" | "support" | "teacher";
+                role_category?: "admin" | "driver" | "other" | "security" | "superadmin" | "support" | "teacher";
                 /** @description A search term. */
                 search?: string;
             };
@@ -48922,15 +49153,6 @@ export interface operations {
                 /** @description A search term. */
                 search?: string;
                 /**
-                 * @description * `teacher` - Teacher (শিক্ষক)
-                 *     * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
-                 *     * `support` - Support Staff (সহায়ক কর্মচারী)
-                 *     * `driver` - Driver (চালক)
-                 *     * `security` - Security (নিরাপত্তা কর্মী)
-                 *     * `other` - Other (অন্যান্য)
-                 */
-                staff_type?: "admin" | "driver" | "other" | "security" | "support" | "teacher";
-                /**
                  * @description * `active` - Active
                  *     * `on_leave` - On Leave
                  *     * `suspended` - Suspended
@@ -49090,11 +49312,41 @@ export interface operations {
             };
             cookie?: never;
         };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ProvisionPortalAccountRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProvisionPortalAccountRequest"];
+                "multipart/form-data": components["schemas"]["ProvisionPortalAccountRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    staff_staff_reset_password_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Staff Member. */
+                id: string;
+            };
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StaffCreateUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["StaffCreateUpdateRequest"];
-                "multipart/form-data": components["schemas"]["StaffCreateUpdateRequest"];
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ResetPasswordRequest"];
+                "multipart/form-data": components["schemas"]["ResetPasswordRequest"];
             };
         };
         responses: {
@@ -49147,6 +49399,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StaffDetail"];
+                };
+            };
+        };
+    };
+    staff_staff_summary_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };

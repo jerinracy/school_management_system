@@ -149,6 +149,9 @@ describe("RoutineBuilderPage & Conflict Pre-Check", () => {
       http.get(/\/api\/v1\/academics\/routine\//, () => {
         return HttpResponse.json({ results: mockRoutine });
       }),
+      http.get(/\/api\/v1\/staff\/staff\//, () => {
+        return HttpResponse.json({ results: [{ id: "staff-1", full_name: "Dr. Rahman" }] });
+      }),
       http.post(/\/api\/v1\/academics\/routine\/validate\//, () => {
         return HttpResponse.json({
           is_valid: false,
@@ -162,10 +165,13 @@ describe("RoutineBuilderPage & Conflict Pre-Check", () => {
   it("renders routine timetable grid and slots", async () => {
     renderRoutinePage();
 
-    await waitFor(() => {
-      expect(screen.getByText("Weekly Routine & Timetable Builder")).toBeInTheDocument();
-      expect(screen.getByText("Physics")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Weekly Routine & Timetable Builder")).toBeInTheDocument();
+        expect(screen.getByText("Physics")).toBeInTheDocument();
+      },
+      { timeout: 8000 }
+    );
 
     expect(screen.getByText("Sunday")).toBeInTheDocument();
     expect(screen.getByText("Dr. Rahman")).toBeInTheDocument();

@@ -45,7 +45,7 @@ from apps.communications.services.chat_service import send_chat_message
 from apps.communications.services.notice_service import get_visible_notices_for_user
 from apps.communications.services.notification_service import render_template
 from apps.communications.services.sms_service import check_and_update_balance, send_single_sms
-from apps.core.mixins import TenantScopedMixin
+from apps.core.mixins import TenantScopedMixin, get_request_institution
 
 
 @extend_schema_view(
@@ -82,7 +82,7 @@ class SMSGatewayConfigViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         serializer = SendDirectSMSSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        institution = request.user.institution
+        institution = get_request_institution(request)
         phone = serializer.validated_data["phone"]
         message = serializer.validated_data["message"]
         gw_id = serializer.validated_data.get("gateway_id")
@@ -214,7 +214,7 @@ class NotificationPreferenceView(APIView):
     )
     def get(self, request: Any) -> Response:
         pref, _ = NotificationPreference.objects.get_or_create(
-            institution=request.user.institution,
+            institution=get_request_institution(request),
             user=request.user,
         )
         return Response(NotificationPreferenceSerializer(pref).data)
@@ -226,7 +226,7 @@ class NotificationPreferenceView(APIView):
     )
     def patch(self, request: Any) -> Response:
         pref, _ = NotificationPreference.objects.get_or_create(
-            institution=request.user.institution,
+            institution=get_request_institution(request),
             user=request.user,
         )
         serializer = NotificationPreferenceSerializer(pref, data=request.data, partial=True)

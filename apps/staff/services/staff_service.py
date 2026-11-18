@@ -99,60 +99,86 @@ def create_staff(
     return staff
 
 
-def create_portal_user_for_staff(staff: Staff) -> tuple[User, str]:
+def _resolve_staff_role_and_user_type(staff_type: str) -> tuple[str, bool, bool, str, str]:
+    """Helper to map staff_type to UserType and Role definitions."""
+    if staff_type == StaffType.SUPERADMIN:
+        return UserType.SUPERADMIN, True, True, "superadmin", "Super Admin"
+    if staff_type == StaffType.ADMIN:
+        return UserType.ADMIN, False, True, "admin", "Institution Admin"
+    if staff_type == StaffType.TEACHER:
+        return UserType.TEACHER, False, False, "teacher", "Teacher"
+    return UserType.STAFF, False, False, "staff", "Staff"
+
+
+def create_portal_user_for_staff(
+    staff: Staff,
+    username: str | None = None,
+    password: str | None = None,
+) -> tuple[User, str]:
     """Provision a login account for the staff member and send access credentials via SMS."""
-    temp_password = secrets.token_urlsafe(8)
+    final_password = password.strip() if password and password.strip() else secrets.token_urlsafe(8)
+    chosen_username = (
+        username.strip() if username and username.strip() else (staff.employee_id or staff.phone)
+    )
+    user_type, is_su, is_st, role_code, role_name = _resolve_staff_role_and_user_type(
+        staff.staff_type
+    )
 
     with transaction.atomic():
         if staff.user:
             user = staff.user
-            user.set_password(temp_password)
-            user.save(update_fields=["password"])
+            if chosen_username and user.username != chosen_username:
+                user.username = chosen_username
+            user.set_password(final_password)
+            user.institution = staff.institution
+            user.save()
         else:
-            user_type = (
-                UserType.TEACHER if staff.staff_type == StaffType.TEACHER else UserType.STAFF
-            )
             user, _ = User.objects.get_or_create(
                 phone=staff.phone,
                 institution=staff.institution,
                 defaults={
-                    "username": staff.employee_id,
+                    "username": chosen_username,
                     "full_name": staff.full_name_en[:150],
                     "email": staff.email,
                     "user_type": user_type,
+                    "is_superuser": is_su,
+                    "is_staff": is_st,
                 },
             )
-            user.set_password(temp_password)
-            user.save(update_fields=["password"])
+            if user.username != chosen_username and chosen_username:
+                user.username = chosen_username
+            user.set_password(final_password)
+            user.institution = staff.institution
+            user.save()
 
             staff.user = user
             staff.save(update_fields=["user"])
 
-        # Determine appropriate role
-        role_code = "teacher" if staff.staff_type == StaffType.TEACHER else "staff"
-        role_name = "Teacher" if staff.staff_type == StaffType.TEACHER else "Staff"
         role, _ = Role.objects.get_or_create(
             institution=staff.institution,
             code=role_code,
             defaults={"name": role_name},
         )
-        # Grant basic view permissions
         for codename in ["view_student", "view_subject", "view_routineslot"]:
             perm = Permission.objects.filter(codename=codename).first()
             if perm:
                 role.permissions.add(perm)
 
-        UserRole.objects.get_or_create(user=user, role=role)
+        UserRole.objects.get_or_create(
+            user=user,
+            role=role,
+            defaults={"branch": getattr(staff, "branch", None)},
+        )
 
     # Deliver SMS
     inst_name = getattr(staff.institution, "name_en", "School")
     msg = (
         f"Your {inst_name} Staff Account is ready. "
-        f"Login: {staff.phone} | Password: {temp_password}"
+        f"Login: {user.username} | Password: {final_password}"
     )
     try:
         get_sms_service().send_sms(staff.phone, msg)
     except Exception as exc:  # pragma: no cover
         logger.warning("Failed to dispatch staff credentials SMS: %s", exc)
 
-    return user, temp_password
+    return user, final_password

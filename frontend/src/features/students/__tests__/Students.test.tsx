@@ -157,6 +157,7 @@ describe("StudentIDCardPreview", () => {
     ],
     documents: [],
     id_cards: [],
+    guardians: [],
     previous_school: {
       id: "ps-1",
       school_name: "Dhaka Collegiate School",

@@ -3,11 +3,11 @@
 from typing import Any
 
 from django.db import transaction
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -48,19 +48,9 @@ from apps.academics.serializers import (
 )
 from apps.academics.services.conflicts import validate_routine_slot_conflicts
 from apps.academics.services.copy_session import copy_academic_structure_from_previous_session
-from apps.accounts.models import User
 from apps.accounts.permissions import HasModulePermission
-from apps.core.mixins import TenantScopedMixin
+from apps.core.mixins import TenantScopedMixin, get_request_institution
 from apps.core.pagination import StandardResultsSetPagination
-from apps.institutions.models import Institution
-
-
-def get_request_institution(request: Request) -> Institution:
-    """Helper to extract and type-narrow the user's institution."""
-    user = request.user
-    if not isinstance(user, User) or not user.institution:
-        raise PermissionDenied("User is not associated with an institution.")
-    return user.institution
 
 
 @extend_schema_view(
@@ -72,18 +62,39 @@ def get_request_institution(request: Request) -> Institution:
     destroy=extend_schema(summary="Delete a class level", tags=["Academics"]),
 )
 class ClassLevelViewSet(TenantScopedMixin, ModelViewSet):
-    queryset = ClassLevel.objects.all()
+    queryset = ClassLevel.objects.select_related("shift", "session", "branch").all()
     serializer_class = ClassLevelSerializer
     permission_classes = [IsAuthenticated, HasModulePermission("academics.view_classlevel")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["medium", "has_groups"]
+    filterset_fields = ["medium", "has_groups", "shift", "session", "branch"]
     search_fields = ["name", "code"]
     ordering_fields = ["order", "name"]
     ordering = ["order"]
 
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        shift_id = self.request.query_params.get("shift")
+        if shift_id:
+            qs = qs.filter(Q(shift_id=shift_id) | Q(shift__isnull=True))
+        session_id = self.request.query_params.get("session")
+        if session_id:
+            qs = qs.filter(Q(session_id=session_id) | Q(session__isnull=True))
+        branch_id = self.request.query_params.get("branch")
+        if branch_id:
+            qs = qs.filter(Q(branch_id=branch_id) | Q(branch__isnull=True))
+        return qs
+
     def perform_create(self, serializer: Any) -> None:
-        serializer.save(institution=get_request_institution(self.request))
+        institution = get_request_institution(self.request)
+        kwargs: dict[str, Any] = {"institution": institution}
+        if "shift" not in serializer.validated_data and self.request.data.get("shift"):
+            kwargs["shift_id"] = self.request.data.get("shift")
+        if "session" not in serializer.validated_data and self.request.data.get("session"):
+            kwargs["session_id"] = self.request.data.get("session")
+        if "branch" not in serializer.validated_data and self.request.data.get("branch"):
+            kwargs["branch_id"] = self.request.data.get("branch")
+        serializer.save(**kwargs)
 
 
 @extend_schema_view(
@@ -124,13 +135,39 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
     permission_classes = [IsAuthenticated, HasModulePermission("academics.view_section")]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["class_level", "shift", "session"]
+    filterset_fields = ["class_level"]
     search_fields = ["name", "class_level__name"]
     ordering_fields = ["name", "capacity"]
     ordering = ["class_level", "name"]
 
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        params = getattr(self.request, "query_params", getattr(self.request, "GET", {}))
+        branch_id = params.get("branch")
+        shift_id = params.get("shift")
+        session_id = params.get("session")
+        if branch_id:
+            qs = qs.filter(
+                Q(branch_id=branch_id) | Q(branch__isnull=True, class_level__branch_id=branch_id)
+            )
+        if shift_id:
+            qs = qs.filter(
+                Q(shift_id=shift_id) | Q(shift__isnull=True, class_level__shift_id=shift_id)
+            )
+        if session_id:
+            qs = qs.filter(
+                Q(session_id=session_id)
+                | Q(session__isnull=True, class_level__session_id=session_id)
+            )
+        return qs
+
     def perform_create(self, serializer: Any) -> None:
-        serializer.save(institution=get_request_institution(self.request))
+        inst = get_request_institution(self.request)
+        class_level = serializer.validated_data.get("class_level")
+        branch = serializer.validated_data.get("branch") or (
+            class_level.branch if class_level else None
+        )
+        serializer.save(institution=inst, branch=branch)
 
     @extend_schema(
         summary="Bulk create sections for a class level",
@@ -146,6 +183,7 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
 
         institution = get_request_institution(request)
         created_sections: list[Section] = []
+        branch = data.get("branch") or data["class_level"].branch
         with transaction.atomic():
             for name in data["names"]:
                 sec, _ = Section.objects.get_or_create(
@@ -154,8 +192,11 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
                     shift=data["shift"],
                     session=data["session"],
                     name=name.strip(),
-                    defaults={"capacity": data.get("capacity", 50)},
+                    defaults={"capacity": data.get("capacity", 50), "branch": branch},
                 )
+                if not sec.branch and branch:
+                    sec.branch = branch
+                    sec.save(update_fields=["branch"])
                 created_sections.append(sec)
 
         output_serializer = SectionSerializer(created_sections, many=True)
@@ -315,11 +356,17 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
             return RoutineSlot.objects.none()
 
         institution = get_request_institution(self.request)
-        sec_id = self.request.query_params.get("section_id")
-        t_id = self.request.query_params.get("teacher_id")
-        r_id = self.request.query_params.get("room_id")
+        sec_id = self.request.query_params.get("section_id") or self.request.query_params.get(
+            "section"
+        )
+        t_id = (
+            self.request.query_params.get("teacher_id")
+            or self.request.query_params.get("teacher")
+            or self.request.query_params.get("teacher_staff")
+        )
+        r_id = self.request.query_params.get("room_id") or self.request.query_params.get("room")
         w_day = self.request.query_params.get("weekday")
-        weekday_int = int(w_day) if w_day is not None and w_day.isdigit() else None
+        weekday_int = int(w_day) if w_day is not None and str(w_day).isdigit() else None
 
         if sec_id:
             return get_routine_for_section(
@@ -357,6 +404,7 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
             weekday=data["weekday"],
             period_id=data["period_id"],
             teacher_user_id=data.get("teacher_user_id"),
+            teacher_staff_id=data.get("teacher_staff_id"),
             room_id=data.get("room_id"),
             exclude_slot_id=data.get("exclude_slot_id"),
         )
@@ -377,8 +425,14 @@ class SubstituteAssignmentViewSet(TenantScopedMixin, ModelViewSet):
     queryset = SubstituteAssignment.objects.select_related(
         "routine_slot",
         "routine_slot__section",
+        "routine_slot__section__class_level",
+        "routine_slot__period",
+        "routine_slot__subject",
+        "routine_slot__room",
         "original_teacher",
+        "original_staff",
         "substitute_teacher",
+        "substitute_staff",
     ).all()
     serializer_class = SubstituteAssignmentSerializer
     permission_classes = [
@@ -386,10 +440,29 @@ class SubstituteAssignmentViewSet(TenantScopedMixin, ModelViewSet):
         HasModulePermission("academics.view_substituteassignment"),
     ]
     pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["slot_date", "substitute_teacher", "original_teacher"]
-    ordering_fields = ["slot_date"]
-    ordering = ["-slot_date"]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = [
+        "slot_date",
+        "substitute_teacher",
+        "substitute_staff",
+        "original_teacher",
+        "original_staff",
+    ]
+    search_fields = [
+        "substitute_staff__full_name_en",
+        "substitute_staff__full_name_bn",
+        "substitute_teacher__full_name",
+        "original_staff__full_name_en",
+        "original_staff__full_name_bn",
+        "original_teacher__full_name",
+        "routine_slot__section__name",
+        "routine_slot__section__class_level__name",
+        "routine_slot__subject__name_en",
+        "routine_slot__subject__name_bn",
+        "reason",
+    ]
+    ordering_fields = ["slot_date", "created_at"]
+    ordering = ["-slot_date", "-created_at"]
 
     def perform_create(self, serializer: Any) -> None:
         serializer.save(institution=get_request_institution(self.request))

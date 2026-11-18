@@ -151,6 +151,59 @@ class TestGuardianAPI:
         assert patch_res.status_code == status.HTTP_200_OK
         assert patch_res.json()["occupation"] == "Senior Businessman"
 
+    def test_create_guardian_with_student_links(
+        self, client_for, staff_user, institution, student, other_student
+    ):
+        client = client_for(staff_user)
+
+        payload = {
+            "name_en": "Mahmudur Rahman",
+            "name_bn": "মাহমুদুর রহমান",
+            "relation_default": "father",
+            "phone": "01811223344",
+            "occupation": "Teacher",
+            "student_links": [
+                {
+                    "student_id": str(student.id),
+                    "relation": "father",
+                    "is_primary": True,
+                    "can_pickup": True,
+                    "receives_sms": True,
+                    "financial_responsible": True,
+                },
+                {
+                    "student_id": str(other_student.id),
+                    "relation": "uncle",
+                    "is_primary": False,
+                    "can_pickup": True,
+                    "receives_sms": False,
+                    "financial_responsible": False,
+                },
+            ],
+        }
+        res = client.post("/api/v1/guardians/guardians/", payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        data = res.json()
+        assert len(data["student_relations"]) == 2
+
+        g_id = data["id"]
+        sg_list = StudentGuardian.objects.filter(guardian_id=g_id)
+        assert sg_list.count() == 2
+
+        sg_primary = sg_list.get(student=student)
+        assert sg_primary.relation == "father"
+        assert sg_primary.is_primary is True
+        assert sg_primary.financial_responsible is True
+
+        sg_other = sg_list.get(student=other_student)
+        assert sg_other.relation == "uncle"
+        assert sg_other.is_primary is False
+        assert sg_other.receives_sms is False
+
+        student.refresh_from_db()
+        assert student.emergency_contact_name == "Mahmudur Rahman"
+        assert student.emergency_contact_phone == "+8801811223344"
+
     def test_link_and_unlink_student(self, client_for, staff_user, institution, student):
         client = client_for(staff_user)
         guardian = Guardian.objects.create(

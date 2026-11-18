@@ -51,6 +51,18 @@ class SalaryComponentSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "is_system", "created_at", "updated_at"]
 
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if isinstance(data, dict):
+            data = dict(data)
+            if "name" in data:
+                if not data.get("name_en"):
+                    data["name_en"] = data["name"]
+                if not data.get("name_bn"):
+                    data["name_bn"] = data["name"]
+            if data.get("calculation_type") == "flat":
+                data["calculation_type"] = "fixed"
+        return super().to_internal_value(data)
+
 
 class SalaryStructureLineSerializer(serializers.ModelSerializer):
     """Serializer for component lines within a SalaryStructure."""

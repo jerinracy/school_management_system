@@ -129,6 +129,32 @@ class ShiftSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "institution", "created_at", "updated_at"]
 
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if isinstance(data, dict):
+            data = dict(data)
+            if "name" in data:
+                raw_name = str(data["name"]).strip().lower()
+                name_map = {
+                    "morning": "morning",
+                    "morning shift": "morning",
+                    "day": "day",
+                    "day shift": "day",
+                    "evening": "evening",
+                    "evening shift": "evening",
+                }
+                if raw_name in name_map:
+                    data["name"] = name_map[raw_name]
+            if not data.get("branch"):
+                request = self.context.get("request")
+                if request:
+                    from apps.core.mixins import get_request_institution
+
+                    inst = get_request_institution(request)
+                    br = Branch.objects.filter(institution=inst).first()
+                    if br:
+                        data["branch"] = str(br.id)
+        return super().to_internal_value(data)
+
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         start = attrs.get("start_time", getattr(self.instance, "start_time", None))
         end = attrs.get("end_time", getattr(self.instance, "end_time", None))
@@ -159,6 +185,18 @@ class TermSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "institution", "created_at", "updated_at"]
+
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if isinstance(data, dict):
+            data = dict(data)
+            if "order" not in data:
+                session_id = data.get("session")
+                if session_id:
+                    count = Term.objects.filter(session_id=session_id).count()
+                    data["order"] = count + 1
+                else:
+                    data["order"] = 1
+        return super().to_internal_value(data)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         start = attrs.get("start_date", getattr(self.instance, "start_date", None))

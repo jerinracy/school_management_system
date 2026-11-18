@@ -29,7 +29,8 @@ export const staffCreateSchema = z.object({
     .optional(),
   department: z.string().min(1, "validation.departmentRequired"),
   designation: z.string().min(1, "validation.designationRequired"),
-  staff_type: z.enum(["admin", "teacher", "support", "driver", "security", "other"]),
+  branch: z.string().optional(),
+  staff_type: z.enum(["superadmin", "admin", "teacher", "support", "driver", "security", "other"]),
   joining_date: z.string().min(1, "validation.joiningDateRequired"),
   confirmation_date: z.string().optional(),
   tin_number: z.string().max(32).optional(),
@@ -43,6 +44,10 @@ export const staffCreateSchema = z.object({
     .trim()
     .refine((val) => BD_PHONE_REGEX.test(val), "validation.phoneInvalid"),
   emergency_contact_relation: z.string().max(50).optional(),
+  give_portal_access: z.boolean().default(false),
+  portal_username: z.string().optional(),
+  portal_password: z.string().optional(),
+  portal_password_confirm: z.string().optional(),
 });
 
 export type StaffCreateFormData = z.infer<typeof staffCreateSchema>;

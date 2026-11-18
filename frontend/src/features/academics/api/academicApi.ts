@@ -44,8 +44,10 @@ function checkVoid(res: { error?: unknown; response: Response }): void {
 }
 
 export const academicApi = {
-  async getClasses() {
-    const res = await apiClient.GET("/api/v1/academics/classes/");
+  async getClasses(params?: { shift?: string; session?: string; branch?: string }) {
+    const res = await apiClient.GET("/api/v1/academics/classes/", {
+      params: params ? { query: params as never } : undefined,
+    });
     return checkResponse(res).results ?? [];
   },
 
@@ -61,9 +63,10 @@ export const academicApi = {
     return checkResponse(res).results ?? [];
   },
 
-  async getSections(classId?: string) {
+  async getSections(queryOrClassId?: string | { class_level?: string; shift?: string; session?: string; branch?: string }) {
+    const query = typeof queryOrClassId === "string" ? { class_level: queryOrClassId } : queryOrClassId;
     const res = await apiClient.GET("/api/v1/academics/sections/", {
-      params: classId ? { query: { class_level: classId } } : undefined,
+      params: query ? { query: query as never } : undefined,
     });
     return checkResponse(res).results ?? [];
   },
@@ -75,9 +78,19 @@ export const academicApi = {
     return checkResponse(res);
   },
 
-  async bulkCreateSections(payload: { class_id: string; names: string[]; shift_id?: string }) {
+  async bulkCreateSections(payload: {
+    class_id: string;
+    names: string[];
+    shift_id?: string;
+    session_id?: string;
+    class_level_id?: string;
+    capacity?: number;
+  }) {
     const res = await apiClient.POST("/api/v1/academics/sections/bulk-create/", {
-      body: payload as never,
+      body: {
+        ...payload,
+        class_level_id: payload.class_level_id || payload.class_id,
+      } as never,
     });
     return checkResponse(res);
   },
@@ -108,8 +121,10 @@ export const academicApi = {
     return checkResponse(res);
   },
 
-  async getPeriods() {
-    const res = await apiClient.GET("/api/v1/academics/periods/");
+  async getPeriods(params?: { shift?: string }) {
+    const res = await apiClient.GET("/api/v1/academics/periods/", {
+      params: params ? { query: params as never } : undefined,
+    });
     return checkResponse(res).results ?? [];
   },
 
@@ -120,8 +135,10 @@ export const academicApi = {
     return checkResponse(res);
   },
 
-  async getRooms() {
-    const res = await apiClient.GET("/api/v1/academics/rooms/");
+  async getRooms(params?: { branch?: string }) {
+    const res = await apiClient.GET("/api/v1/academics/rooms/", {
+      params: params ? { query: params as never } : undefined,
+    });
     return checkResponse(res).results ?? [];
   },
 
@@ -132,15 +149,24 @@ export const academicApi = {
     return checkResponse(res);
   },
 
-  async getRoutine(sectionId?: string) {
+  async getRoutine(params?: string | { section?: string; weekday?: number }) {
+    const query = typeof params === "string" ? { section: params } : params;
     const res = await apiClient.GET("/api/v1/academics/routine/", {
-      params: sectionId ? { query: { section: sectionId } } : undefined,
+      params: query ? { query: query as never } : undefined,
     });
     return checkResponse(res).results ?? [];
   },
 
   async createRoutineSlot(payload: Record<string, unknown>) {
     const res = await apiClient.POST("/api/v1/academics/routine/", {
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async updateRoutineSlot(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/academics/routine/{id}/", {
+      params: { path: { id } },
       body: payload as never,
     });
     return checkResponse(res);
@@ -170,6 +196,13 @@ export const academicApi = {
       body: payload as never,
     });
     return checkResponse(res);
+  },
+
+  async deleteSubstitute(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/substitutes/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
   },
 
   async copySession(payload: { source_session_id: string; target_session_id: string; dry_run?: boolean }): Promise<CopySessionResult> {

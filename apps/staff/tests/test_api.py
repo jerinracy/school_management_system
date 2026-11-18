@@ -226,3 +226,118 @@ class TestStaffAPI:
         client = client_for(admin_user)
         res = client.get(f"/api/v1/staff/staff/{other_staff.id}/")
         assert res.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_staff_summary_and_superadmin_isolation(self, client_for, admin_user, institution):
+        # Create a regular staff member
+        Staff.objects.create(
+            institution=institution,
+            employee_id="EMP-REG-001",
+            full_name_en="Regular Teacher",
+            phone="+8801700112233",
+            staff_type="teacher",
+            gender="female",
+            dob=date(1992, 5, 5),
+            joining_date=date(2025, 1, 1),
+        )
+
+        # Create a superadmin user and staff
+        sa_user = User.objects.create(
+            username="sa_tester",
+            user_type="superadmin",
+            is_superuser=True,
+            institution=institution,
+        )
+        sa_staff = Staff.objects.create(
+            institution=institution,
+            employee_id="EMP-SA-001",
+            full_name_en="Superadmin Tester",
+            phone="+8801700998877",
+            staff_type="superadmin",
+            user=sa_user,
+            gender="male",
+            dob=date(1990, 1, 1),
+            joining_date=date(2026, 1, 1),
+        )
+
+        # 1. Superadmin calls summary -> gets all 4 categories including superadmin
+        sa_client = client_for(sa_user)
+        res_sa = sa_client.get("/api/v1/staff/staff/summary/")
+        assert res_sa.status_code == status.HTTP_200_OK
+        data_sa = res_sa.json()
+        assert "superadmin" in data_sa
+        assert data_sa["superadmin"] >= 1
+        assert "admin" in data_sa
+        assert "teacher" in data_sa
+        assert "staff" in data_sa
+
+        # 2. Regular admin calls summary -> superadmin count is omitted
+        admin_client = client_for(admin_user)
+        res_admin = admin_client.get("/api/v1/staff/staff/summary/")
+        assert res_admin.status_code == status.HTTP_200_OK
+        data_admin = res_admin.json()
+        assert "superadmin" not in data_admin
+        assert "admin" in data_admin
+        assert "teacher" in data_admin
+        assert "staff" in data_admin
+
+        # 3. Regular admin calls list -> superadmin staff is excluded from results
+        res_list = admin_client.get("/api/v1/staff/staff/")
+        assert res_list.status_code == status.HTTP_200_OK
+        returned_ids = [item["id"] for item in res_list.json()["results"]]
+        assert str(sa_staff.id) not in returned_ids
+
+    def test_create_staff_with_portal_access_and_branch(self, client_for, admin_user, institution):
+        from apps.institutions.models import Branch
+
+        branch = Branch.objects.create(
+            institution=institution,
+            name="North Campus",
+            code="NORTH",
+        )
+        client = client_for(admin_user)
+        payload = {
+            "full_name_en": "New Admin Officer",
+            "phone": "+8801811223344",
+            "gender": "male",
+            "dob": "1988-03-15",
+            "joining_date": "2026-02-01",
+            "staff_type": "admin",
+            "branch": str(branch.id),
+            "give_portal_access": True,
+            "portal_username": "admin_officer",
+            "portal_password": "NewSecretPass123#",
+        }
+        res = client.post("/api/v1/staff/staff/", payload)
+        assert res.status_code == status.HTTP_201_CREATED
+        data = res.json()
+        assert data["full_name_en"] == "New Admin Officer"
+
+        staff = Staff.objects.get(id=data["id"])
+        assert staff.branch == branch
+        assert staff.user is not None
+        assert staff.user.username == "admin_officer"
+        assert staff.user.check_password("NewSecretPass123#")
+        assert staff.user.institution == institution
+
+    def test_reset_staff_password(self, client_for, admin_user, institution):
+        client = client_for(admin_user)
+        staff = Staff.objects.create(
+            institution=institution,
+            employee_id="EMP-2026-00077",
+            full_name_en="Password Test Staff",
+            phone="+8801999888777",
+            gender="male",
+            dob=date(1991, 4, 20),
+            joining_date=date(2025, 1, 1),
+            staff_type=StaffType.SUPPORT,
+        )
+
+        # Reset password (creates portal account if none)
+        res = client.post(
+            f"/api/v1/staff/staff/{staff.id}/reset-password/",
+            {"password": "ResetPassword456#"},
+        )
+        assert res.status_code == status.HTTP_200_OK
+        staff.refresh_from_db()
+        assert staff.user is not None
+        assert staff.user.check_password("ResetPassword456#")

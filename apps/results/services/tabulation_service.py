@@ -407,6 +407,11 @@ def create_tabulation_sheet_record(
     user: User | None = None,
 ) -> TabulationSheet:
     """Generate the file and persist an official TabulationSheet record."""
+    if str(file_format).lower() in ["excel", "xlsx", "csv"]:
+        file_format = TabulationSheetFormat.EXCEL
+    else:
+        file_format = TabulationSheetFormat.PDF
+
     exam = Exam.objects.select_related("institution").get(id=exam_id)
     class_level = ClassLevel.objects.get(id=class_level_id)
     section = Section.objects.get(id=section_id) if section_id else None

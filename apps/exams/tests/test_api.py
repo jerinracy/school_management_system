@@ -353,3 +353,57 @@ def test_admit_card_pdf_download_api(
     assert res.status_code == status.HTTP_200_OK
     assert res["Content-Type"] == "application/pdf"
     assert len(res.content) > 1000
+
+
+@pytest.mark.django_db
+def test_exam_type_crud_and_validation(admin_user, institution):
+    client, user = admin_user
+
+    # 1. Create ExamType with lowercase code
+    create_res = client.post(
+        "/api/v1/exams/types/",
+        {
+            "name": "Monthly Class Assessment",
+            "code": "mca",
+            "is_board_exam": False,
+            "description": "Monthly continuous progress test",
+        },
+        format="json",
+    )
+    assert create_res.status_code == status.HTTP_201_CREATED
+    type_id = create_res.data["id"]
+    assert create_res.data["code"] == "MCA"
+    assert create_res.data["name"] == "Monthly Class Assessment"
+
+    # 2. Reject duplicate code in same institution
+    dup_res = client.post(
+        "/api/v1/exams/types/",
+        {
+            "name": "Another Assessment",
+            "code": "MCA",
+            "is_board_exam": False,
+        },
+        format="json",
+    )
+    assert dup_res.status_code == status.HTTP_400_BAD_REQUEST
+    assert "code" in dup_res.data.get("details", dup_res.data)
+
+    # 3. Update ExamType
+    patch_res = client.patch(
+        f"/api/v1/exams/types/{type_id}/",
+        {"description": "Updated monthly evaluation protocol"},
+        format="json",
+    )
+    assert patch_res.status_code == status.HTTP_200_OK
+    assert patch_res.data["description"] == "Updated monthly evaluation protocol"
+
+    # 4. List ExamTypes
+    list_res = client.get("/api/v1/exams/types/")
+    assert list_res.status_code == status.HTTP_200_OK
+    results = list_res.data.get("results", list_res.data)
+    assert any(item["id"] == type_id for item in results)
+
+    # 5. Delete ExamType
+    del_res = client.delete(f"/api/v1/exams/types/{type_id}/")
+    assert del_res.status_code == status.HTTP_204_NO_CONTENT
+    assert not ExamType.objects.filter(id=type_id).exists()

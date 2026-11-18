@@ -8,15 +8,29 @@ import {
   Printer,
   Search,
   UserCheck,
-  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { examsApi, type AdmitCardItem } from "@/features/exams/api/examsApi";
+import { useBrandingStore } from "@/features/institutions/store/brandingStore";
 
 export default function AdmitCardsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language === "bn" ? "bn" : "en";
+  const { getLocalizedName, getEIIN, getBoard, getLogoUrl } = useBrandingStore();
+  const schoolName = getLocalizedName(currentLang);
+  const schoolEIIN = getEIIN();
+  const schoolBoard = getBoard();
+  const schoolLogo = getLogoUrl();
+
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -170,96 +184,99 @@ export default function AdmitCardsPage() {
       </div>
 
       {/* Modal: Printable Admit Card Preview */}
-      {previewCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800 print:hidden">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                Official Admit Card / প্রবেশপত্র
-              </h2>
-              <div className="flex items-center gap-2">
+      <Dialog open={Boolean(previewCard)} onOpenChange={(open) => !open && setPreviewCard(null)}>
+        <DialogContent className="max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+          {previewCard && (
+            <div className="space-y-4">
+              <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800 pr-8 print:hidden">
+                <div>
+                  <DialogTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Official Admit Card / প্রবেশপত্র
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500">
+                    Candidate examination hall pass
+                  </DialogDescription>
+                </div>
                 <Button
                   size="sm"
                   onClick={() => window.print()}
-                  className="h-8 gap-1.5 bg-emerald-800 text-white hover:bg-emerald-900 text-xs"
+                  className="h-8 gap-1.5 bg-emerald-800 text-white hover:bg-emerald-900 text-xs shrink-0"
                 >
                   <Printer className="h-3.5 w-3.5" />
                   Print (A4)
                 </Button>
-                <button
-                  onClick={() => setPreviewCard(null)}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+              </DialogHeader>
 
-            {/* Printable Pass Container */}
-            <div className="rounded-xl border-2 border-slate-900/80 p-6 space-y-4 bg-white text-slate-900 font-sans print:border-none print:p-0">
-              {/* Institution Header */}
-              <div className="text-center border-b pb-3 border-slate-300">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <div className="h-8 w-8 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">
-                    SMS
+              {/* Printable Pass Container */}
+              <div className="rounded-xl border-2 border-slate-900/80 p-6 space-y-4 bg-white text-slate-900 font-sans print:border-none print:p-0">
+                {/* Institution Header */}
+                <div className="text-center border-b pb-3 border-slate-300">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    {schoolLogo ? (
+                      <img src={schoolLogo} alt={schoolName} className="h-8 w-8 object-contain rounded-full" />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">
+                        SMS
+                      </div>
+                    )}
+                    <h3 className="text-base font-extrabold uppercase tracking-wide">
+                      {schoolName}
+                    </h3>
                   </div>
-                  <h3 className="text-base font-extrabold uppercase tracking-wide">
-                    Dhaka Model High School &amp; College
-                  </h3>
-                </div>
-                <p className="text-[11px] text-slate-600">EIIN: 134567 &bull; Dhaka Education Board &bull; Bangladesh</p>
-                <div className="mt-2 inline-block rounded-md border border-slate-800 bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                  Admit Card / প্রবেশপত্র
-                </div>
-              </div>
-
-              {/* Student Demographics */}
-              <div className="grid grid-cols-3 gap-3 text-xs border-b pb-3 border-slate-200">
-                <div className="col-span-2 space-y-1.5">
-                  <div>
-                    <span className="text-slate-500">Student Name:</span>{" "}
-                    <span className="font-bold text-slate-900">{previewCard.student_name_en || previewCard.student_name_bn}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Student ID:</span>{" "}
-                    <span className="font-mono font-semibold">{previewCard.student_id}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Admit No:</span>{" "}
-                    <span className="font-mono font-bold text-emerald-800">{previewCard.card_number}</span>
+                  <p className="text-[11px] text-slate-600">EIIN: {schoolEIIN} &bull; {schoolBoard} Education Board &bull; Bangladesh</p>
+                  <div className="mt-2 inline-block rounded-md border border-slate-800 bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                    Admit Card / প্রবেশপত্র
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-md p-2 bg-slate-50 text-[10px] text-slate-400">
-                  <UserCheck className="h-8 w-8 text-slate-300 mb-1" />
-                  Candidate Photo
-                </div>
-              </div>
+                {/* Student Demographics */}
+                <div className="grid grid-cols-3 gap-3 text-xs border-b pb-3 border-slate-200">
+                  <div className="col-span-2 space-y-1.5">
+                    <div>
+                      <span className="text-slate-500">Student Name:</span>{" "}
+                      <span className="font-bold text-slate-900">{previewCard.student_name_en || previewCard.student_name_bn}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Student ID:</span>{" "}
+                      <span className="font-mono font-semibold">{previewCard.student_id}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Admit No:</span>{" "}
+                      <span className="font-mono font-bold text-emerald-800">{previewCard.card_number}</span>
+                    </div>
+                  </div>
 
-              {/* Instructions */}
-              <div className="space-y-1 text-[10px] text-slate-600">
-                <p className="font-bold text-slate-800">General Instructions:</p>
-                <p>1. Candidates must arrive at the examination hall at least 15 minutes before commencement.</p>
-                <p>2. Electronic gadgets, mobile phones, and non-approved calculators are strictly prohibited.</p>
-                <p>3. This admit card must be produced to the invigilator during every examination session.</p>
-              </div>
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-md p-2 bg-slate-50 text-[10px] text-slate-400">
+                    <UserCheck className="h-8 w-8 text-slate-300 mb-1" />
+                    Candidate Photo
+                  </div>
+                </div>
 
-              {/* Signatures */}
-              <div className="flex justify-between items-end pt-8 text-[11px] text-slate-700">
-                <div className="text-center">
-                  <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Class Teacher</div>
+                {/* Instructions */}
+                <div className="space-y-1 text-[10px] text-slate-600">
+                  <p className="font-bold text-slate-800">General Instructions:</p>
+                  <p>1. Candidates must arrive at the examination hall at least 15 minutes before commencement.</p>
+                  <p>2. Electronic gadgets, mobile phones, and non-approved calculators are strictly prohibited.</p>
+                  <p>3. This admit card must be produced to the invigilator during every examination session.</p>
                 </div>
-                <div className="text-center">
-                  <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Exam Controller</div>
-                </div>
-                <div className="text-center">
-                  <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Principal</div>
+
+                {/* Signatures */}
+                <div className="flex justify-between items-end pt-8 text-[11px] text-slate-700">
+                  <div className="text-center">
+                    <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Class Teacher</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Exam Controller</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Principal</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

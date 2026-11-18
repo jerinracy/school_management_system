@@ -1,5 +1,7 @@
 """Serializers for the communications module."""
 
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.communications.models import (
@@ -212,6 +214,22 @@ class NoticeSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_by", "created_at", "updated_at"]
+
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if isinstance(data, dict):
+            data = dict(data)
+            if "title" in data:
+                if not data.get("title_en"):
+                    data["title_en"] = data["title"]
+                if not data.get("title_bn"):
+                    data["title_bn"] = data["title"]
+            if "body" in data or "content" in data:
+                content_val = data.get("body") or data.get("content")
+                if not data.get("content_en"):
+                    data["content_en"] = content_val
+                if not data.get("content_bn"):
+                    data["content_bn"] = content_val
+        return super().to_internal_value(data)
 
     def get_created_by_name(self, obj: Notice) -> str:
         if obj.created_by:

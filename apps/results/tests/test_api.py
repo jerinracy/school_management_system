@@ -257,3 +257,38 @@ def test_exam_summary_api(admin_user, exam_setup):
     assert data["gpa_5_count"] == 1
     assert float(data["pass_percentage"]) == 100.0
     assert data["gpa_distribution"] == {"A+": 1}
+
+
+@pytest.mark.django_db
+def test_exam_results_filter_by_class_and_section(admin_user, exam_setup):
+    """Test filtering /api/v1/results/exam-results/ by class_level and section."""
+    client, user = admin_user
+    exam, exam_subject, student = exam_setup
+
+    # Calculate results to create ExamResult
+    client.post("/api/v1/results/exam-results/calculate/", data={"exam_id": str(exam.id)})
+    result = ExamResult.objects.get(exam=exam, student=student)
+    class_id = result.enrollment.class_level_id
+    section_id = result.enrollment.section_id
+
+    # Filter with matching class_level
+    res = client.get(f"/api/v1/results/exam-results/?exam={exam.id}&class_level={class_id}")
+    assert res.status_code == status.HTTP_200_OK
+    assert res.json()["count"] == 1
+    assert res.json()["results"][0]["class_level"] == str(class_id)
+    assert res.json()["results"][0]["section"] == str(section_id)
+
+    # Filter with matching class_level and section
+    res = client.get(
+        f"/api/v1/results/exam-results/?exam={exam.id}&class_level={class_id}&section={section_id}"
+    )
+    assert res.status_code == status.HTTP_200_OK
+    assert res.json()["count"] == 1
+
+    # Filter with non-matching class UUID
+    import uuid
+
+    dummy_uuid = uuid.uuid4()
+    res = client.get(f"/api/v1/results/exam-results/?exam={exam.id}&class_level={dummy_uuid}")
+    assert res.status_code == status.HTTP_200_OK
+    assert res.json()["count"] == 0

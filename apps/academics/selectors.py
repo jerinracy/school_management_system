@@ -3,7 +3,7 @@
 from typing import Any
 from uuid import UUID
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from apps.academics.models import Period, RoutineSlot, Weekday
 
@@ -19,6 +19,7 @@ def get_routine_slots_queryset(institution_id: UUID | str) -> QuerySet[RoutineSl
             "period__shift",
             "subject",
             "teacher_user",
+            "teacher_staff",
             "room",
             "room__branch",
         )
@@ -44,7 +45,9 @@ def get_routine_for_teacher(
     teacher_user_id: UUID | str,
     weekday: int | None = None,
 ) -> QuerySet[RoutineSlot]:
-    qs = get_routine_slots_queryset(institution_id).filter(teacher_user__id=teacher_user_id)
+    qs = get_routine_slots_queryset(institution_id).filter(
+        Q(teacher_user__id=teacher_user_id) | Q(teacher_staff__id=teacher_user_id)
+    )
     if weekday is not None:
         qs = qs.filter(weekday=weekday)
     return qs

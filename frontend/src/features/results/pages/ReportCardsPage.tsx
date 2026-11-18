@@ -51,11 +51,14 @@ export default function ReportCardsPage() {
   });
 
   const { data: examResultsData, isLoading } = useQuery({
-    queryKey: ["report-cards-results", selectedExam, search],
+    queryKey: ["report-cards-results", selectedExam, selectedClass, selectedSection, search],
     queryFn: () =>
       resultsApi.getExamResults({
         exam: selectedExam || undefined,
+        class_level: selectedClass || undefined,
+        section: selectedSection || undefined,
         search: search.trim() || undefined,
+        page_size: 100,
       }),
     enabled: Boolean(selectedExam),
   });
@@ -71,7 +74,22 @@ export default function ReportCardsPage() {
   });
 
   const exams = useMemo(() => examsData?.results ?? [], [examsData]);
-  const results = useMemo(() => examResultsData?.results ?? [], [examResultsData]);
+  const results = useMemo(() => {
+    let list = examResultsData?.results ?? [];
+    if (selectedClass) {
+      list = list.filter((r) => {
+        const item = r as typeof r & { class_level?: string; section?: string };
+        return !item.class_level || item.class_level === selectedClass;
+      });
+    }
+    if (selectedSection) {
+      list = list.filter((r) => {
+        const item = r as typeof r & { class_level?: string; section?: string };
+        return !item.section || item.section === selectedSection;
+      });
+    }
+    return list;
+  }, [examResultsData, selectedClass, selectedSection]);
   const subjectResults = useMemo(() => subjectResultsData?.results ?? [], [subjectResultsData]);
 
   // Bulk ZIP Mutation
@@ -306,7 +324,7 @@ export default function ReportCardsPage() {
 
       {/* Modal: Report Card Preview */}
       {previewResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade p-4">
           <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
             <ReportCardPreview
               result={previewResult}

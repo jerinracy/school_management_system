@@ -7,6 +7,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from apps.core.utils.phone import normalize_bd_phone
+from apps.institutions.models import Branch
 
 from .models import PlatformType, Role, User, UserRole, UserSession
 
@@ -185,12 +186,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating a new user by Admin."""
 
     password = serializers.CharField(write_only=True, required=False)
+    branch = serializers.PrimaryKeyRelatedField(
+        queryset=Branch.objects.all(), required=False, allow_null=True, write_only=True
+    )
 
     class Meta:
         model = User
         fields = [
             "id",
             "institution",
+            "branch",
             "username",
             "phone",
             "email",
@@ -209,8 +214,22 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data: dict[str, Any]) -> User:
+        branch = validated_data.pop("branch", None)
+        if branch and getattr(branch, "institution", None):
+            validated_data["institution"] = branch.institution
+
         password = validated_data.pop("password", None)
         user = User.objects.create_user(password=password, **validated_data)
+
+        if branch:
+            role_code = user.user_type if user.user_type else "staff"
+            role, _ = Role.objects.get_or_create(
+                institution=user.institution,
+                code=role_code,
+                defaults={"name": role_code.capitalize()},
+            )
+            UserRole.objects.get_or_create(user=user, role=role, defaults={"branch": branch})
+
         return user
 
 

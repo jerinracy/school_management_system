@@ -62,6 +62,30 @@ class ClassLevel(TenantOwnedModel):
         default=False,
         help_text="Whether students branch into streams/groups (typically Class 9+ in Bangladesh)",
     )
+    shift = models.ForeignKey(
+        "institutions.Shift",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="class_levels",
+        help_text="Associated shift (optional; null means common across all shifts)",
+    )
+    session = models.ForeignKey(
+        "institutions.AcademicSession",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="class_levels",
+        help_text="Associated academic session (optional; null means common across all sessions)",
+    )
+    branch = models.ForeignKey(
+        "institutions.Branch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="class_levels",
+        help_text="Associated branch (optional; null means common across all branches)",
+    )
 
     class Meta(TenantOwnedModel.Meta):
         verbose_name = "Class Level"
@@ -120,6 +144,14 @@ class Section(TenantOwnedModel):
         "institutions.AcademicSession",
         on_delete=models.CASCADE,
         related_name="sections",
+    )
+    branch = models.ForeignKey(
+        "institutions.Branch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sections",
+        help_text="Associated branch (optional; null means inherited from shift or primary branch)",
     )
     name = models.CharField(max_length=64, help_text="Section name (e.g. Padma, Section A)")
     capacity = models.PositiveIntegerField(default=50, help_text="Maximum student capacity")
@@ -491,7 +523,9 @@ class SubstituteAssignment(TenantOwnedModel):
     )
     substitute_teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="substitute_assignments",
     )
     substitute_staff = models.ForeignKey(
@@ -515,9 +549,12 @@ class SubstituteAssignment(TenantOwnedModel):
         ]
 
     def __str__(self) -> str:
-        return (
-            f"{self.slot_date} | Slot {self.routine_slot_id} -> {self.substitute_teacher.full_name}"
+        teacher_name = (
+            (self.substitute_staff.full_name_en or self.substitute_staff.full_name_bn)
+            if self.substitute_staff
+            else (self.substitute_teacher.full_name if self.substitute_teacher else "Assigned")
         )
+        return f"{self.slot_date} | Slot {self.routine_slot_id} -> {teacher_name}"
 
     def clean(self) -> None:
         super().clean()
@@ -528,7 +565,27 @@ class SubstituteAssignment(TenantOwnedModel):
             raise ValidationError(
                 {"substitute_teacher": "Substitute teacher must belong to the same institution."}
             )
-        if self.original_teacher_id and self.substitute_teacher_id == self.original_teacher_id:
+        if self.substitute_staff_id and self.substitute_staff.institution_id != self.institution_id:
+            raise ValidationError(
+                {"substitute_staff": "Substitute staff must belong to the same institution."}
+            )
+        if not self.substitute_teacher_id and not self.substitute_staff_id:
+            raise ValidationError(
+                {"substitute_teacher": "A substitute teacher or staff must be assigned."}
+            )
+        if (
+            self.original_teacher_id
+            and self.substitute_teacher_id
+            and self.substitute_teacher_id == self.original_teacher_id
+        ):
             raise ValidationError(
                 {"substitute_teacher": "Substitute teacher cannot be the original teacher."}
+            )
+        if (
+            self.original_staff_id
+            and self.substitute_staff_id
+            and self.substitute_staff_id == self.original_staff_id
+        ):
+            raise ValidationError(
+                {"substitute_staff": "Substitute teacher cannot be the original teacher."}
             )

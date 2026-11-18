@@ -4,11 +4,21 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Briefcase,
+  CheckCircle2,
   CreditCard,
   History,
+  Mail,
+  MapPin,
+  Phone,
   Plus,
+  Search,
+  ShieldCheck,
+  Trash2,
   User,
+  Users,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -33,6 +43,7 @@ import { academicApi } from "@/features/academics/api/academicApi";
 import { institutionApi } from "@/features/institutions/api/institutionApi";
 import { StudentIDCardPreview } from "@/features/students/components/StudentIDCardPreview";
 import { Can } from "@/features/auth/permissions";
+import type { components } from "@/types/api";
 
 export function StudentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -100,6 +111,70 @@ export function StudentDetailPage() {
     },
     onError: (err: unknown) => {
       setEnrollError((err as Error).message || "Failed to enroll student.");
+    },
+  });
+
+  // Link Guardian Modal State
+  const [isLinkGuardianModalOpen, setIsLinkGuardianModalOpen] = useState(false);
+  const [guardianSearch, setGuardianSearch] = useState("");
+  const [selectedGuardianId, setSelectedGuardianId] = useState("");
+  const [selectedRelation, setSelectedRelation] = useState<
+    components["schemas"]["RelationEnum"]
+  >("father");
+  const [isPrimaryGuardian, setIsPrimaryGuardian] = useState(false);
+  const [canPickup, setCanPickup] = useState(true);
+  const [receivesSms, setReceivesSms] = useState(true);
+  const [financialResponsible, setFinancialResponsible] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  // Unlink Dialog State
+  const [unlinkingGuardian, setUnlinkingGuardian] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  // Guardian Search Query
+  const { data: searchGuardiansData, isFetching: isSearchingGuardians } = useQuery({
+    queryKey: ["guardiansSearch", guardianSearch],
+    queryFn: () => studentsApi.getGuardians({ search: guardianSearch, page: 1 }),
+    enabled: isLinkGuardianModalOpen && guardianSearch.trim().length >= 2,
+  });
+
+  const searchedGuardians = searchGuardiansData?.results ?? [];
+
+  // Link Guardian Mutation
+  const linkGuardianMutation = useMutation({
+    mutationFn: () => {
+      if (!selectedGuardianId || !id) {
+        throw new Error("Please select a guardian");
+      }
+      return studentsApi.linkGuardian(selectedGuardianId, {
+        student_id: id,
+        relation: selectedRelation,
+        is_primary: isPrimaryGuardian,
+        can_pickup: canPickup,
+        receives_sms: receivesSms,
+        financial_responsible: financialResponsible,
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["student", id] });
+      setIsLinkGuardianModalOpen(false);
+      setSelectedGuardianId("");
+      setGuardianSearch("");
+      setLinkError(null);
+    },
+    onError: (err: unknown) => {
+      setLinkError((err as Error).message || "Failed to link guardian.");
+    },
+  });
+
+  // Unlink Guardian Mutation
+  const unlinkGuardianMutation = useMutation({
+    mutationFn: (guardianId: string) => studentsApi.unlinkGuardian(guardianId, id!),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["student", id] });
+      setUnlinkingGuardian(null);
     },
   });
 
@@ -332,6 +407,157 @@ export function StudentDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Guardians & Household Contacts Card */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <Users className="h-4 w-4 text-emerald-600" />
+                    <span>{t("students.guardiansContacts", "Guardians & Family Contacts")}</span>
+                  </h3>
+                  <span className="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                    {student.guardians?.length ?? 0}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {t("students.guardiansContactsSubtitle", "Verified parents, legal guardians, and authorized pickup contacts.")}
+                </p>
+              </div>
+
+              <Can perm="students.manage">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSelectedGuardianId("");
+                    setGuardianSearch("");
+                    setSelectedRelation("father");
+                    setIsPrimaryGuardian((student.guardians?.length ?? 0) === 0);
+                    setCanPickup(true);
+                    setReceivesSms(true);
+                    setFinancialResponsible((student.guardians?.length ?? 0) === 0);
+                    setLinkError(null);
+                    setIsLinkGuardianModalOpen(true);
+                  }}
+                  className="gap-1.5 text-xs bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>{t("students.linkGuardian", "Link Guardian")}</span>
+                </Button>
+              </Can>
+            </div>
+
+            {!student.guardians || student.guardians.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-slate-400">
+                <Users className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  {t("students.noGuardiansLinked", "No guardians linked to this student yet.")}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {student.guardians.map((g) => (
+                  <div
+                    key={g.id}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 p-4 space-y-3 relative hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                  >
+                    {/* Guardian Name & Badges */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                            {currentLang === "bn" && g.name_bn ? g.name_bn : g.name_en}
+                          </span>
+                          {g.is_primary && (
+                            <Badge variant="primary" className="text-[10px]">
+                              {t("students.primaryBadge", "Primary")}
+                            </Badge>
+                          )}
+                          <Badge variant="neutral" className="text-[10px] capitalize">
+                            {g.relation}
+                          </Badge>
+                        </div>
+
+                        {/* Mobile Phone */}
+                        <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-700 dark:text-slate-300">
+                          <Phone className="h-3.5 w-3.5 text-emerald-600" />
+                          <a href={`tel:${g.phone}`} className="hover:underline text-emerald-700 dark:text-emerald-400">
+                            {g.phone}
+                          </a>
+                          {g.alt_phone && (
+                            <span className="text-slate-400 text-[11px]">/ {g.alt_phone}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Unlink Action */}
+                      <Can perm="students.manage">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUnlinkingGuardian({ id: g.guardian_id, name: g.name_en })}
+                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 rounded-lg"
+                          title={t("students.unlinkGuardian", "Unlink")}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </Can>
+                    </div>
+
+                    {/* Additional details */}
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      {g.occupation && (
+                        <div className="flex items-center gap-1.5">
+                          <Briefcase className="h-3 w-3 text-slate-400" />
+                          <span className="truncate">{g.occupation}</span>
+                        </div>
+                      )}
+                      {g.nid && (
+                        <div className="font-mono text-slate-600 dark:text-slate-400 truncate">
+                          NID: {g.nid}
+                        </div>
+                      )}
+                      {g.email && (
+                        <div className="flex items-center gap-1.5 col-span-2 truncate">
+                          <Mail className="h-3 w-3 text-slate-400" />
+                          <span className="truncate">{g.email}</span>
+                        </div>
+                      )}
+                      {g.present_address && (
+                        <div className="flex items-center gap-1.5 col-span-2 text-slate-600 dark:text-slate-400 truncate">
+                          <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{g.present_address}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Permission Flags */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {g.can_pickup && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 px-2 py-0.5 rounded-md">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>{t("students.canPickup", "Pickup Authorized")}</span>
+                        </span>
+                      )}
+                      {g.receives_sms && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 px-2 py-0.5 rounded-md">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>{t("students.receivesSms", "Receives SMS")}</span>
+                        </span>
+                      )}
+                      {g.financial_responsible && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60 px-2 py-0.5 rounded-md">
+                          <ShieldCheck className="h-3 w-3" />
+                          <span>{t("students.financialResponsible", "Financial Contact")}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         {/* Tab 2: Historical Enrollments */}
@@ -496,6 +722,246 @@ export function StudentDetailPage() {
               className="text-xs bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg"
             >
               {enrollMutation.isPending ? t("common.saving", "Enrolling...") : t("students.confirmEnroll", "Enroll Student")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link Guardian Dialog */}
+      <Dialog open={isLinkGuardianModalOpen} onOpenChange={setIsLinkGuardianModalOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+              {t("students.linkGuardian", "Link Guardian to Student")}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {t("students.linkGuardianSubtitle", "Search an existing guardian to link or configure authorization permissions.")}
+            </DialogDescription>
+          </DialogHeader>
+
+          {linkError && (
+            <div className="rounded-lg border border-danger/20 bg-danger/10 p-2.5 text-xs text-danger font-medium">
+              {linkError}
+            </div>
+          )}
+
+          <div className="space-y-4 py-2">
+            {/* Guardian Search */}
+            <div className="space-y-1.5">
+              <FormLabel required className="text-xs font-medium text-slate-700">
+                {t("students.guardian", "Guardian Record")}
+              </FormLabel>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={guardianSearch}
+                  onChange={(e) => setGuardianSearch(e.target.value)}
+                  placeholder={t("students.searchGuardiansToLink", "Search existing guardian by name or phone...")}
+                  className="h-9 pl-9 text-xs rounded-lg"
+                />
+                {isSearchingGuardians && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                    {t("common.searching", "Searching...")}
+                  </span>
+                )}
+              </div>
+
+              {/* Autocomplete Results */}
+              {guardianSearch.trim().length >= 2 && searchedGuardians.length > 0 && (
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-1.5 max-h-40 overflow-y-auto space-y-1">
+                  {searchedGuardians.map((g) => {
+                    const isSelected = selectedGuardianId === g.id;
+                    const isAlreadyLinked = student?.guardians?.some((item) => item.guardian_id === g.id);
+                    return (
+                      <div
+                        key={g.id}
+                        className={`flex items-center justify-between px-2.5 py-1.5 rounded-md transition-colors text-xs ${
+                          isSelected ? "bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800" : "hover:bg-white dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <div>
+                          <div className="font-semibold text-slate-800 dark:text-slate-200">
+                            {currentLang === "bn" && g.name_bn ? g.name_bn : g.name_en}
+                          </div>
+                          <div className="text-[11px] font-mono text-slate-500">
+                            {g.phone} {g.occupation ? `• ${g.occupation}` : ""}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={isSelected ? "default" : "outline"}
+                          disabled={Boolean(isAlreadyLinked)}
+                          onClick={() => {
+                            setSelectedGuardianId(g.id);
+                            if (g.relation_default) {
+                              setSelectedRelation(g.relation_default);
+                            }
+                          }}
+                          className="h-6 px-2 text-[11px]"
+                        >
+                          {isAlreadyLinked ? t("common.linked", "Linked") : isSelected ? t("common.selected", "Selected") : t("common.select", "Select")}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Relationship Dropdown */}
+            <FormField>
+              <FormLabel required className="text-xs font-medium text-slate-700">
+                {t("students.relation", "Relationship to Student")}
+              </FormLabel>
+              <Select
+                value={selectedRelation}
+                onValueChange={(val) => setSelectedRelation(val as never)}
+              >
+                <SelectTrigger className="h-9 text-xs rounded-lg">
+                  <SelectValue placeholder={t("students.selectRelation", "Select Relation")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="father">{t("students.relFather", "Father")}</SelectItem>
+                  <SelectItem value="mother">{t("students.relMother", "Mother")}</SelectItem>
+                  <SelectItem value="legal_guardian">{t("students.relLegalGuardian", "Legal Guardian")}</SelectItem>
+                  <SelectItem value="grandparent">{t("students.relGrandparent", "Grandparent")}</SelectItem>
+                  <SelectItem value="uncle">{t("students.relUncle", "Uncle")}</SelectItem>
+                  <SelectItem value="aunt">{t("students.relAunt", "Aunt")}</SelectItem>
+                  <SelectItem value="brother">{t("students.relBrother", "Brother")}</SelectItem>
+                  <SelectItem value="sister">{t("students.relSister", "Sister")}</SelectItem>
+                  <SelectItem value="other">{t("students.relOther", "Other")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            {/* Permission Flags */}
+            <div className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3 space-y-2.5">
+              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
+                {t("students.authorizationPermissions", "Authorization & Permissions")}
+              </span>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={isPrimaryGuardian}
+                    onChange={(e) => setIsPrimaryGuardian(e.target.checked)}
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                  />
+                  <span>{t("students.isPrimary", "Primary Contact")}</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={canPickup}
+                    onChange={(e) => setCanPickup(e.target.checked)}
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                  />
+                  <span>{t("students.canPickup", "Authorized Pickup")}</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={receivesSms}
+                    onChange={(e) => setReceivesSms(e.target.checked)}
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                  />
+                  <span>{t("students.receivesSms", "Receives SMS")}</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={financialResponsible}
+                    onChange={(e) => setFinancialResponsible(e.target.checked)}
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                  />
+                  <span>{t("students.financialResponsible", "Financial Contact")}</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <Link
+                to="/students/guardians"
+                className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline font-medium"
+              >
+                + {t("students.newGuardianRecord", "Need to create a new guardian record first?")}
+              </Link>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLinkGuardianModalOpen(false)}
+              className="text-xs rounded-lg"
+            >
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => linkGuardianMutation.mutate()}
+              disabled={linkGuardianMutation.isPending || !selectedGuardianId}
+              className="text-xs bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg"
+            >
+              {linkGuardianMutation.isPending
+                ? t("common.saving", "Linking...")
+                : t("students.linkGuardian", "Link Guardian")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unlink Confirmation Dialog */}
+      <Dialog
+        open={Boolean(unlinkingGuardian)}
+        onOpenChange={(open) => !open && setUnlinkingGuardian(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+              {t("students.unlinkGuardian", "Unlink Guardian")}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {t(
+                "students.unlinkGuardianConfirm",
+                "Are you sure you want to unlink this guardian from the student?",
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {unlinkingGuardian && (
+            <div className="py-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {unlinkingGuardian.name}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUnlinkingGuardian(null)}
+              className="text-xs rounded-lg"
+            >
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                if (unlinkingGuardian) {
+                  unlinkGuardianMutation.mutate(unlinkingGuardian.id);
+                }
+              }}
+              disabled={unlinkGuardianMutation.isPending}
+              className="text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg"
+            >
+              {unlinkGuardianMutation.isPending
+                ? t("common.removing", "Unlinking...")
+                : t("students.unlinkGuardian", "Unlink")}
             </Button>
           </DialogFooter>
         </DialogContent>

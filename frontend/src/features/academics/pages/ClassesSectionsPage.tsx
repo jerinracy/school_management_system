@@ -9,9 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { academicApi, type ClassLevel, type Section } from "@/features/academics/api/academicApi";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 
 export function ClassesSectionsPage() {
   const { t } = useTranslation();
+  const { selectedShift, selectedSession, selectedBranch } = useAcademicContextStore();
   const [classes, setClasses] = useState<ClassLevel[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");
@@ -27,15 +29,24 @@ export function ClassesSectionsPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const cls = await academicApi.getClasses();
+      const cls = await academicApi.getClasses({
+        shift: selectedShift?.id,
+        session: selectedSession?.id,
+        branch: selectedBranch?.id,
+      });
       setClasses(cls);
-      if (cls.length > 0 && !selectedClass && cls[0]) {
-        setSelectedClass(cls[0].id);
+      if (cls.length > 0) {
+        if (!selectedClass || !cls.some((c) => c.id === selectedClass)) {
+          setSelectedClass(cls[0]?.id || "");
+        }
+      } else {
+        setSelectedClass("");
+        setSections([]);
       }
     } catch {
       toast.error(t("academics.loadClassesError", "Failed to load classes."));
     }
-  }, [t, selectedClass]);
+  }, [t, selectedClass, selectedShift?.id, selectedSession?.id, selectedBranch?.id]);
 
   useEffect(() => {
     void loadData();
@@ -43,9 +54,18 @@ export function ClassesSectionsPage() {
 
   useEffect(() => {
     if (selectedClass) {
-      void academicApi.getSections(selectedClass).then(setSections);
+      void academicApi
+        .getSections({
+          class_level: selectedClass,
+          shift: selectedShift?.id,
+          session: selectedSession?.id,
+          branch: selectedBranch?.id,
+        })
+        .then(setSections);
+    } else {
+      setSections([]);
     }
-  }, [selectedClass]);
+  }, [selectedClass, selectedShift?.id, selectedSession?.id, selectedBranch?.id]);
 
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +73,16 @@ export function ClassesSectionsPage() {
       await academicApi.createClass({
         name: className,
         code: classCode,
-        numeric_order: classNumeric,
+        order: Number(classNumeric),
+        numeric_order: Number(classNumeric),
+        shift: selectedShift?.id,
+        session: selectedSession?.id,
+        branch: selectedBranch?.id,
       });
       toast.success(t("academics.classCreated", "Class level created."));
       setOpenClassModal(false);
       setClassName("");
+      setClassCode("");
       void loadData();
     } catch {
       toast.error(t("academics.classCreateError", "Failed to create class."));
@@ -77,6 +102,8 @@ export function ClassesSectionsPage() {
       await academicApi.bulkCreateSections({
         class_id: selectedClass,
         names,
+        shift_id: selectedShift?.id,
+        session_id: selectedSession?.id,
       });
       toast.success(t("academics.sectionsCreated", "Sections created in batch."));
       setOpenBulkSectionModal(false);

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
@@ -11,80 +11,105 @@ import { authApi } from "@/features/auth/api/authApi";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { ProtectedRoute } from "@/features/auth/permissions";
 import { IdleTimeoutDialog } from "@/features/auth/components/IdleTimeoutDialog";
+
+// Core initial pages loaded eagerly for instant startup
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { ForgotPasswordPage } from "@/features/auth/pages/ForgotPasswordPage";
 import { ForceChangePasswordPage } from "@/features/auth/pages/ForceChangePasswordPage";
 import { ProfilePage } from "@/features/auth/pages/ProfilePage";
 import { ForbiddenPage } from "@/features/auth/pages/ForbiddenPage";
 import { DashboardHomePage } from "@/features/dashboard/pages/DashboardHomePage";
-import { DesignSystemPage } from "@/features/design-system/pages/DesignSystemPage";
 
-import { InstitutionProfilePage } from "@/features/institutions/pages/InstitutionProfilePage";
-import { BranchesShiftsPage } from "@/features/institutions/pages/BranchesShiftsPage";
-import { SessionsTermsPage } from "@/features/institutions/pages/SessionsTermsPage";
-import { HolidaysPage } from "@/features/institutions/pages/HolidaysPage";
-import { ClassesSectionsPage } from "@/features/academics/pages/ClassesSectionsPage";
-import { SubjectsPage } from "@/features/academics/pages/SubjectsPage";
-import { PeriodsRoomsPage } from "@/features/academics/pages/PeriodsRoomsPage";
-import { RoutineBuilderPage } from "@/features/academics/pages/RoutineBuilderPage";
-import { SubstitutesPage } from "@/features/academics/pages/SubstitutesPage";
-import { CopySessionWizardPage } from "@/features/academics/pages/CopySessionWizardPage";
-import { StudentsListPage } from "@/features/students/pages/StudentsListPage";
-import { StudentDetailPage } from "@/features/students/pages/StudentDetailPage";
-import { StudentCreatePage } from "@/features/students/pages/StudentCreatePage";
-import { GuardiansListPage } from "@/features/students/pages/GuardiansListPage";
-import { AdmissionsOverviewPage } from "@/features/admissions/pages/AdmissionsOverviewPage";
-import StaffListPage from "@/features/staff/pages/StaffListPage";
-import StaffCreatePage from "@/features/staff/pages/StaffCreatePage";
-import StaffDetailPage from "@/features/staff/pages/StaffDetailPage";
-import DepartmentsDesignationsPage from "@/features/staff/pages/DepartmentsDesignationsPage";
-import LeaveManagementPage from "@/features/staff/pages/LeaveManagementPage";
-import DeviceListPage from "@/features/devices/pages/DeviceListPage";
-import DailyAttendancePage from "@/features/attendance/pages/DailyAttendancePage";
-import AttendanceCorrectionsPage from "@/features/attendance/pages/AttendanceCorrectionsPage";
-import PeriodAttendancePage from "@/features/attendance/pages/PeriodAttendancePage";
-import AttendancePoliciesPage from "@/features/attendance/pages/AttendancePoliciesPage";
-import ExamListPage from "@/features/exams/pages/ExamListPage";
-import ExamDetailPage from "@/features/exams/pages/ExamDetailPage";
-import MarkEntryPage from "@/features/exams/pages/MarkEntryPage";
-import AdmitCardsPage from "@/features/exams/pages/AdmitCardsPage";
-import ResultsDashboardPage from "@/features/results/pages/ResultsDashboardPage";
-import TabulationSheetPage from "@/features/results/pages/TabulationSheetPage";
-import ReportCardsPage from "@/features/results/pages/ReportCardsPage";
-import GradingScalesPage from "@/features/results/pages/GradingScalesPage";
-import InvoicesListPage from "@/features/fees/pages/InvoicesListPage";
-import InvoiceDetailPage from "@/features/fees/pages/InvoiceDetailPage";
-import CounterCollectionPage from "@/features/fees/pages/CounterCollectionPage";
-import MoneyReceiptsPage from "@/features/fees/pages/MoneyReceiptsPage";
-import FeeStructuresPage from "@/features/fees/pages/FeeStructuresPage";
-import WaiversPage from "@/features/fees/pages/WaiversPage";
-import DueListPage from "@/features/fees/pages/DueListPage";
-import CashbookPage from "@/features/accounting/pages/CashbookPage";
-import PayrollRunsListPage from "@/features/payroll/pages/PayrollRunsListPage";
-import PayrollRunDetailPage from "@/features/payroll/pages/PayrollRunDetailPage";
-import SalaryProfilesPage from "@/features/payroll/pages/SalaryProfilesPage";
-import SalaryStructuresPage from "@/features/payroll/pages/SalaryStructuresPage";
-import StaffLoansPage from "@/features/payroll/pages/StaffLoansPage";
-import PayslipsListPage from "@/features/payroll/pages/PayslipsListPage";
-import { SMSCampaignPage } from "@/features/communications/pages/SMSCampaignPage";
-import { NoticeBoardPage } from "@/features/communications/pages/NoticeBoardPage";
-import { TemplatesPage } from "@/features/communications/pages/TemplatesPage";
-import { DeliveryLogsPage } from "@/features/communications/pages/DeliveryLogsPage";
-import { EmergencyAlertsPage } from "@/features/communications/pages/EmergencyAlertsPage";
-import { UnifiedCalendarPage } from "@/features/events/pages/UnifiedCalendarPage";
-import { HomeworkListPage } from "@/features/operations/pages/HomeworkListPage";
-import { HomeworkSubmissionsPage } from "@/features/operations/pages/HomeworkSubmissionsPage";
-import { LibraryCatalogPage } from "@/features/operations/pages/LibraryCatalogPage";
-import { LibraryCirculationPage } from "@/features/operations/pages/LibraryCirculationPage";
-import { TransportFleetPage } from "@/features/operations/pages/TransportFleetPage";
-import { TransportRoutesPage } from "@/features/operations/pages/TransportRoutesPage";
-import { HostelDormsPage } from "@/features/operations/pages/HostelDormsPage";
-import { HostelAllocationsPage } from "@/features/operations/pages/HostelAllocationsPage";
-import { AuditLogsPage } from "@/features/reports/pages/AuditLogsPage";
-import { ActivityLogsPage } from "@/features/reports/pages/ActivityLogsPage";
-import { ReportDefinitionsPage } from "@/features/reports/pages/ReportDefinitionsPage";
-import { ReportExportsPage } from "@/features/reports/pages/ReportExportsPage";
-import { BulkImportsPage } from "@/features/reports/pages/BulkImportsPage";
+// Secondary feature pages loaded on-demand via React.lazy()
+const DesignSystemPage = lazy(() => import("@/features/design-system/pages/DesignSystemPage").then((m) => ({ default: m.DesignSystemPage })));
+
+const InstitutionProfilePage = lazy(() => import("@/features/institutions/pages/InstitutionProfilePage").then((m) => ({ default: m.InstitutionProfilePage })));
+const BranchesShiftsPage = lazy(() => import("@/features/institutions/pages/BranchesShiftsPage").then((m) => ({ default: m.BranchesShiftsPage })));
+const SessionsTermsPage = lazy(() => import("@/features/institutions/pages/SessionsTermsPage").then((m) => ({ default: m.SessionsTermsPage })));
+const HolidaysPage = lazy(() => import("@/features/institutions/pages/HolidaysPage").then((m) => ({ default: m.HolidaysPage })));
+
+const ClassesSectionsPage = lazy(() => import("@/features/academics/pages/ClassesSectionsPage").then((m) => ({ default: m.ClassesSectionsPage })));
+const SubjectsPage = lazy(() => import("@/features/academics/pages/SubjectsPage").then((m) => ({ default: m.SubjectsPage })));
+const PeriodsRoomsPage = lazy(() => import("@/features/academics/pages/PeriodsRoomsPage").then((m) => ({ default: m.PeriodsRoomsPage })));
+const RoutineBuilderPage = lazy(() => import("@/features/academics/pages/RoutineBuilderPage").then((m) => ({ default: m.RoutineBuilderPage })));
+const SubstitutesPage = lazy(() => import("@/features/academics/pages/SubstitutesPage").then((m) => ({ default: m.SubstitutesPage })));
+const CopySessionWizardPage = lazy(() => import("@/features/academics/pages/CopySessionWizardPage").then((m) => ({ default: m.CopySessionWizardPage })));
+
+const StudentsListPage = lazy(() => import("@/features/students/pages/StudentsListPage").then((m) => ({ default: m.StudentsListPage })));
+const StudentDetailPage = lazy(() => import("@/features/students/pages/StudentDetailPage").then((m) => ({ default: m.StudentDetailPage })));
+const StudentCreatePage = lazy(() => import("@/features/students/pages/StudentCreatePage").then((m) => ({ default: m.StudentCreatePage })));
+const GuardiansListPage = lazy(() => import("@/features/students/pages/GuardiansListPage").then((m) => ({ default: m.GuardiansListPage })));
+const AdmissionsOverviewPage = lazy(() => import("@/features/admissions/pages/AdmissionsOverviewPage").then((m) => ({ default: m.AdmissionsOverviewPage })));
+
+const StaffListPage = lazy(() => import("@/features/staff/pages/StaffListPage"));
+const StaffCreatePage = lazy(() => import("@/features/staff/pages/StaffCreatePage"));
+const StaffDetailPage = lazy(() => import("@/features/staff/pages/StaffDetailPage"));
+const DepartmentsDesignationsPage = lazy(() => import("@/features/staff/pages/DepartmentsDesignationsPage"));
+const LeaveManagementPage = lazy(() => import("@/features/staff/pages/LeaveManagementPage"));
+
+const DeviceListPage = lazy(() => import("@/features/devices/pages/DeviceListPage"));
+const DailyAttendancePage = lazy(() => import("@/features/attendance/pages/DailyAttendancePage"));
+const AttendanceCorrectionsPage = lazy(() => import("@/features/attendance/pages/AttendanceCorrectionsPage"));
+const PeriodAttendancePage = lazy(() => import("@/features/attendance/pages/PeriodAttendancePage"));
+const AttendancePoliciesPage = lazy(() => import("@/features/attendance/pages/AttendancePoliciesPage"));
+
+const ExamListPage = lazy(() => import("@/features/exams/pages/ExamListPage"));
+const ExamDetailPage = lazy(() => import("@/features/exams/pages/ExamDetailPage"));
+const MarkEntryPage = lazy(() => import("@/features/exams/pages/MarkEntryPage"));
+const AdmitCardsPage = lazy(() => import("@/features/exams/pages/AdmitCardsPage"));
+const ResultsDashboardPage = lazy(() => import("@/features/results/pages/ResultsDashboardPage"));
+const TabulationSheetPage = lazy(() => import("@/features/results/pages/TabulationSheetPage"));
+const ReportCardsPage = lazy(() => import("@/features/results/pages/ReportCardsPage"));
+const GradingScalesPage = lazy(() => import("@/features/results/pages/GradingScalesPage"));
+
+const InvoicesListPage = lazy(() => import("@/features/fees/pages/InvoicesListPage"));
+const InvoiceDetailPage = lazy(() => import("@/features/fees/pages/InvoiceDetailPage"));
+const CounterCollectionPage = lazy(() => import("@/features/fees/pages/CounterCollectionPage"));
+const MoneyReceiptsPage = lazy(() => import("@/features/fees/pages/MoneyReceiptsPage"));
+const FeeStructuresPage = lazy(() => import("@/features/fees/pages/FeeStructuresPage"));
+const WaiversPage = lazy(() => import("@/features/fees/pages/WaiversPage"));
+const DueListPage = lazy(() => import("@/features/fees/pages/DueListPage"));
+const CashbookPage = lazy(() => import("@/features/accounting/pages/CashbookPage"));
+
+const PayrollRunsListPage = lazy(() => import("@/features/payroll/pages/PayrollRunsListPage"));
+const PayrollRunDetailPage = lazy(() => import("@/features/payroll/pages/PayrollRunDetailPage"));
+const SalaryProfilesPage = lazy(() => import("@/features/payroll/pages/SalaryProfilesPage"));
+const SalaryStructuresPage = lazy(() => import("@/features/payroll/pages/SalaryStructuresPage"));
+const StaffLoansPage = lazy(() => import("@/features/payroll/pages/StaffLoansPage"));
+const PayslipsListPage = lazy(() => import("@/features/payroll/pages/PayslipsListPage"));
+
+const SMSCampaignPage = lazy(() => import("@/features/communications/pages/SMSCampaignPage").then((m) => ({ default: m.SMSCampaignPage })));
+const NoticeBoardPage = lazy(() => import("@/features/communications/pages/NoticeBoardPage").then((m) => ({ default: m.NoticeBoardPage })));
+const TemplatesPage = lazy(() => import("@/features/communications/pages/TemplatesPage").then((m) => ({ default: m.TemplatesPage })));
+const DeliveryLogsPage = lazy(() => import("@/features/communications/pages/DeliveryLogsPage").then((m) => ({ default: m.DeliveryLogsPage })));
+const EmergencyAlertsPage = lazy(() => import("@/features/communications/pages/EmergencyAlertsPage").then((m) => ({ default: m.EmergencyAlertsPage })));
+const UnifiedCalendarPage = lazy(() => import("@/features/events/pages/UnifiedCalendarPage").then((m) => ({ default: m.UnifiedCalendarPage })));
+
+const HomeworkListPage = lazy(() => import("@/features/operations/pages/HomeworkListPage").then((m) => ({ default: m.HomeworkListPage })));
+const HomeworkSubmissionsPage = lazy(() => import("@/features/operations/pages/HomeworkSubmissionsPage").then((m) => ({ default: m.HomeworkSubmissionsPage })));
+const LibraryCatalogPage = lazy(() => import("@/features/operations/pages/LibraryCatalogPage").then((m) => ({ default: m.LibraryCatalogPage })));
+const LibraryCirculationPage = lazy(() => import("@/features/operations/pages/LibraryCirculationPage").then((m) => ({ default: m.LibraryCirculationPage })));
+const TransportFleetPage = lazy(() => import("@/features/operations/pages/TransportFleetPage").then((m) => ({ default: m.TransportFleetPage })));
+const TransportRoutesPage = lazy(() => import("@/features/operations/pages/TransportRoutesPage").then((m) => ({ default: m.TransportRoutesPage })));
+const HostelDormsPage = lazy(() => import("@/features/operations/pages/HostelDormsPage").then((m) => ({ default: m.HostelDormsPage })));
+const HostelAllocationsPage = lazy(() => import("@/features/operations/pages/HostelAllocationsPage").then((m) => ({ default: m.HostelAllocationsPage })));
+
+const AuditLogsPage = lazy(() => import("@/features/reports/pages/AuditLogsPage").then((m) => ({ default: m.AuditLogsPage })));
+const ActivityLogsPage = lazy(() => import("@/features/reports/pages/ActivityLogsPage").then((m) => ({ default: m.ActivityLogsPage })));
+const ReportDefinitionsPage = lazy(() => import("@/features/reports/pages/ReportDefinitionsPage").then((m) => ({ default: m.ReportDefinitionsPage })));
+const ReportExportsPage = lazy(() => import("@/features/reports/pages/ReportExportsPage").then((m) => ({ default: m.ReportExportsPage })));
+const BulkImportsPage = lazy(() => import("@/features/reports/pages/BulkImportsPage").then((m) => ({ default: m.BulkImportsPage })));
+
+function PageFallbackLoader() {
+  return (
+    <div className="flex h-[50vh] w-full items-center justify-center">
+      <div className="flex flex-col items-center gap-2.5">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-[11px] text-ink-muted">Loading...</span>
+      </div>
+    </div>
+  );
+}
 
 function SessionBootstrap({ children }: { children: React.ReactNode }) {
   const { setTokens, setUser, logout, setIsRestoring } = useAuthStore();
@@ -173,9 +198,10 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <AppShell permissions={user?.permissions} userType={user?.user_type} onLogout={handleLogout}>
-              <Routes>
-                <Route path="/" element={<DashboardHomePage />} />
-                <Route path="/profile" element={<ProfilePage />} />
+              <Suspense fallback={<PageFallbackLoader />}>
+                <Routes>
+                  <Route path="/" element={<DashboardHomePage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
 
                 {/* Institution Routes */}
                 <Route
@@ -745,7 +771,8 @@ export function AppRoutes() {
                 ) : null}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-            </AppShell>
+            </Suspense>
+          </AppShell>
           </ProtectedRoute>
         }
       />

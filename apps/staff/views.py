@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, status, viewsets
@@ -10,7 +11,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.mixins import TenantScopedMixin
+from apps.core.mixins import TenantScopedMixin, get_request_institution
 from apps.institutions.models import AcademicSession, Institution
 from apps.staff.models import (
     Department,
@@ -37,6 +38,8 @@ from apps.staff.serializers import (
     LeaveDecideActionSerializer,
     LeaveRequestSerializer,
     LeaveTypeSerializer,
+    ProvisionPortalAccountSerializer,
+    ResetPasswordSerializer,
     StaffCreateUpdateSerializer,
     StaffDetailSerializer,
     StaffListSerializer,
@@ -56,10 +59,7 @@ from apps.staff.services import (
 
 
 def _get_request_institution(request: Request) -> Institution:
-    user = request.user
-    if not hasattr(user, "institution") or user.institution is None:
-        raise ValidationError("User has no associated institution.")
-    return user.institution
+    return get_request_institution(request)
 
 
 def _get_request_staff(request: Request) -> Staff | None:
@@ -118,9 +118,38 @@ class StaffViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         "nid",
         "mpo_index_number",
     ]
-    filterset_fields = ["staff_type", "status", "department", "designation", "is_mpo", "gender"]
+    filterset_fields = ["status", "department", "designation", "is_mpo", "gender"]
     ordering_fields = ["employee_id", "full_name_en", "joining_date", "created_at"]
     ordering = ["designation__rank_order", "full_name_en"]
+
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        params = getattr(self.request, "query_params", getattr(self.request, "GET", {}))
+        staff_type = params.get("staff_type")
+        if staff_type:
+            qs = qs.filter(staff_type__iexact=staff_type.strip())
+        if self.action in ["list", "summary"]:
+            qs = qs.select_related("department", "designation", "user")
+        else:
+            qs = qs.select_related("department", "designation", "user").prefetch_related(
+                "educations", "documents", "id_cards"
+            )
+
+        # Superadmin data isolation: only platform superadmins can view superadmin staff
+        user = getattr(self.request, "user", None)
+        is_superadmin = bool(
+            user
+            and user.is_authenticated
+            and (
+                getattr(user, "is_superuser", False)
+                or getattr(user, "user_type", "") == "superadmin"
+            )
+        )
+        if not is_superadmin:
+            qs = qs.exclude(
+                models.Q(staff_type="superadmin") | models.Q(user__user_type="superadmin")
+            )
+        return qs
 
     def get_serializer_class(self) -> type[Any]:
         if self.action == "list":
@@ -132,9 +161,65 @@ class StaffViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     def get_permissions(self) -> list[Any]:
         if self.action in ["me", "workload"]:
             return [permissions.IsAuthenticated()]
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "summary"]:
             return [permissions.IsAuthenticated(), (CanViewStaff | CanManageStaff)()]
         return [permissions.IsAuthenticated(), CanManageStaff()]
+
+    @extend_schema(responses={200: dict})
+    @action(detail=False, methods=["get"], url_path="summary")
+    def summary(self, request: Request) -> Response:
+        """Aggregated staff category counts in a single query."""
+        qs = self.get_queryset()
+        user = request.user
+        is_superadmin = bool(
+            user
+            and user.is_authenticated
+            and (
+                getattr(user, "is_superuser", False)
+                or getattr(user, "user_type", "") == "superadmin"
+            )
+        )
+
+        counts = qs.aggregate(
+            total=models.Count("id"),
+            superadmin=models.Count(
+                "id",
+                filter=models.Q(staff_type="superadmin") | models.Q(user__user_type="superadmin"),
+            ),
+            admin=models.Count(
+                "id",
+                filter=models.Q(staff_type="admin")
+                | models.Q(
+                    user__user_type__in=[
+                        "admin",
+                        "head_teacher",
+                        "assistant_head",
+                        "accountant",
+                        "clerk",
+                    ]
+                ),
+            ),
+            teacher=models.Count(
+                "id",
+                filter=models.Q(staff_type="teacher") | models.Q(user__user_type="teacher"),
+            ),
+            staff=models.Count(
+                "id",
+                filter=models.Q(staff_type__in=["support", "driver", "security", "other"])
+                | models.Q(user__user_type__in=["staff", "librarian", "driver", "security"]),
+            ),
+        )
+
+        data: dict[str, Any] = {
+            "total": counts["total"],
+            "admin": counts["admin"],
+            "teacher": counts["teacher"],
+            "staff": counts["staff"],
+        }
+        if is_superadmin:
+            data["superadmin"] = counts["superadmin"]
+
+        return Response(data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer: Any) -> None:
         inst = _get_request_institution(self.request)
@@ -167,17 +252,59 @@ class StaffViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         metrics = get_teacher_workload_summary(teacher, session)
         return Response(metrics, status=status.HTTP_200_OK)
 
-    @extend_schema(responses={200: dict})
+    @extend_schema(
+        request=ProvisionPortalAccountSerializer,
+        responses={200: dict},
+        summary="Provision portal access credentials for this staff member",
+    )
     @action(detail=True, methods=["post"], url_path="create-portal-account")
     def create_portal_account(self, request: Request, pk: str | None = None) -> Response:
         """Provision or reset portal access credentials for this staff member."""
         staff = self.get_object()
-        user, _ = create_portal_user_for_staff(staff)
+        serializer = ProvisionPortalAccountSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        custom_username = serializer.validated_data.get("username")
+        custom_password = serializer.validated_data.get("password")
+
+        user, _ = create_portal_user_for_staff(
+            staff,
+            username=custom_username,
+            password=custom_password,
+        )
         return Response(
             {
-                "detail": "Staff portal account provisioned and credentials sent via SMS.",
+                "detail": "Staff portal account provisioned successfully.",
                 "user_id": str(user.id),
+                "username": user.username,
                 "phone": staff.phone,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        request=ResetPasswordSerializer,
+        responses={200: dict},
+        summary="Reset portal login password for an employee",
+    )
+    @action(detail=True, methods=["post"], url_path="reset-password")
+    def reset_password(self, request: Request, pk: str | None = None) -> Response:
+        """Reset portal login password for an employee (Super Admin and Admin only)."""
+        staff = self.get_object()
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_password = serializer.validated_data["password"]
+
+        if not staff.user:
+            user, _ = create_portal_user_for_staff(staff, password=new_password)
+        else:
+            user = staff.user
+            user.set_password(new_password)
+            user.save(update_fields=["password"])
+
+        return Response(
+            {
+                "detail": f"Password for {user.username} has been successfully reset.",
+                "username": user.username,
             },
             status=status.HTTP_200_OK,
         )

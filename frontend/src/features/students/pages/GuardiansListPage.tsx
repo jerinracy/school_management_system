@@ -7,6 +7,8 @@ import {
   KeyRound,
   Plus,
   Search,
+  Trash2,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +21,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FormField, FormLabel } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { studentsApi, type GuardianItem } from "@/features/students/api/studentsApi";
 import { Can } from "@/features/auth/permissions";
+import type { components } from "@/types/api";
+
+type RelationType = components["schemas"]["RelationEnum"];
+
+interface LinkedStudentDraft {
+  studentId: string;
+  studentName: string;
+  studentIdNumber: string;
+  relation: RelationType;
+  isPrimary: boolean;
+  canPickup: boolean;
+  receivesSms: boolean;
+  financialResponsible: boolean;
+}
 
 export function GuardiansListPage() {
   const { t, i18n } = useTranslation();
@@ -39,6 +62,10 @@ export function GuardiansListPage() {
   const [occupation, setOccupation] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
 
+  // Student Linking inside Modal
+  const [studentSearch, setStudentSearch] = useState("");
+  const [selectedStudents, setSelectedStudents] = useState<LinkedStudentDraft[]>([]);
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["guardians", { search, page }],
     queryFn: () => studentsApi.getGuardians({ search: search || undefined, page }),
@@ -46,6 +73,69 @@ export function GuardiansListPage() {
 
   const guardians: GuardianItem[] = data?.results ?? [];
   const totalCount = data?.count ?? 0;
+
+  // Search matching students to link
+  const { data: searchStudentsData, isFetching: isSearchingStudents } = useQuery({
+    queryKey: ["studentsSearch", studentSearch],
+    queryFn: () => studentsApi.getStudents({ search: studentSearch, page: 1 }),
+    enabled: isModalOpen && studentSearch.trim().length >= 2,
+  });
+
+  const searchedStudents = searchStudentsData?.results ?? [];
+
+  const handleAddStudent = (s: { id: string; name_en: string; name_bn?: string; student_id: string }) => {
+    if (selectedStudents.some((item) => item.studentId === s.id)) {
+      return;
+    }
+    const isFirst = selectedStudents.length === 0;
+    setSelectedStudents((prev) => [
+      ...prev,
+      {
+        studentId: s.id,
+        studentName: currentLang === "bn" && s.name_bn ? s.name_bn : s.name_en,
+        studentIdNumber: s.student_id,
+        relation: isFirst ? "father" : "other",
+        isPrimary: isFirst,
+        canPickup: true,
+        receivesSms: true,
+        financialResponsible: isFirst,
+      },
+    ]);
+    setStudentSearch("");
+  };
+
+  const handleRemoveStudent = (studentId: string) => {
+    setSelectedStudents((prev) => prev.filter((s) => s.studentId !== studentId));
+  };
+
+  const handleUpdateStudentDraft = (
+    studentId: string,
+    updates: Partial<LinkedStudentDraft>,
+  ) => {
+    setSelectedStudents((prev) =>
+      prev.map((item) => {
+        if (item.studentId === studentId) {
+          return { ...item, ...updates };
+        }
+        // If this student is set to primary, clear primary on others
+        if (updates.isPrimary) {
+          return { ...item, isPrimary: false };
+        }
+        return item;
+      }),
+    );
+  };
+
+  const resetModalState = () => {
+    setNameEn("");
+    setNameBn("");
+    setPhone("");
+    setNid("");
+    setOccupation("");
+    setStudentSearch("");
+    setSelectedStudents([]);
+    setModalError(null);
+  };
 
   const createGuardianMutation = useMutation({
     mutationFn: () =>
@@ -55,16 +145,23 @@ export function GuardiansListPage() {
         phone,
         nid: nid || undefined,
         occupation: occupation || undefined,
+        relation_default: selectedStudents[0]?.relation ?? "father",
+        student_links:
+          selectedStudents.length > 0
+            ? selectedStudents.map((s) => ({
+                student_id: s.studentId,
+                relation: s.relation,
+                is_primary: s.isPrimary,
+                can_pickup: s.canPickup,
+                receives_sms: s.receivesSms,
+                financial_responsible: s.financialResponsible,
+              }))
+            : undefined,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["guardians"] });
       setIsModalOpen(false);
-      setNameEn("");
-      setNameBn("");
-      setPhone("");
-      setNid("");
-      setOccupation("");
-      setModalError(null);
+      resetModalState();
     },
     onError: (err: unknown) => {
       setModalError((err as Error).message || "Failed to create guardian.");
@@ -109,7 +206,10 @@ export function GuardiansListPage() {
           <Can perm="students.manage">
             <Button
               size="sm"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                resetModalState();
+                setIsModalOpen(true);
+              }}
               className="gap-1.5 text-xs font-semibold bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs"
             >
               <Plus className="h-4 w-4" />
@@ -141,13 +241,14 @@ export function GuardiansListPage() {
               <th className="px-4 py-3">{t("students.phone", "Mobile Number")}</th>
               <th className="px-4 py-3">{t("students.nid", "NID Number")}</th>
               <th className="px-4 py-3">{t("students.occupation", "Occupation")}</th>
+              <th className="px-4 py-3">{t("students.linkedStudents", "Linked Students")}</th>
               <th className="px-4 py-3 text-right">{t("common.actions", "Actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-slate-400">
+                <td colSpan={6} className="py-12 text-center text-slate-400">
                   <div className="inline-flex items-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
                     <span>{t("common.loading", "Loading guardians...")}</span>
@@ -156,7 +257,7 @@ export function GuardiansListPage() {
               </tr>
             ) : isError ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-danger">
+                <td colSpan={6} className="py-12 text-center text-danger">
                   <div className="flex flex-col items-center gap-2">
                     <span>{t("common.errorLoading", "Failed to load guardians.")}</span>
                     <Button
@@ -174,7 +275,7 @@ export function GuardiansListPage() {
               </tr>
             ) : guardians.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-16 text-center text-slate-400">
+                <td colSpan={6} className="py-16 text-center text-slate-400">
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {t("students.noGuardians", "No guardians registered yet.")}
                   </p>
@@ -196,6 +297,35 @@ export function GuardiansListPage() {
                   </td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                     {g.occupation || "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {g.student_relations && g.student_relations.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 max-w-sm">
+                        {g.student_relations.map((rel) => (
+                          <Link
+                            key={rel.id}
+                            to={`/students/${rel.student}`}
+                            className="inline-flex items-center gap-1 rounded-md bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 dark:bg-slate-800 dark:hover:bg-emerald-950 px-2 py-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors"
+                            title={`${rel.student_name} (${rel.relation})`}
+                          >
+                            <span>{rel.student_name}</span>
+                            {rel.student_id_number && (
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                ({rel.student_id_number})
+                              </span>
+                            )}
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold capitalize">
+                              • {rel.relation}
+                            </span>
+                            {rel.is_primary && (
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title={t("students.isPrimary", "Primary Contact")} />
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Can perm="students.manage">
@@ -246,7 +376,7 @@ export function GuardiansListPage() {
 
       {/* Add Guardian Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
               {t("students.addGuardian", "Add Guardian Record")}
@@ -262,73 +392,276 @@ export function GuardiansListPage() {
             </div>
           )}
 
-          <div className="space-y-3.5 py-2">
-            <FormField>
-              <FormLabel required className="text-xs font-medium text-slate-700">
-                {t("students.nameEn", "Full Name (English)")}
-              </FormLabel>
-              <Input
-                value={nameEn}
-                onChange={(e) => setNameEn(e.target.value)}
-                placeholder="e.g. Rafiqul Islam"
-                className="h-9 text-xs rounded-lg"
-              />
-            </FormField>
+          <div className="space-y-4 py-2">
+            {/* Demographics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <FormField>
+                <FormLabel required className="text-xs font-medium text-slate-700">
+                  {t("students.nameEn", "Full Name (English)")}
+                </FormLabel>
+                <Input
+                  value={nameEn}
+                  onChange={(e) => setNameEn(e.target.value)}
+                  placeholder="e.g. Rafiqul Islam"
+                  className="h-9 text-xs rounded-lg"
+                />
+              </FormField>
 
-            <FormField>
-              <FormLabel required className="text-xs font-medium text-slate-700">
-                {t("students.nameBn", "Full Name (Bangla)")}
-              </FormLabel>
-              <Input
-                value={nameBn}
-                onChange={(e) => setNameBn(e.target.value)}
-                placeholder="e.g. রফিকুল ইসলাম"
-                className="h-9 text-xs rounded-lg"
-              />
-            </FormField>
+              <FormField>
+                <FormLabel required className="text-xs font-medium text-slate-700">
+                  {t("students.nameBn", "Full Name (Bangla)")}
+                </FormLabel>
+                <Input
+                  value={nameBn}
+                  onChange={(e) => setNameBn(e.target.value)}
+                  placeholder="e.g. রফিকুল ইসলাম"
+                  className="h-9 text-xs rounded-lg"
+                />
+              </FormField>
+            </div>
 
-            <FormField>
-              <FormLabel required className="text-xs font-medium text-slate-700">
-                {t("students.phone", "Mobile Number")}
-              </FormLabel>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+8801XXXXXXXXX"
-                className="h-9 text-xs font-mono rounded-lg"
-              />
-            </FormField>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <FormField>
+                <FormLabel required className="text-xs font-medium text-slate-700">
+                  {t("students.phone", "Mobile Number")}
+                </FormLabel>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+8801XXXXXXXXX"
+                  className="h-9 text-xs font-mono rounded-lg"
+                />
+              </FormField>
 
-            <FormField>
-              <FormLabel className="text-xs font-medium text-slate-700">
-                {t("students.nid", "NID Number")}
-              </FormLabel>
-              <Input
-                value={nid}
-                onChange={(e) => setNid(e.target.value)}
-                placeholder="e.g. 1985123456789"
-                className="h-9 text-xs font-mono rounded-lg"
-              />
-            </FormField>
+              <FormField>
+                <FormLabel className="text-xs font-medium text-slate-700">
+                  {t("students.nid", "NID Number")}
+                </FormLabel>
+                <Input
+                  value={nid}
+                  onChange={(e) => setNid(e.target.value)}
+                  placeholder="e.g. 1985123456789"
+                  className="h-9 text-xs font-mono rounded-lg"
+                />
+              </FormField>
 
-            <FormField>
-              <FormLabel className="text-xs font-medium text-slate-700">
-                {t("students.occupation", "Occupation")}
-              </FormLabel>
-              <Input
-                value={occupation}
-                onChange={(e) => setOccupation(e.target.value)}
-                placeholder="e.g. Government Service, Business, Teacher"
-                className="h-9 text-xs rounded-lg"
-              />
-            </FormField>
+              <FormField>
+                <FormLabel className="text-xs font-medium text-slate-700">
+                  {t("students.occupation", "Occupation")}
+                </FormLabel>
+                <Input
+                  value={occupation}
+                  onChange={(e) => setOccupation(e.target.value)}
+                  placeholder="e.g. Service, Business"
+                  className="h-9 text-xs rounded-lg"
+                />
+              </FormField>
+            </div>
+
+            {/* Link Students Section */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>{t("students.linkedStudents", "Linked Students")}</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    {t("students.linkStudentsHelp", "Select one or more students to link with this guardian.")}
+                  </p>
+                </div>
+                {selectedStudents.length > 0 && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full">
+                    {selectedStudents.length} {t("students.selected", "selected")}
+                  </span>
+                )}
+              </div>
+
+              {/* Student Search to Link */}
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder={t("students.searchStudentsToLink", "Search student by name or student ID...")}
+                  className="h-9 pl-9 text-xs rounded-lg"
+                />
+                {isSearchingStudents && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                    {t("common.searching", "Searching...")}
+                  </span>
+                )}
+              </div>
+
+              {/* Autocomplete Results */}
+              {studentSearch.trim().length >= 2 && searchedStudents.length > 0 && (
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-1.5 max-h-40 overflow-y-auto space-y-1">
+                  {searchedStudents.map((st) => {
+                    const isAlreadySelected = selectedStudents.some(
+                      (item) => item.studentId === st.id,
+                    );
+                    return (
+                      <div
+                        key={st.id}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-md hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {currentLang === "bn" && st.name_bn ? st.name_bn : st.name_en}
+                          </span>
+                          <span className="font-mono text-[10px] text-slate-500">
+                            ({st.student_id})
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={isAlreadySelected ? "ghost" : "outline"}
+                          disabled={isAlreadySelected}
+                          onClick={() => handleAddStudent(st)}
+                          className="h-6 px-2 text-[11px]"
+                        >
+                          {isAlreadySelected ? t("common.added", "Added") : `+ ${t("students.linkStudent", "Link")}`}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Selected Students List */}
+              {selectedStudents.length > 0 ? (
+                <div className="space-y-2.5">
+                  {selectedStudents.map((s) => (
+                    <div
+                      key={s.studentId}
+                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3 space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                            {s.studentName}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-500">
+                            ({s.studentIdNumber})
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveStudent(s.studentId)}
+                          className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                        <div>
+                          <FormLabel className="text-[11px] font-medium text-slate-600">
+                            {t("students.relation", "Relationship")}
+                          </FormLabel>
+                          <Select
+                            value={s.relation}
+                            onValueChange={(val) =>
+                              handleUpdateStudentDraft(s.studentId, {
+                                relation: val as RelationType,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs rounded-lg bg-white dark:bg-slate-900">
+                              <SelectValue placeholder={t("students.selectRelation", "Select Relation")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="father">{t("students.relFather", "Father")}</SelectItem>
+                              <SelectItem value="mother">{t("students.relMother", "Mother")}</SelectItem>
+                              <SelectItem value="legal_guardian">{t("students.relLegalGuardian", "Legal Guardian")}</SelectItem>
+                              <SelectItem value="grandparent">{t("students.relGrandparent", "Grandparent")}</SelectItem>
+                              <SelectItem value="uncle">{t("students.relUncle", "Uncle")}</SelectItem>
+                              <SelectItem value="aunt">{t("students.relAunt", "Aunt")}</SelectItem>
+                              <SelectItem value="brother">{t("students.relBrother", "Brother")}</SelectItem>
+                              <SelectItem value="sister">{t("students.relSister", "Sister")}</SelectItem>
+                              <SelectItem value="other">{t("students.relOther", "Other")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-1.5 pt-3">
+                          <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={s.isPrimary}
+                              onChange={(e) =>
+                                handleUpdateStudentDraft(s.studentId, {
+                                  isPrimary: e.target.checked,
+                                })
+                              }
+                              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                            />
+                            <span>{t("students.isPrimary", "Primary")}</span>
+                          </label>
+
+                          <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={s.canPickup}
+                              onChange={(e) =>
+                                handleUpdateStudentDraft(s.studentId, {
+                                  canPickup: e.target.checked,
+                                })
+                              }
+                              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                            />
+                            <span>{t("students.canPickup", "Pickup")}</span>
+                          </label>
+
+                          <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={s.receivesSms}
+                              onChange={(e) =>
+                                handleUpdateStudentDraft(s.studentId, {
+                                  receivesSms: e.target.checked,
+                                })
+                              }
+                              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                            />
+                            <span>{t("students.receivesSms", "SMS")}</span>
+                          </label>
+
+                          <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={s.financialResponsible}
+                              onChange={(e) =>
+                                handleUpdateStudentDraft(s.studentId, {
+                                  financialResponsible: e.target.checked,
+                                })
+                              }
+                              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                            />
+                            <span>{t("students.financialResponsible", "Finance")}</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 p-3 text-center text-xs text-slate-400">
+                  {t("students.noStudentsSelected", "No students selected yet. Search above to link students.")}
+                </div>
+              )}
+            </div>
           </div>
 
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                resetModalState();
+                setIsModalOpen(false);
+              }}
               className="text-xs rounded-lg"
             >
               {t("common.cancel", "Cancel")}

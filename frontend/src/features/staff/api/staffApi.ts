@@ -2,8 +2,20 @@ import { apiClient } from "@/lib/api-client";
 import { parseApiError } from "@/lib/errors";
 import type { paths, components } from "@/types/api";
 
-export type StaffListItem = paths["/api/v1/staff/staff/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number];
+export type StaffListItem = paths["/api/v1/staff/staff/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number] & {
+  user_id?: string | null;
+  user_type?: string | null;
+  username?: string | null;
+};
 export type StaffDetail = paths["/api/v1/staff/staff/{id}/"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export interface StaffSummary {
+  total: number;
+  admin: number;
+  teacher: number;
+  staff: number;
+  superadmin?: number;
+}
 export type StaffCreateInput = components["schemas"]["StaffCreateUpdateRequest"];
 export type DepartmentItem = paths["/api/v1/staff/departments/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number];
 export type DepartmentCreateInput = components["schemas"]["DepartmentRequest"];
@@ -29,6 +41,11 @@ function checkVoid(res: { error?: unknown; response: Response }): void {
 
 export const staffApi = {
   // Staff Directory
+  async getStaffSummary(): Promise<StaffSummary> {
+    const res = await apiClient.GET("/api/v1/staff/staff/summary/");
+    return checkResponse(res) as unknown as StaffSummary;
+  },
+
   async getStaffList(params?: {
     search?: string;
     department?: string;
@@ -83,6 +100,27 @@ export const staffApi = {
       params: { path: { id } },
     });
     checkVoid(res);
+  },
+
+  async createPortalAccount(id: string, data?: { username?: string; password?: string }) {
+    const res = await apiClient.POST("/api/v1/staff/staff/{id}/create-portal-account/", {
+      params: { path: { id } },
+      body: (data || {}) as never,
+    });
+    return checkResponse(res);
+  },
+
+  async resetPassword(id: string, password: string): Promise<{ detail: string; username?: string }> {
+    const res = await apiClient.POST("/api/v1/staff/staff/{id}/reset-password/", {
+      params: { path: { id } },
+      body: { password } as never,
+    });
+    return checkResponse(res) as unknown as { detail: string; username?: string };
+  },
+
+  async getBranches() {
+    const res = await apiClient.GET("/api/v1/institutions/branches/");
+    return checkResponse(res);
   },
 
   // Departments

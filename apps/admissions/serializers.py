@@ -23,6 +23,7 @@ from apps.admissions.services.application_workflow import (
     generate_application_number,
     validate_applicant_eligibility,
 )
+from apps.core.mixins import get_request_institution
 from apps.core.utils.phone import normalize_bd_phone
 
 
@@ -54,7 +55,7 @@ class AdmissionCircularSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        institution = self.context["request"].user.institution
+        institution = get_request_institution(self.context["request"])
         session = attrs.get("session") or (
             self.instance.session if isinstance(self.instance, AdmissionCircular) else None
         )

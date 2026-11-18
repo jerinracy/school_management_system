@@ -278,3 +278,46 @@ class TestCrossTenantIsolation:
         # User A trying to delete Branch B gets 404
         delete_res = client_a.delete(f"/api/v1/institutions/branches/{branch_b.id}/")
         assert delete_res.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_create_shift_auto_branch_and_term_auto_order(
+        self,
+        admin_user_a: Any,
+        institution_a: Institution,
+    ) -> None:
+        branch = Branch.objects.create(
+            institution=institution_a,
+            name="Main Campus",
+            code="MAIN",
+        )
+        session = AcademicSession.objects.create(
+            institution=institution_a,
+            name="2026",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 12, 31),
+            is_current=True,
+        )
+        client = APIClient()
+        client.force_authenticate(user=admin_user_a)
+
+        # Create shift without explicitly passing branch
+        res_shift = client.post(
+            "/api/v1/institutions/shifts/",
+            {"name": "Morning Shift", "start_time": "07:30:00", "end_time": "12:00:00"},
+            format="json",
+        )
+        assert res_shift.status_code == status.HTTP_201_CREATED
+        assert str(res_shift.data["branch"]) == str(branch.id)
+
+        # Create term without passing order
+        res_term = client.post(
+            "/api/v1/institutions/terms/",
+            {
+                "session": str(session.id),
+                "name": "1st Mid Term",
+                "start_date": "2026-01-15",
+                "end_date": "2026-03-31",
+            },
+            format="json",
+        )
+        assert res_term.status_code == status.HTTP_201_CREATED
+        assert res_term.data["order"] == 1

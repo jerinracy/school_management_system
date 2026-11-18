@@ -6,7 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Performance
+- **Route-Level Code Splitting & Fast Overview Cold Start**:
+  - Implemented on-demand lazy loading using `React.lazy()` and `<Suspense>` across 60+ secondary feature pages in `frontend/src/App.tsx`.
+  - Kept critical core routes (`LoginPage`, `ForgotPasswordPage`, `ForceChangePasswordPage`, `ProfilePage`, `ForbiddenPage`, and `DashboardHomePage`) eagerly loaded so the initial Overview page loads instantaneously on server startup without compiling or downloading unrelated feature modules.
+  - Added full-screen and inner-route fallback loading spinners (`PageFallbackLoader`) ensuring smooth transitions when navigating to lazy-loaded routes.
+  - Verified chunk splitting in production build with separate bundles generated per feature module and passing 67/67 tests.
+
 ### Fixed
+- **Static Media Route Serving in Development & Tabulation Sheet Download**:
+  - Registered `static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)` in `config/urls.py` under `if settings.DEBUG:`, resolving HTTP 404 (`Not Found: /media/results/tabulations/...`) when downloading generated tabulation sheets, PDFs, and media assets in local development.
+  - Enabled `SERVE_MEDIA_IN_TEST = True` in `config/settings/test.py` with fallback route in `config/urls.py` to allow end-to-end automated testing of media file downloads.
+  - Enhanced download links in `TabulationSheetPage.tsx` with explicit `download` attribute and resilient fallback to `/api/v1/results/tabulation-sheets/${s.id}/download/`.
+  - Added automated test in `apps/results/tests/test_tabulation.py` asserting HTTP 200 on both the API download endpoint and the media static asset route.
+- **Tabulation Sheet Generation Institution Binding & File Creation**:
+  - Fixed `psycopg.errors.NotNullViolation: null value in column "institution_id" of relation "results_tabulationsheet"` when clicking "Generate Official Sheet" (`POST /api/v1/results/tabulation-sheets/`).
+  - Overrode `create()` and implemented `perform_create()` in `TabulationSheetViewSet` in `apps/results/views.py` to route generation through `create_tabulation_sheet_record` with tenant binding (`institution=exam.institution`), document rendering, and user attribution.
+  - Normalized format parsing (`"xlsx"` / `"pdf"`) in `tabulation_service.py` and added automated test in `test_tabulation.py`.
+- **Tabulation Sheet & Exam Results Class and Section Scoped Filtering**:
+  - Fixed issue in the Official Tabulation Sheet Register (`TabulationSheetPage.tsx`) where selecting different classes rendered identical results.
+  - Implemented `class_level` and `section` query filtering in `ExamResultViewSet.get_queryset()` in `apps/results/views.py` and exposed `class_level` and `section` UUIDs on `ExamResultSerializer`.
+  - Added query parameter pass-through for `class_level`, `section`, and `page_size` in `resultsApi.getExamResults` and `resultsApi.getTabulationSheets`.
+  - Updated `TabulationSheetPage.tsx` and `ReportCardsPage.tsx` to include `selectedClass` and `selectedSection` in query dependencies with client-side verification, ensuring broadsheets and transcripts display only candidates belonging to the selected class and section.
+- **Exam Workspace Admit Cards "View Pass" Preview Modal**:
+  - Fixed non-functional "View Pass" button in the Admit Cards tab of the Examination Workspace (`ExamDetailPage.tsx`) by wiring click handler to a candidate preview modal.
+  - Implemented the official Admit Card / প্রবেশপত্র preview dialog using Radix UI `<Dialog>` with student demographics, admit card number, session, candidate photo placeholder, exam hall rules, and official signature blocks.
+  - Upgraded both the workspace preview and dedicated Printable Center (`AdmitCardsPage.tsx`) to Radix UI `<Dialog>` with transparent soft blur backdrop (`bg-black/10 dark:bg-black/25 backdrop-blur-sm`) and instant A4 printing support.
+- **Examinations Top Bar Alignment & UI Cleanup**:
+  - Aligned all four action buttons (`Mark Entry Sheet`, `GPA 5.0 Processing`, `Exam Types`, and `Create Examination`) on the exact same horizontal line and height (`h-9`) in `ExamListPage.tsx`.
+  - Removed redundant text hints: removed the verbose subtitle text under the page heading, removed the redundant `Session:` prefix label in the filter bar, simplified search input placeholder, and streamlined empty state text.
+- **Examinations Top Bar UX & Workspace "Add Exam Subject" Radix Modal**:
+  - Redesigned the Examinations & Continuous Assessment top bar (`ExamListPage.tsx`) to provide a clean, user-friendly layout with a segmented shortcuts pill group for "Mark Entry Sheet" and "GPA 5.0 Processing", separating them from administrative configuration ("Exam Types") and primary creation ("Create Examination").
+  - Polished the Examination Workspace header (`ExamDetailPage.tsx`) with structured metadata chips for Session, Type, and Evaluation Window.
+  - Refactored the "Add Exam Subject" modal in `ExamDetailPage.tsx` from raw inline divs to Radix UI `<Dialog>` and `<DialogContent>`, portaling directly to `document.body`.
+  - Fixed modal positioning (now perfectly centered on viewport) and restored transparent soft blur backdrop (`bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)]`).
+- **Transparent Backdrops with Reduced Soft Blur Across All Dashboard Modals**:
+  - Replaced opaque dark/gray layers (`bg-slate-900/60`, `bg-black/50`, `bg-slate-950/40`) with transparent `bg-black/10 dark:bg-black/25` across all modals in the application.
+  - Reduced backdrop blur to a subtle, soft 4px blur (`backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)]`) in central `dialog.tsx`, `drawer.tsx`, and all feature modal dialogs (Exams, Results, Staff, Attendance, Operations, Reports, Communications, Devices, Events, Fees).
+  - Teleported Create Examination modal via Radix `<Dialog>` primitive to prevent ancestor CSS transform stacking context collisions.
 - **Persistent JWT Authentication & Session Restoration**:
   - Replaced tab-scoped `sessionStorage` with error-safe `localStorage` persistence for `accessToken`, `refreshToken`, and cached `user` profile in `authStore.ts`.
   - Initialized Zustand auth store directly from persistent storage so visiting the base URL (`/` or `/dashboard/`) or opening a new browser tab immediately loads the authenticated session without screen flicker or forced redirect to `/login`.

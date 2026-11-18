@@ -266,3 +266,35 @@ def test_tabulation_api_generate_and_download(base_setup):
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         in res_dl.headers["Content-Type"]
     )
+
+
+@pytest.mark.django_db
+def test_tabulation_api_create_standard(base_setup):
+    """Verify POST /api/v1/results/tabulation-sheets/ creates record and file with institution."""
+    data = base_setup
+    client = APIClient()
+    client.force_authenticate(user=data["admin_user"])
+
+    res = client.post(
+        "/api/v1/results/tabulation-sheets/",
+        {
+            "exam": str(data["exam"].id),
+            "class_level": str(data["class_level"].id),
+            "section": str(data["section"].id),
+            "file_format": "pdf",
+        },
+        format="json",
+    )
+    assert res.status_code == status.HTTP_201_CREATED
+    assert res.data["id"] is not None
+    assert res.data["file_format"] == "pdf"
+    assert res.data["download_url"] is not None
+
+    # Test API download endpoint
+    dl_res = client.get(f"/api/v1/results/tabulation-sheets/{res.data['id']}/download/")
+    assert dl_res.status_code == status.HTTP_200_OK
+    assert "application/pdf" in dl_res.headers["Content-Type"]
+
+    # Test static media URL serving
+    media_res = client.get(res.data["download_url"])
+    assert media_res.status_code == status.HTTP_200_OK

@@ -1,8 +1,11 @@
 """Serializers for Staff, Leave, and Teacher Assignment modules."""
 
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.core.utils.phone import normalize_bd_phone
+from apps.institutions.models import Branch
 from apps.staff.models import (
     Department,
     Designation,
@@ -15,6 +18,7 @@ from apps.staff.models import (
     StaffIDCard,
     TeacherAssignment,
 )
+from apps.staff.services.staff_service import create_portal_user_for_staff
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -102,11 +106,30 @@ class StaffIDCardSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+class ProvisionPortalAccountSerializer(serializers.Serializer):
+    """Payload to create or provision portal login credentials for an employee."""
+
+    username = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(
+        required=False, allow_blank=True, min_length=6, write_only=True
+    )
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Payload to reset a user's portal login password."""
+
+    password = serializers.CharField(min_length=6, write_only=True)
+
+
 class StaffListSerializer(serializers.ModelSerializer):
     """Lightweight roster view of employee profiles."""
 
     department_name = serializers.CharField(source="department.name", read_only=True)
     designation_title = serializers.CharField(source="designation.title", read_only=True)
+    branch_name = serializers.CharField(source="branch.name", read_only=True)
+    user_id = serializers.UUIDField(source="user.id", read_only=True, default=None)
+    user_type = serializers.CharField(source="user.user_type", read_only=True, default=None)
+    username = serializers.CharField(source="user.username", read_only=True, default=None)
 
     class Meta:
         model = Staff
@@ -119,7 +142,12 @@ class StaffListSerializer(serializers.ModelSerializer):
             "department_name",
             "designation",
             "designation_title",
+            "branch",
+            "branch_name",
             "staff_type",
+            "user_id",
+            "user_type",
+            "username",
             "phone",
             "email",
             "status",
@@ -136,6 +164,12 @@ class StaffCreateUpdateSerializer(serializers.ModelSerializer):
     phone = serializers.CharField()
     alt_phone = serializers.CharField(required=False, allow_blank=True)
     employee_id = serializers.CharField(required=False, allow_blank=True)
+    branch = serializers.PrimaryKeyRelatedField(
+        queryset=Branch.objects.all(), required=False, allow_null=True
+    )
+    give_portal_access = serializers.BooleanField(required=False, default=False, write_only=True)
+    portal_username = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    portal_password = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
         model = Staff
@@ -158,6 +192,7 @@ class StaffCreateUpdateSerializer(serializers.ModelSerializer):
             "confirmation_date",
             "department",
             "designation",
+            "branch",
             "staff_type",
             "status",
             "is_mpo",
@@ -166,6 +201,9 @@ class StaffCreateUpdateSerializer(serializers.ModelSerializer):
             "emergency_contact_name",
             "emergency_contact_phone",
             "emergency_contact_relation",
+            "give_portal_access",
+            "portal_username",
+            "portal_password",
         ]
         read_only_fields = ["id"]
 
@@ -177,12 +215,37 @@ class StaffCreateUpdateSerializer(serializers.ModelSerializer):
             return normalize_bd_phone(value)
         return value
 
+    def create(self, validated_data: dict[str, Any]) -> Staff:
+        give_portal = validated_data.pop("give_portal_access", False)
+        portal_username = validated_data.pop("portal_username", None)
+        portal_password = validated_data.pop("portal_password", None)
+
+        branch = validated_data.get("branch")
+        if branch and getattr(branch, "institution", None):
+            validated_data["institution"] = branch.institution
+
+        staff = super().create(validated_data)
+
+        if give_portal:
+            create_portal_user_for_staff(
+                staff,
+                username=portal_username,
+                password=portal_password,
+            )
+
+        return staff
+
 
 class StaffDetailSerializer(StaffCreateUpdateSerializer):
     """Rich staff view with nested educations, documents, and cards."""
 
     department_name = serializers.CharField(source="department.name", read_only=True)
     designation_title = serializers.CharField(source="designation.title", read_only=True)
+    branch_name = serializers.CharField(source="branch.name", read_only=True)
+    user_id = serializers.UUIDField(source="user.id", read_only=True, default=None)
+    username = serializers.CharField(source="user.username", read_only=True, default=None)
+    user_type = serializers.CharField(source="user.user_type", read_only=True, default=None)
+    has_portal_access = serializers.SerializerMethodField()
     educations = StaffEducationSerializer(many=True, read_only=True)
     documents = StaffDocumentSerializer(many=True, read_only=True)
     id_cards = StaffIDCardSerializer(many=True, read_only=True)
@@ -191,10 +254,18 @@ class StaffDetailSerializer(StaffCreateUpdateSerializer):
         fields = StaffCreateUpdateSerializer.Meta.fields + [
             "department_name",
             "designation_title",
+            "branch_name",
+            "user_id",
+            "username",
+            "user_type",
+            "has_portal_access",
             "educations",
             "documents",
             "id_cards",
         ]
+
+    def get_has_portal_access(self, obj: Staff) -> bool:
+        return bool(obj.user)
 
 
 class LeaveTypeSerializer(serializers.ModelSerializer):

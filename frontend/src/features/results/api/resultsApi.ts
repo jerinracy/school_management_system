@@ -31,14 +31,19 @@ export const resultsApi = {
     is_passed?: boolean;
     search?: string;
     page?: number;
+    page_size?: number;
   }) {
     const res = await apiClient.GET("/api/v1/results/exam-results/", {
       params: {
         query: {
           exam: params?.exam,
+          class_level: params?.class_level,
+          section: params?.section,
+          is_passed: params?.is_passed,
           search: params?.search,
           page: params?.page,
-        },
+          page_size: params?.page_size,
+        } as never,
       },
     });
     return checkResponse(res);
@@ -68,13 +73,14 @@ export const resultsApi = {
   },
 
   // Tabulation Sheets
-  async getTabulationSheets(params?: { exam?: string; class_level?: string }) {
+  async getTabulationSheets(params?: { exam?: string; class_level?: string; section?: string }) {
     const res = await apiClient.GET("/api/v1/results/tabulation-sheets/", {
       params: {
         query: {
           exam: params?.exam,
           class_level: params?.class_level,
-        },
+          section: params?.section,
+        } as never,
       },
     });
     return checkResponse(res);

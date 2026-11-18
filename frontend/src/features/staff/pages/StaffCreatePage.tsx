@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { staffApi } from "@/features/staff/api/staffApi";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import {
   staffCreateSchema,
   type StaffCreateFormData,
@@ -24,7 +25,10 @@ import {
 export function StaffCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const currentUser = useAuthStore((s) => s.user);
+  const isSuperAdmin = currentUser?.user_type === "superadmin" || currentUser?.user_type === "super_admin";
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<StaffCreateFormData>({
     resolver: zodResolver(staffCreateSchema) as never,
@@ -40,6 +44,7 @@ export function StaffCreatePage() {
       nid: "",
       department: "",
       designation: "",
+      branch: "",
       staff_type: "teacher",
       joining_date: new Date().toISOString().split("T")[0] ?? "2026-01-01",
       tin_number: "",
@@ -50,10 +55,15 @@ export function StaffCreatePage() {
       emergency_contact_name: "",
       emergency_contact_phone: "",
       emergency_contact_relation: "Spouse",
+      give_portal_access: false,
+      portal_username: "",
+      portal_password: "",
+      portal_password_confirm: "",
     },
   });
 
   const isMpo = form.watch("is_mpo");
+  const givePortalAccess = form.watch("give_portal_access");
 
   // Options Queries
   const { data: departmentsData } = useQuery({
@@ -66,8 +76,14 @@ export function StaffCreatePage() {
     queryFn: () => staffApi.getDesignations(),
   });
 
+  const { data: branchesData } = useQuery({
+    queryKey: ["institutions-branches"],
+    queryFn: () => staffApi.getBranches(),
+  });
+
   const departments = departmentsData?.results ?? [];
   const designations = designationsData?.results ?? [];
+  const branches = (branchesData?.results as Array<{ id: string; name: string; code: string }>) ?? [];
 
   const onSubmit = async (data: StaffCreateFormData) => {
     setSubmitError(null);
@@ -84,6 +100,7 @@ export function StaffCreatePage() {
         nid: data.nid || undefined,
         department: data.department,
         designation: data.designation,
+        branch: data.branch || undefined,
         staff_type: data.staff_type,
         joining_date: data.joining_date,
         tin_number: data.tin_number || undefined,
@@ -94,6 +111,9 @@ export function StaffCreatePage() {
         emergency_contact_name: data.emergency_contact_name,
         emergency_contact_phone: data.emergency_contact_phone,
         emergency_contact_relation: data.emergency_contact_relation || undefined,
+        give_portal_access: data.give_portal_access,
+        portal_username: data.portal_username || undefined,
+        portal_password: data.portal_password || undefined,
       });
 
       void navigate(`/staff/${staff.id}`);
@@ -281,6 +301,11 @@ export function StaffCreatePage() {
                       <SelectValue placeholder="Select Staff Type" />
                     </SelectTrigger>
                     <SelectContent>
+                      {isSuperAdmin && (
+                        <SelectItem value="superadmin" className="text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+                          Super Admin
+                        </SelectItem>
+                      )}
                       <SelectItem value="teacher" className="text-xs">Teacher</SelectItem>
                       <SelectItem value="admin" className="text-xs">Administration</SelectItem>
                       <SelectItem value="support" className="text-xs">Support Staff</SelectItem>
@@ -360,6 +385,30 @@ export function StaffCreatePage() {
                   {t(form.formState.errors.designation.message ?? "")}
                 </p>
               )}
+            </FormField>
+
+            <FormField className="sm:col-span-2">
+              <FormLabel className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                {t("staff.branch", "Campus / Branch (শাখা)")}
+              </FormLabel>
+              <Controller
+                control={form.control}
+                name="branch"
+                render={({ field }) => (
+                  <Select value={field.value || ""} onValueChange={field.onChange}>
+                    <SelectTrigger className="h-9 text-xs rounded-lg">
+                      <SelectValue placeholder={t("staff.selectBranch", "Select Campus / Branch")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => (
+                        <SelectItem key={b.id} value={b.id} className="text-xs">
+                          {b.name} ({b.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </FormField>
 
             <FormField>
@@ -485,6 +534,99 @@ export function StaffCreatePage() {
               )}
             </FormField>
           </div>
+        </div>
+
+        {/* Section 6: Portal Login & Security Access */}
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-800 dark:text-emerald-300">
+                <KeyRound className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                  {t("staff.portalAccessSection", "Portal & System Login Access")}
+                </h2>
+                <p className="text-[11px] text-slate-500">
+                  {t("staff.portalAccessSectionSubtitle", "Create login credentials for dashboard access.")}
+                </p>
+              </div>
+            </div>
+
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+              <input
+                type="checkbox"
+                checked={givePortalAccess}
+                onChange={(e) => form.setValue("give_portal_access", e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-emerald-800 focus:ring-emerald-700"
+              />
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                {t("staff.givePortalAccess", "Grant Portal Login Access (লগইন দিন)")}
+              </span>
+            </label>
+          </div>
+
+          {givePortalAccess && (
+            <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField>
+                <FormLabel className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  {t("staff.portalUsername", "Portal Username")}
+                </FormLabel>
+                <Input
+                  placeholder={form.watch("phone") || "Username (leave blank for Phone)"}
+                  className="h-9 text-xs rounded-lg font-mono"
+                  {...form.register("portal_username")}
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {t("staff.usernameHint", "Defaults to Employee ID or Phone if blank")}
+                </p>
+              </FormField>
+
+              <FormField>
+                <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  {t("staff.portalPassword", "Login Password")}
+                </FormLabel>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Min. 6 characters"
+                    className="h-9 text-xs rounded-lg pr-8 font-mono"
+                    {...form.register("portal_password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+                {form.formState.errors.portal_password && (
+                  <p className="text-xs text-danger mt-1">
+                    {t(form.formState.errors.portal_password.message ?? "")}
+                  </p>
+                )}
+              </FormField>
+
+              <FormField>
+                <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  {t("staff.confirmPassword", "Confirm Password")}
+                </FormLabel>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Repeat password"
+                  className="h-9 text-xs rounded-lg font-mono"
+                  {...form.register("portal_password_confirm")}
+                />
+                {form.formState.errors.portal_password_confirm && (
+                  <p className="text-xs text-danger mt-1">
+                    {t(form.formState.errors.portal_password_confirm.message ?? "")}
+                  </p>
+                )}
+              </FormField>
+            </div>
+          )}
         </div>
 
         {/* Submit Actions */}

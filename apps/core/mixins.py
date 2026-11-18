@@ -4,6 +4,40 @@ from typing import Any
 
 from django.db.models import QuerySet
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.request import Request
+
+
+def get_request_institution(request: Request) -> Any:
+    """Helper to extract and type-narrow the user's institution with superadmin fallback."""
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        raise PermissionDenied("Authentication credentials were not provided.")
+
+    institution = getattr(user, "institution", None)
+    if institution is not None:
+        return institution
+
+    # Check if user has a linked staff profile with an institution
+    staff_profile = getattr(user, "staff_profile", None)
+    if staff_profile and getattr(staff_profile, "institution", None):
+        user.institution = staff_profile.institution
+        user.save(update_fields=["institution"])
+        return staff_profile.institution
+
+    # Superusers / Superadmins fallback to default school institution
+    if getattr(user, "is_superuser", False) or getattr(user, "user_type", "") in (
+        "superadmin",
+        "super_admin",
+    ):
+        from apps.institutions.models import Institution
+
+        default_inst = Institution.objects.first()
+        if default_inst:
+            user.institution = default_inst
+            user.save(update_fields=["institution"])
+            return default_inst
+
+    raise PermissionDenied("User is not associated with an institution.")
 
 
 class TenantScopedMixin:
@@ -33,16 +67,5 @@ class TenantScopedMixin:
 
     def perform_create(self, serializer: Any) -> None:
         """Inject tenant context into created instances."""
-        user = getattr(self.request, "user", None)  # type: ignore[attr-defined]
-
-        if not user or not user.is_authenticated:
-            raise PermissionDenied("Authentication required to create resources.")
-
-        institution = getattr(user, "institution", None)
-        if not institution and not getattr(user, "is_superuser", False):
-            raise PermissionDenied("User does not belong to any institution.")
-
-        if institution:
-            serializer.save(institution=institution)
-        else:
-            serializer.save()
+        institution = get_request_institution(self.request)
+        serializer.save(institution=institution)

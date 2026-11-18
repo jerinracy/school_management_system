@@ -1,5 +1,7 @@
 import { Printer } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useBrandingStore } from "@/features/institutions/store/brandingStore";
 import type { ExamResultItem, SubjectResultItem } from "@/features/results/api/resultsApi";
 
 interface ReportCardPreviewProps {
@@ -9,6 +11,15 @@ interface ReportCardPreviewProps {
 }
 
 export function ReportCardPreview({ result, subjectResults = [], onClose }: ReportCardPreviewProps) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language === "bn" ? "bn" : "en";
+  const { getLocalizedName, getEIIN, getBoard, getLogoUrl } = useBrandingStore();
+
+  const schoolName = getLocalizedName(currentLang);
+  const schoolEIIN = getEIIN();
+  const schoolBoard = getBoard();
+  const schoolLogo = getLogoUrl();
+
   return (
     <div className="space-y-4">
       {/* Action Bar */}
@@ -38,15 +49,19 @@ export function ReportCardPreview({ result, subjectResults = [], onClose }: Repo
         {/* Institutional Header */}
         <div className="text-center border-b-2 border-slate-900 pb-4">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <div className="h-10 w-10 rounded-full bg-emerald-800 text-white flex items-center justify-center font-black text-sm">
-              SMS
-            </div>
+            {schoolLogo ? (
+              <img src={schoolLogo} alt={schoolName} className="h-10 w-10 object-contain rounded-full" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-emerald-800 text-white flex items-center justify-center font-black text-sm">
+                SMS
+              </div>
+            )}
             <h2 className="text-xl font-black uppercase tracking-wide">
-              Dhaka Model High School &amp; College
+              {schoolName}
             </h2>
           </div>
           <p className="text-xs text-slate-600 font-medium">
-            EIIN: 134567 &bull; Dhaka Education Board &bull; Bangladesh
+            EIIN: {schoolEIIN} &bull; {schoolBoard} Education Board &bull; Bangladesh
           </p>
           <div className="mt-2 inline-block rounded-md border border-slate-900 bg-slate-100 px-4 py-1 text-xs font-bold uppercase tracking-wider">
             Academic Progress Report / একাডেমিক ফলাফল

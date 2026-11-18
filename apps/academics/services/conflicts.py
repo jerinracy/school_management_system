@@ -4,7 +4,7 @@ import dataclasses
 from typing import Any
 from uuid import UUID
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from apps.academics.models import Period, RoutineSlot, Weekday
 from apps.institutions.models import Institution
@@ -123,16 +123,28 @@ def _check_teacher_clash(
     base_qs: QuerySet[RoutineSlot],
     teacher_user_id: UUID | str | None,
     conflicts: list[SlotConflict],
+    teacher_staff_id: UUID | str | None = None,
 ) -> None:
-    if not teacher_user_id:
+    if not teacher_user_id and not teacher_staff_id:
         return
-    clashing_teacher_slot = base_qs.filter(teacher_user__id=teacher_user_id).first()
+    q = Q()
+    if teacher_user_id:
+        q |= Q(teacher_user__id=teacher_user_id)
+    if teacher_staff_id:
+        q |= Q(teacher_staff__id=teacher_staff_id)
+    clashing_teacher_slot = base_qs.filter(q).first()
     if clashing_teacher_slot:
-        teacher_name = (
-            clashing_teacher_slot.teacher_user.full_name
-            if clashing_teacher_slot.teacher_user
-            else "Selected teacher"
-        )
+        teacher_name = "Selected teacher"
+        if clashing_teacher_slot.teacher_staff:
+            teacher_name = (
+                clashing_teacher_slot.teacher_staff.full_name_en
+                or clashing_teacher_slot.teacher_staff.full_name_bn
+            )
+        elif clashing_teacher_slot.teacher_user:
+            teacher_name = (
+                clashing_teacher_slot.teacher_user.full_name
+                or clashing_teacher_slot.teacher_user.username
+            )
         conflicts.append(
             SlotConflict(
                 code="TEACHER_DOUBLE_BOOKED",
@@ -183,6 +195,7 @@ def validate_routine_slot_conflicts(
     weekday: int,
     period_id: UUID | str,
     teacher_user_id: UUID | str | None = None,
+    teacher_staff_id: UUID | str | None = None,
     room_id: UUID | str | None = None,
     exclude_slot_id: UUID | str | None = None,
 ) -> ConflictReport:
@@ -204,7 +217,7 @@ def validate_routine_slot_conflicts(
         base_qs = base_qs.exclude(id=exclude_slot_id)
 
     _check_section_clash(base_qs, section_id, conflicts)
-    _check_teacher_clash(base_qs, teacher_user_id, conflicts)
+    _check_teacher_clash(base_qs, teacher_user_id, conflicts, teacher_staff_id=teacher_staff_id)
     _check_room_clash(base_qs, room_id, conflicts)
 
     return ConflictReport(

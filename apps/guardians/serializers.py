@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from django.db import transaction
 from rest_framework import serializers
 
 from apps.core.utils.phone import normalize_bd_phone
@@ -44,6 +45,7 @@ class StudentGuardianSerializer(serializers.ModelSerializer):
     """Serializer for Student-Guardian relationship links."""
 
     student_name = serializers.CharField(source="student.name_en", read_only=True)
+    student_id_number = serializers.CharField(source="student.student_id", read_only=True)
     guardian_name = serializers.CharField(source="guardian.name_en", read_only=True)
     guardian_phone = serializers.CharField(source="guardian.phone", read_only=True)
 
@@ -53,6 +55,7 @@ class StudentGuardianSerializer(serializers.ModelSerializer):
             "id",
             "student",
             "student_name",
+            "student_id_number",
             "guardian",
             "guardian_name",
             "guardian_phone",
@@ -66,12 +69,27 @@ class StudentGuardianSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
+class StudentLinkInputSerializer(serializers.Serializer):
+    """Input payload for linking a student during guardian creation/update."""
+
+    student_id = serializers.UUIDField()
+    relation = serializers.ChoiceField(
+        choices=GuardianRelation.choices, default=GuardianRelation.FATHER
+    )
+    is_primary = serializers.BooleanField(default=False)
+    can_pickup = serializers.BooleanField(default=True)
+    receives_sms = serializers.BooleanField(default=True)
+    financial_responsible = serializers.BooleanField(default=False)
+
+
 class GuardianSerializer(serializers.ModelSerializer):
     """Standard serializer for Guardian profiles."""
 
     phone = serializers.CharField()
     alt_phone = serializers.CharField(required=False, allow_blank=True)
     has_portal_account = serializers.SerializerMethodField()
+    student_links = StudentLinkInputSerializer(many=True, required=False, write_only=True)
+    student_relations = StudentGuardianSerializer(many=True, read_only=True)
 
     class Meta:
         model = Guardian
@@ -93,10 +111,19 @@ class GuardianSerializer(serializers.ModelSerializer):
             "permanent_address",
             "photo",
             "is_emergency_contact",
+            "student_links",
+            "student_relations",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "user", "has_portal_account", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "user",
+            "has_portal_account",
+            "student_relations",
+            "created_at",
+            "updated_at",
+        ]
 
     def get_has_portal_account(self, obj: Guardian) -> bool:
         return obj.user_id is not None
@@ -109,14 +136,40 @@ class GuardianSerializer(serializers.ModelSerializer):
             return normalize_bd_phone(value)
         return value
 
+    @transaction.atomic
+    def create(self, validated_data: dict[str, Any]) -> Guardian:
+        student_links_data = validated_data.pop("student_links", [])
+        guardian = super().create(validated_data)
+        institution = guardian.institution
+
+        if institution and student_links_data:
+            from apps.guardians.services.guardian_service import link_student_guardian
+
+            for link_data in student_links_data:
+                student = Student.objects.filter(
+                    id=link_data["student_id"],
+                    institution=institution,
+                ).first()
+                if student:
+                    link_student_guardian(
+                        institution=institution,
+                        student=student,
+                        guardian=guardian,
+                        relation=link_data.get("relation", guardian.relation_default),
+                        is_primary=link_data.get("is_primary", False),
+                        can_pickup=link_data.get("can_pickup", True),
+                        receives_sms=link_data.get("receives_sms", True),
+                        financial_responsible=link_data.get("financial_responsible", False),
+                    )
+
+        return guardian
+
 
 class GuardianDetailSerializer(GuardianSerializer):
     """Detailed guardian serializer embedding linked students."""
 
-    student_relations = StudentGuardianSerializer(many=True, read_only=True)
-
     class Meta(GuardianSerializer.Meta):
-        fields = GuardianSerializer.Meta.fields + ["student_relations"]
+        fields = GuardianSerializer.Meta.fields
 
 
 class AuthorizedPickupSerializer(serializers.ModelSerializer):

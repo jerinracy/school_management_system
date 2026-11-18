@@ -10,9 +10,11 @@ import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { academicApi, type ClassLevel, type ClassSubject, type Subject } from "@/features/academics/api/academicApi";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 
 export function SubjectsPage() {
   const { t } = useTranslation();
+  const { selectedSession, selectedShift, selectedBranch } = useAcademicContextStore();
   const [classes, setClasses] = useState<ClassLevel[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [classSubjects, setClassSubjects] = useState<ClassSubject[]>([]);
@@ -21,9 +23,10 @@ export function SubjectsPage() {
   const [openSubjectModal, setOpenSubjectModal] = useState(false);
   const [openOfferingModal, setOpenOfferingModal] = useState(false);
 
-  const [sName, setSName] = useState("");
+  const [sNameEn, setSNameEn] = useState("");
+  const [sNameBn, setSNameBn] = useState("");
   const [sCode, setSCode] = useState("");
-  const [sType, setSType] = useState("theory");
+  const [sType, setSType] = useState("compulsory");
 
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [totalMarks, setTotalMarks] = useState(100);
@@ -31,7 +34,14 @@ export function SubjectsPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [cls, subs] = await Promise.all([academicApi.getClasses(), academicApi.getSubjects()]);
+      const [cls, subs] = await Promise.all([
+        academicApi.getClasses({
+          shift: selectedShift?.id,
+          session: selectedSession?.id,
+          branch: selectedBranch?.id,
+        }),
+        academicApi.getSubjects(),
+      ]);
       setClasses(cls);
       setSubjects(subs);
       if (cls.length > 0 && !selectedClass && cls[0]) {
@@ -40,7 +50,7 @@ export function SubjectsPage() {
     } catch {
       toast.error(t("academics.loadSubjectsError", "Failed to load subjects."));
     }
-  }, [t, selectedClass]);
+  }, [t, selectedClass, selectedShift?.id, selectedSession?.id, selectedBranch?.id]);
 
   useEffect(() => {
     void loadData();
@@ -55,15 +65,22 @@ export function SubjectsPage() {
   const handleCreateSubject = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const finalEn = sNameEn.trim() || sNameBn.trim();
+      const finalBn = sNameBn.trim() || sNameEn.trim();
       await academicApi.createSubject({
-        name: sName,
-        code: sCode,
+        name_en: finalEn,
+        name_bn: finalBn,
+        name: finalEn,
+        code: sCode.trim(),
+        type: sType,
         subject_type: sType,
       });
       toast.success(t("academics.subjectCreated", "Subject added to catalog."));
       setOpenSubjectModal(false);
-      setSName("");
+      setSNameEn("");
+      setSNameBn("");
       setSCode("");
+      setSType("compulsory");
       void loadData();
     } catch {
       toast.error(t("academics.subjectCreateError", "Failed to add subject."));
@@ -76,8 +93,11 @@ export function SubjectsPage() {
       await academicApi.createClassSubject({
         class_level: selectedClass,
         subject: selectedSubjectId,
+        session: selectedSession?.id,
         total_marks: totalMarks,
+        full_marks: totalMarks,
         pass_marks: passMarks,
+        pass_rule: { pass_marks: passMarks },
       });
       toast.success(t("academics.offeringCreated", "Subject mapped to class grade."));
       setOpenOfferingModal(false);
@@ -164,13 +184,33 @@ export function SubjectsPage() {
             <DialogTitle>{t("academics.newSubjectCatalog", "New Catalog Subject")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={(e) => void handleCreateSubject(e)} className="space-y-3 pt-2">
-            <FormField>
-              <FormLabel required>{t("academics.subjectName", "Subject Name")}</FormLabel>
-              <Input value={sName} onChange={(e) => setSName(e.target.value)} required placeholder="e.g. Mathematics / বাংলা" />
-            </FormField>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField>
+                <FormLabel required>{t("academics.subjectNameEn", "Name (English)")}</FormLabel>
+                <Input
+                  value={sNameEn}
+                  onChange={(e) => setSNameEn(e.target.value)}
+                  required
+                  placeholder="e.g. Mathematics"
+                />
+              </FormField>
+              <FormField>
+                <FormLabel>{t("academics.subjectNameBn", "Name (Bangla)")}</FormLabel>
+                <Input
+                  value={sNameBn}
+                  onChange={(e) => setSNameBn(e.target.value)}
+                  placeholder="e.g. গণিত"
+                />
+              </FormField>
+            </div>
             <FormField>
               <FormLabel required>{t("academics.subjectCode", "Subject Code")}</FormLabel>
-              <Input value={sCode} onChange={(e) => setSCode(e.target.value)} required placeholder="e.g. MATH-101" />
+              <Input
+                value={sCode}
+                onChange={(e) => setSCode(e.target.value)}
+                required
+                placeholder="e.g. MATH-101"
+              />
             </FormField>
             <FormField>
               <FormLabel required>{t("academics.subjectType", "Type")}</FormLabel>
@@ -179,10 +219,10 @@ export function SubjectsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="theory">Theory</SelectItem>
-                  <SelectItem value="practical">Practical / Lab</SelectItem>
-                  <SelectItem value="combined">Theory + Practical</SelectItem>
-                  <SelectItem value="optional">Optional / 4th Subject</SelectItem>
+                  <SelectItem value="compulsory">{t("academics.typeCompulsory", "Compulsory")}</SelectItem>
+                  <SelectItem value="optional">{t("academics.typeOptional", "Optional / Elective")}</SelectItem>
+                  <SelectItem value="fourth_subject">{t("academics.typeFourthSubject", "4th Subject")}</SelectItem>
+                  <SelectItem value="co_curricular">{t("academics.typeCoCurricular", "Co-Curricular / Activity")}</SelectItem>
                 </SelectContent>
               </Select>
             </FormField>

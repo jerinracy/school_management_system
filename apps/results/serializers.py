@@ -140,6 +140,8 @@ class ExamResultSerializer(serializers.ModelSerializer):
     roll_no = serializers.IntegerField(source="enrollment.roll_no", read_only=True)
     section_name = serializers.CharField(source="enrollment.section.name", read_only=True)
     class_level_name = serializers.CharField(source="enrollment.class_level.name", read_only=True)
+    class_level = serializers.UUIDField(source="enrollment.class_level_id", read_only=True)
+    section = serializers.UUIDField(source="enrollment.section_id", read_only=True)
 
     class Meta:
         model = ExamResult
@@ -150,8 +152,10 @@ class ExamResultSerializer(serializers.ModelSerializer):
             "student_name",
             "student_code",
             "roll_no",
-            "section_name",
+            "class_level",
             "class_level_name",
+            "section",
+            "section_name",
             "total_marks",
             "total_full_marks",
             "percentage",

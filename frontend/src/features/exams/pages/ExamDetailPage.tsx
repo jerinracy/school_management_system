@@ -11,12 +11,14 @@ import {
   BookOpen,
   Calendar,
   CheckCircle2,
+  Clock,
   FileCheck2,
   FileText,
   Lock,
   Plus,
   Printer,
   ShieldCheck,
+  Tag,
   Unlock,
   UserCheck,
   X,
@@ -24,17 +26,34 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { examsApi } from "@/features/exams/api/examsApi";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { examsApi, type AdmitCardItem } from "@/features/exams/api/examsApi";
 import { examSubjectFormSchema, type ExamSubjectFormData } from "@/features/exams/schemas/examSchemas";
 import { academicApi } from "@/features/academics/api/academicApi";
+import { useBrandingStore } from "@/features/institutions/store/brandingStore";
 
 export default function ExamDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language === "bn" ? "bn" : "en";
+  const { getLocalizedName, getEIIN, getBoard, getLogoUrl } = useBrandingStore();
+  const schoolName = getLocalizedName(currentLang);
+  const schoolEIIN = getEIIN();
+  const schoolBoard = getBoard();
+  const schoolLogo = getLogoUrl();
+
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<"subjects" | "eligibility" | "admit_cards" | "routines">("subjects");
   const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
+  const [previewCard, setPreviewCard] = useState<AdmitCardItem | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Queries
@@ -174,18 +193,23 @@ export default function ExamDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Back button & Title */}
-      <div>
-        <Link to="/exams" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 mb-2">
-          <ArrowLeft className="h-3.5 w-3.5" />
-          {t("common.backToExams", "Back to Examinations")}
-        </Link>
+      {/* Workspace Header */}
+      <div className="border-b border-slate-200/80 pb-4 dark:border-slate-800">
+        <div className="mb-2">
+          <Link
+            to="/exams"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 hover:text-emerald-950 dark:text-emerald-400 dark:hover:text-emerald-300"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {t("common.backToExams", "Back to Examinations")}
+          </Link>
+        </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{exam.name}</h1>
               <span
-                className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                   exam.status === "published"
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                     : exam.status === "locked"
@@ -198,22 +222,34 @@ export default function ExamDetailPage() {
                 {exam.status}
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-500">
-              Session: <span className="font-semibold text-slate-700 dark:text-slate-300">{exam.session_name}</span> | Type:{" "}
-              <span className="font-semibold text-slate-700 dark:text-slate-300">{exam.exam_type_name}</span> | Window:{" "}
-              <span className="font-mono text-slate-700 dark:text-slate-300">{exam.start_date} to {exam.end_date}</span>
-            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                <span>Session:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{exam.session_name}</span>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Tag className="h-3.5 w-3.5 text-slate-400" />
+                <span>Type:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{exam.exam_type_name}</span>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 text-slate-400" />
+                <span>Window:</span>
+                <span className="font-mono text-slate-700 dark:text-slate-300">{exam.start_date} to {exam.end_date}</span>
+              </span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <Link to={`/exams/marks?exam=${exam.id}`}>
-              <Button size="sm" className="h-9 gap-1.5 bg-emerald-800 text-white hover:bg-emerald-900 text-xs">
+              <Button size="sm" className="h-8 gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800 text-xs font-medium">
                 <FileCheck2 className="h-3.5 w-3.5" />
                 {t("exams.markEntryPortal", "Mark Entry Sheet")}
               </Button>
             </Link>
             <Link to={`/results?exam=${exam.id}`}>
-              <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs border-emerald-300 text-emerald-800 dark:border-emerald-800 dark:text-emerald-300">
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-medium border-emerald-300 text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950">
                 <Award className="h-3.5 w-3.5" />
                 {t("results.processResults", "Process Results")}
               </Button>
@@ -521,7 +557,12 @@ export default function ExamDetailPage() {
                           {ac.issue_date || "Generated"}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Button variant="ghost" size="sm" className="h-7 px-2.5 text-xs text-emerald-800 dark:text-emerald-400">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setPreviewCard(ac)}
+                            className="h-7 px-2.5 text-xs text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/60"
+                          >
                             View Pass
                           </Button>
                         </td>
@@ -577,124 +618,222 @@ export default function ExamDetailPage() {
       )}
 
       {/* Modal: Add Exam Subject */}
-      {showAddSubjectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                Add Subject to Examination
-              </h2>
-              <button
-                onClick={() => setShowAddSubjectModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="h-4 w-4" />
-              </button>
+      <Dialog open={showAddSubjectModal} onOpenChange={setShowAddSubjectModal}>
+        <DialogContent className="max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              Add Subject to Examination
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+              Configure curriculum subject, total full marks, and component-wise thresholds (CQ, MCQ, Practical) for this exam.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              void handleSubmit((data) => addSubjectMutation.mutate(data))(e);
+            }}
+            className="space-y-3.5 text-xs pt-2"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="subject-class-select" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Class Grade *</label>
+                <select
+                  id="subject-class-select"
+                  {...register("class_level")}
+                  className="w-full h-9 rounded-md border border-slate-300 bg-white px-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="">Select Class...</option>
+                  {classesData.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.class_level && <p className="mt-1 text-[11px] text-rose-600">{errors.class_level.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="subject-item-select" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Curriculum Subject *</label>
+                <select
+                  id="subject-item-select"
+                  {...register("subject")}
+                  className="w-full h-9 rounded-md border border-slate-300 bg-white px-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="">Select Subject...</option>
+                  {subjectsData.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name_en || s.name_bn} ({s.code})
+                    </option>
+                  ))}
+                </select>
+                {errors.subject && <p className="mt-1 text-[11px] text-rose-600">{errors.subject.message}</p>}
+              </div>
             </div>
 
-            <form
-              onSubmit={(e) => {
-                void handleSubmit((data) => addSubjectMutation.mutate(data))(e);
-              }}
-              className="space-y-3.5 text-xs"
-            >
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="subject-class-select" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Class Grade *</label>
-                  <select
-                    id="subject-class-select"
-                    {...register("class_level")}
-                    className="w-full h-9 rounded-md border border-slate-300 bg-white px-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <option value="">Select Class...</option>
-                    {classesData.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.class_level && <p className="mt-1 text-[11px] text-rose-600">{errors.class_level.message}</p>}
-                </div>
-
-                <div>
-                  <label htmlFor="subject-item-select" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Curriculum Subject *</label>
-                  <select
-                    id="subject-item-select"
-                    {...register("subject")}
-                    className="w-full h-9 rounded-md border border-slate-300 bg-white px-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <option value="">Select Subject...</option>
-                    {subjectsData.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name_en || s.name_bn} ({s.code})
-                      </option>
-                    ))}
-                  </select>
-                  {errors.subject && <p className="mt-1 text-[11px] text-rose-600">{errors.subject.message}</p>}
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Total Full Marks *</label>
+                <Input id="full-marks-input" {...register("full_marks")} className="h-9 text-xs font-mono" />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Total Full Marks *</label>
-                  <Input id="full-marks-input" {...register("full_marks")} className="h-9 text-xs font-mono" />
-                </div>
-                <div>
-                  <label htmlFor="pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Total Pass Marks *</label>
-                  <Input id="pass-marks-input" {...register("pass_marks")} className="h-9 text-xs font-mono" />
-                </div>
+              <div>
+                <label htmlFor="pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Total Pass Marks *</label>
+                <Input id="pass-marks-input" {...register("pass_marks")} className="h-9 text-xs font-mono" />
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="cq-full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">CQ (Theory) Max</label>
-                  <Input id="cq-full-marks-input" {...register("creative_full_marks")} className="h-9 text-xs font-mono" />
-                </div>
-                <div>
-                  <label htmlFor="cq-pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">CQ Pass Mark</label>
-                  <Input id="cq-pass-marks-input" {...register("creative_pass_marks")} className="h-9 text-xs font-mono" />
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="cq-full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">CQ (Theory) Max</label>
+                <Input id="cq-full-marks-input" {...register("creative_full_marks")} className="h-9 text-xs font-mono" />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="mcq-full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">MCQ Max</label>
-                  <Input id="mcq-full-marks-input" {...register("mcq_full_marks")} className="h-9 text-xs font-mono" />
-                </div>
-                <div>
-                  <label htmlFor="mcq-pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">MCQ Pass Mark</label>
-                  <Input id="mcq-pass-marks-input" {...register("mcq_pass_marks")} className="h-9 text-xs font-mono" />
-                </div>
+              <div>
+                <label htmlFor="cq-pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">CQ Pass Mark</label>
+                <Input id="cq-pass-marks-input" {...register("creative_pass_marks")} className="h-9 text-xs font-mono" />
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="pr-full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Practical Max</label>
-                  <Input id="pr-full-marks-input" {...register("practical_full_marks")} className="h-9 text-xs font-mono" />
-                </div>
-                <div>
-                  <label htmlFor="pr-pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Practical Pass Mark</label>
-                  <Input id="pr-pass-marks-input" {...register("practical_pass_marks")} className="h-9 text-xs font-mono" />
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="mcq-full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">MCQ Max</label>
+                <Input id="mcq-full-marks-input" {...register("mcq_full_marks")} className="h-9 text-xs font-mono" />
               </div>
+              <div>
+                <label htmlFor="mcq-pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">MCQ Pass Mark</label>
+                <Input id="mcq-pass-marks-input" {...register("mcq_pass_marks")} className="h-9 text-xs font-mono" />
+              </div>
+            </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowAddSubjectModal(false)}>
-                  {t("common.cancel", "Cancel")}
-                </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="pr-full-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Practical Max</label>
+                <Input id="pr-full-marks-input" {...register("practical_full_marks")} className="h-9 text-xs font-mono" />
+              </div>
+              <div>
+                <label htmlFor="pr-pass-marks-input" className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">Practical Pass Mark</label>
+                <Input id="pr-pass-marks-input" {...register("practical_pass_marks")} className="h-9 text-xs font-mono" />
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowAddSubjectModal(false)}>
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={addSubjectMutation.isPending}
+                className="bg-emerald-800 hover:bg-emerald-900 text-white"
+              >
+                {addSubjectMutation.isPending ? t("common.saving", "Saving...") : "Add Subject"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: View Admit Card / Hall Pass */}
+      <Dialog open={Boolean(previewCard)} onOpenChange={(open) => !open && setPreviewCard(null)}>
+        <DialogContent className="max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+          {previewCard && (
+            <div className="space-y-4">
+              <DialogHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800 pr-8">
+                <div>
+                  <DialogTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    Official Admit Card / প্রবেশপত্র
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-slate-500">
+                    Candidate examination hall pass
+                  </DialogDescription>
+                </div>
                 <Button
-                  type="submit"
                   size="sm"
-                  disabled={addSubjectMutation.isPending}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white"
+                  onClick={() => window.print()}
+                  className="h-8 gap-1.5 bg-emerald-800 text-white hover:bg-emerald-900 text-xs shrink-0"
                 >
-                  {addSubjectMutation.isPending ? t("common.saving", "Saving...") : "Add Subject"}
+                  <Printer className="h-3.5 w-3.5" />
+                  Print (A4)
                 </Button>
+              </DialogHeader>
+
+              {/* Printable Pass Container */}
+              <div className="rounded-xl border-2 border-slate-900/80 p-6 space-y-4 bg-white text-slate-900 font-sans print:border-none print:p-0">
+                {/* Institution Header */}
+                <div className="text-center border-b pb-3 border-slate-300">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    {schoolLogo ? (
+                      <img src={schoolLogo} alt={schoolName} className="h-8 w-8 object-contain rounded-full" />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">
+                        SMS
+                      </div>
+                    )}
+                    <h3 className="text-base font-extrabold uppercase tracking-wide">
+                      {schoolName}
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-slate-600">EIIN: {schoolEIIN} &bull; {schoolBoard} Education Board &bull; Bangladesh</p>
+                  <div className="mt-2 inline-block rounded-md border border-slate-800 bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                    Admit Card / প্রবেশপত্র
+                  </div>
+                </div>
+
+                {/* Student Demographics */}
+                <div className="grid grid-cols-3 gap-3 text-xs border-b pb-3 border-slate-200">
+                  <div className="col-span-2 space-y-1.5">
+                    <div>
+                      <span className="text-slate-500">Candidate Name:</span>{" "}
+                      <span className="font-bold text-slate-900">{previewCard.student_name_en || previewCard.student_name_bn}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Student ID:</span>{" "}
+                      <span className="font-mono font-semibold">{previewCard.student_id}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Admit No:</span>{" "}
+                      <span className="font-mono font-bold text-emerald-800">{previewCard.card_number}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Examination:</span>{" "}
+                      <span className="font-semibold text-slate-800">{exam.name}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Session:</span>{" "}
+                      <span className="text-slate-700">{exam.session_name}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-md p-2 bg-slate-50 text-[10px] text-slate-400">
+                    <UserCheck className="h-8 w-8 text-slate-300 mb-1" />
+                    Candidate Photo
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div className="space-y-1 text-[10px] text-slate-600">
+                  <p className="font-bold text-slate-800">General Instructions:</p>
+                  <p>1. Candidates must arrive at the examination hall at least 15 minutes before commencement.</p>
+                  <p>2. Electronic gadgets, mobile phones, and non-approved calculators are strictly prohibited.</p>
+                  <p>3. This admit card must be produced to the invigilator during every examination session.</p>
+                </div>
+
+                {/* Signatures */}
+                <div className="flex justify-between items-end pt-8 text-[11px] text-slate-700">
+                  <div className="text-center">
+                    <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Class Teacher</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Exam Controller</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="border-t border-slate-400 w-32 pt-1 font-semibold">Principal</div>
+                  </div>
+                </div>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

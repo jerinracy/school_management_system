@@ -115,6 +115,37 @@ class HomeworkSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if isinstance(data, dict):
+            data = dict(data)
+            if "due_date" in data and not data.get("due_at"):
+                due_val = str(data["due_date"])
+                if "T" not in due_val:
+                    due_val = f"{due_val}T23:59:59Z"
+                data["due_at"] = due_val
+            if not data.get("session"):
+                request = self.context.get("request")
+                if request:
+                    from apps.core.mixins import get_request_institution
+                    from apps.institutions.models import AcademicSession
+
+                    inst = get_request_institution(request)
+                    sess = (
+                        AcademicSession.objects.filter(institution=inst, is_current=True).first()
+                        or AcademicSession.objects.filter(institution=inst).first()
+                    )
+                    if sess:
+                        data["session"] = str(sess.id)
+            if not data.get("teacher"):
+                request = self.context.get("request")
+                if (
+                    request
+                    and hasattr(request.user, "staff_profile")
+                    and request.user.staff_profile
+                ):
+                    data["teacher"] = str(request.user.staff_profile.id)
+        return super().to_internal_value(data)
+
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         for field_name in ("session", "class_level", "section", "subject", "teacher"):
             _assert_same_institution(self.context, attrs.get(field_name), field_name)

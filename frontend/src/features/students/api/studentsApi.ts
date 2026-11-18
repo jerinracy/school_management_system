@@ -10,6 +10,8 @@ export type StudentEnrollmentInput = components["schemas"]["StudentEnrollmentCre
 export type GuardianItem = paths["/api/v1/guardians/guardians/"]["get"]["responses"]["200"]["content"]["application/json"]["results"][number];
 export type GuardianCreateInput = components["schemas"]["GuardianRequest"];
 export type LinkStudentInput = components["schemas"]["LinkStudentActionRequest"];
+export type StudentLinkedGuardian = components["schemas"]["StudentLinkedGuardian"];
+export type StudentLinkInput = components["schemas"]["StudentLinkInputRequest"];
 
 function checkResponse<T>(res: { data?: T; error?: unknown; response: Response }): T {
   if (!res.response.ok) {

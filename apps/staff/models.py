@@ -10,6 +10,7 @@ from apps.core.models import SoftDeleteMixin, TenantOwnedModel
 
 
 class StaffType(models.TextChoices):
+    SUPERADMIN = "superadmin", "Super Admin (সুপার অ্যাডমিন)"
     TEACHER = "teacher", "Teacher (শিক্ষক)"
     ADMIN = "admin", "Administrative Staff (প্রশাসনিক কর্মকর্তা)"
     SUPPORT = "support", "Support Staff (সহায়ক কর্মচারী)"
@@ -136,6 +137,14 @@ class Staff(TenantOwnedModel, SoftDeleteMixin):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="staff_members",
+    )
+    branch = models.ForeignKey(
+        "institutions.Branch",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="staff_members",
+        help_text="Primary campus/branch where this staff member is assigned",
     )
     staff_type = models.CharField(
         max_length=30,

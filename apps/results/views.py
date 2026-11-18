@@ -6,7 +6,7 @@ from typing import cast
 from django.db.models import Count
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema, extend_schema_view
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -206,6 +206,24 @@ class SubjectResultViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="class_level",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                description="Filter student results by class level UUID",
+            ),
+            OpenApiParameter(
+                name="section",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                description="Filter student results by section UUID",
+            ),
+        ]
+    )
+)
 class ExamResultViewSet(viewsets.ReadOnlyModelViewSet):
     """Student exam results summary, ranking, and tabulation execution endpoint."""
 
@@ -241,6 +259,18 @@ class ExamResultViewSet(viewsets.ReadOnlyModelViewSet):
             "enrollment__section",
             "enrollment__class_level",
         )
+
+        class_level_id = self.request.query_params.get(
+            "class_level"
+        ) or self.request.query_params.get("enrollment__class_level")
+        if class_level_id:
+            qs = qs.filter(enrollment__class_level_id=class_level_id)
+
+        section_id = self.request.query_params.get("section") or self.request.query_params.get(
+            "enrollment__section"
+        )
+        if section_id:
+            qs = qs.filter(enrollment__section_id=section_id)
 
         # Enforce student/guardian visibility filters
         if user and hasattr(user, "user_roles"):
@@ -487,6 +517,33 @@ class TabulationSheetViewSet(viewsets.ModelViewSet):
         if self.action in ["generate", "create", "destroy"]:
             return [IsAuthenticated(), CanCalculateResults()]
         return [DenyAll()]
+
+    def create(self, request: Request, *args, **kwargs) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exam = serializer.validated_data["exam"]
+        class_level = serializer.validated_data["class_level"]
+        section = serializer.validated_data.get("section")
+        file_format = serializer.validated_data.get("file_format", "xlsx")
+
+        record = create_tabulation_sheet_record(
+            exam_id=exam.id,
+            class_level_id=class_level.id,
+            section_id=section.id if section else None,
+            file_format=file_format,
+            user=cast(User, request.user),
+        )
+        return Response(
+            TabulationSheetSerializer(record).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def perform_create(self, serializer):
+        user = getattr(self.request, "user", None)
+        inst = getattr(user, "institution", None)
+        if not inst and hasattr(user, "institution_id"):
+            inst = Institution.objects.filter(id=user.institution_id).first()
+        serializer.save(institution=inst, generated_by=user)
 
     @extend_schema(
         request=TabulationGenerateSerializer,

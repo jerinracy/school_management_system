@@ -17,6 +17,9 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
+# Allow media serving in tests
+SERVE_MEDIA_IN_TEST = True
+
 # In-memory cache for tests
 CACHES = {
     "default": {

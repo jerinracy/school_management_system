@@ -16,6 +16,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Cpu,
   FileSpreadsheet,
   GraduationCap,
@@ -37,6 +38,7 @@ import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useBrandingStore } from "@/features/institutions/store/brandingStore";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 import { AcademicLogo } from "@/features/institutions/components/AcademicLogo";
 import {
   DropdownMenu,
@@ -83,8 +85,23 @@ export function AppShell({ children, permissions, userType, onLogout }: AppShell
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [branch, setBranch] = useState("main");
-  const [session, setSession] = useState("2026");
+
+  const {
+    branches,
+    selectedBranch,
+    setSelectedBranchId,
+    sessions,
+    selectedSession,
+    setSelectedSessionId,
+    shifts,
+    selectedShift,
+    setSelectedShiftId,
+    fetchContext,
+  } = useAcademicContextStore();
+
+  useEffect(() => {
+    void fetchContext();
+  }, [fetchContext]);
 
   const currentLang: SupportedLanguage = i18n.language === "bn" ? "bn" : "en";
   const { branding, fetchBranding, getLocalizedName, getLogoUrl } = useBrandingStore();
@@ -364,51 +381,110 @@ export function AppShell({ children, permissions, userType, onLogout }: AppShell
               <Menu className="h-4 w-4" />
             </button>
 
+            {/* Branch Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
+                  aria-label={t("topbar.switchBranch")}
                   className="inline-flex items-center gap-1.5 rounded-md border border-border bg-canvas px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-border-strong"
                 >
-                  <Building2 className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  <span>
-                    {branch === "main" ? t("topbar.branchMain") : t("topbar.branchMorning")}
+                  <Building2 className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                  <span className="max-w-[110px] truncate sm:max-w-none">
+                    {selectedBranch?.name || t("topbar.branchMain")}
                   </span>
-                  <ChevronDown className="h-3 w-3 text-ink-subtle" aria-hidden="true" />
+                  <ChevronDown className="h-3 w-3 text-ink-subtle shrink-0" aria-hidden="true" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuLabel>{t("topbar.switchBranch")}</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => setBranch("main")}>
-                  {t("topbar.branchMain")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setBranch("morning")}>
-                  {t("topbar.branchMorning")}
-                </DropdownMenuItem>
+                {branches.length > 0 ? (
+                  branches.map((b) => (
+                    <DropdownMenuItem
+                      key={b.id}
+                      onSelect={() => setSelectedBranchId(b.id)}
+                      className={cn(b.id === selectedBranch?.id && "font-semibold text-primary")}
+                    >
+                      {b.name}
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem disabled>{t("topbar.branchMain")}</DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Academic Session Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
+                  aria-label={t("topbar.switchSession")}
                   className="hidden items-center gap-1.5 rounded-md border border-border bg-canvas px-2.5 py-1 text-xs text-ink-muted transition-colors hover:border-border-strong sm:inline-flex"
                 >
                   <Calendar className="h-3.5 w-3.5 text-ink-subtle" aria-hidden="true" />
                   <span>
-                    {session === "2026" ? t("topbar.sessionLabel") : t("topbar.session2025")}
+                    {selectedSession?.name || t("topbar.sessionLabel")}
                   </span>
                   <ChevronDown className="h-3 w-3 text-ink-subtle" aria-hidden="true" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuLabel>{t("topbar.switchSession")}</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => setSession("2026")}>
-                  {t("topbar.sessionLabel")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setSession("2025")}>
-                  {t("topbar.session2025")}
-                </DropdownMenuItem>
+                {sessions.length > 0 ? (
+                  sessions.map((s) => (
+                    <DropdownMenuItem
+                      key={s.id}
+                      onSelect={() => setSelectedSessionId(s.id)}
+                      className={cn(s.id === selectedSession?.id && "font-semibold text-primary")}
+                    >
+                      {s.name} {s.is_current ? `(${t("common.current", "Current")})` : ""}
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem disabled>{t("topbar.sessionLabel")}</DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Shift Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={t("topbar.switchShift", "Switch Shift")}
+                  className="hidden items-center gap-1.5 rounded-md border border-border bg-canvas px-2.5 py-1 text-xs text-ink-muted transition-colors hover:border-border-strong md:inline-flex"
+                >
+                  <Clock className="h-3.5 w-3.5 text-ink-subtle" aria-hidden="true" />
+                  <span className="capitalize">
+                    {selectedShift?.name
+                      ? t(`shifts.${selectedShift.name}`, selectedShift.name)
+                      : t("shifts.morning", "Morning")}
+                  </span>
+                  <ChevronDown className="h-3 w-3 text-ink-subtle" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuLabel>{t("topbar.switchShift", "Switch Shift")}</DropdownMenuLabel>
+                {shifts.length > 0 ? (
+                  shifts.map((sh) => (
+                    <DropdownMenuItem
+                      key={sh.id}
+                      onSelect={() => setSelectedShiftId(sh.id)}
+                      className={cn(
+                        "capitalize",
+                        sh.id === selectedShift?.id && "font-semibold text-primary"
+                      )}
+                    >
+                      {t(`shifts.${sh.name}`, sh.name)}{" "}
+                      {sh.start_time
+                        ? `(${sh.start_time.slice(0, 5)} - ${sh.end_time.slice(0, 5)})`
+                        : ""}
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem disabled>{t("shifts.morning", "Morning")}</DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -509,7 +585,7 @@ export function AppShell({ children, permissions, userType, onLogout }: AppShell
           </div>
         </header>
 
-        <main id="main-content" className="flex-1 p-4 md:p-5">
+        <main id="main-content" className="flex-1 p-3 sm:p-4 md:p-5">
           <div key={location.pathname} className="mx-auto max-w-6xl animate-page-enter">
             {children}
           </div>

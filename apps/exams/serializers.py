@@ -36,6 +36,25 @@ class ExamTypeSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    def validate_code(self, value: str) -> str:
+        return value.strip().upper()
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        request = self.context.get("request")
+        institution = getattr(request.user, "institution", None) if request else None
+        code = attrs.get("code")
+        if code and institution:
+            code = code.strip().upper()
+            attrs["code"] = code
+            qs = ExamType.objects.filter(institution=institution, code=code)
+            if self.instance:
+                qs = qs.exclude(id=self.instance.id)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {"code": f"Exam type with code '{code}' already exists."}
+                )
+        return attrs
+
 
 class ExamSubjectSerializer(serializers.ModelSerializer):
     subject_name_en = serializers.CharField(source="subject.name_en", read_only=True)

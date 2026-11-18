@@ -10,9 +10,11 @@ import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { academicApi, type Period, type Room } from "@/features/academics/api/academicApi";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 
 export function PeriodsRoomsPage() {
   const { t } = useTranslation();
+  const { selectedShift, selectedBranch } = useAcademicContextStore();
   const [periods, setPeriods] = useState<Period[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
 
@@ -26,7 +28,7 @@ export function PeriodsRoomsPage() {
 
   const [rNumber, setRNumber] = useState("");
   const [rCapacity, setRCapacity] = useState(50);
-  const [rType, setRType] = useState("Classroom");
+  const [rType, setRType] = useState("classroom");
 
   const loadData = useCallback(async () => {
     try {
@@ -49,7 +51,9 @@ export function PeriodsRoomsPage() {
         name: pName,
         start_time: pStart,
         end_time: pEnd,
-        period_order: pOrder,
+        order: Number(pOrder),
+        period_order: Number(pOrder),
+        shift: selectedShift?.id,
       });
       toast.success(t("academics.periodCreated", "Period slot created."));
       setOpenPeriodModal(false);
@@ -64,9 +68,12 @@ export function PeriodsRoomsPage() {
     e.preventDefault();
     try {
       await academicApi.createRoom({
+        name: rNumber,
         room_number: rNumber,
-        capacity: rCapacity,
-        room_type: rType,
+        capacity: Number(rCapacity),
+        type: rType.toLowerCase(),
+        room_type: rType.toLowerCase(),
+        branch: selectedBranch?.id,
       });
       toast.success(t("academics.roomCreated", "Room registered."));
       setOpenRoomModal(false);

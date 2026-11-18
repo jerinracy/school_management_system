@@ -13,12 +13,19 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useBrandingStore } from "@/features/institutions/store/brandingStore";
 import { resultsApi } from "@/features/results/api/resultsApi";
 import { examsApi } from "@/features/exams/api/examsApi";
 import { academicApi } from "@/features/academics/api/academicApi";
 
 export default function TabulationSheetPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language === "bn" ? "bn" : "en";
+  const { getLocalizedName, getEIIN, getBoard } = useBrandingStore();
+  const schoolName = getLocalizedName(currentLang);
+  const schoolEIIN = getEIIN();
+  const schoolBoard = getBoard();
+
   const queryClient = useQueryClient();
 
   const [selectedExam, setSelectedExam] = useState<string>("");
@@ -44,27 +51,45 @@ export default function TabulationSheetPage() {
   });
 
   const { data: sheetsData } = useQuery({
-    queryKey: ["tabulation-sheets", selectedExam, selectedClass],
+    queryKey: ["tabulation-sheets", selectedExam, selectedClass, selectedSection],
     queryFn: () =>
       resultsApi.getTabulationSheets({
         exam: selectedExam || undefined,
         class_level: selectedClass || undefined,
+        section: selectedSection || undefined,
       }),
   });
 
   const { data: examResultsData } = useQuery({
-    queryKey: ["tabulation-results", selectedExam, selectedClass],
+    queryKey: ["tabulation-results", selectedExam, selectedClass, selectedSection],
     queryFn: () =>
       resultsApi.getExamResults({
         exam: selectedExam || undefined,
         class_level: selectedClass || undefined,
+        section: selectedSection || undefined,
+        page_size: 100,
       }),
     enabled: Boolean(selectedExam) && Boolean(selectedClass),
   });
 
   const exams = useMemo(() => examsData?.results ?? [], [examsData]);
   const sheets = useMemo(() => sheetsData?.results ?? [], [sheetsData]);
-  const results = useMemo(() => examResultsData?.results ?? [], [examResultsData]);
+  const results = useMemo(() => {
+    let list = examResultsData?.results ?? [];
+    if (selectedClass) {
+      list = list.filter((r) => {
+        const item = r as typeof r & { class_level?: string; section?: string };
+        return !item.class_level || item.class_level === selectedClass;
+      });
+    }
+    if (selectedSection) {
+      list = list.filter((r) => {
+        const item = r as typeof r & { class_level?: string; section?: string };
+        return !item.section || item.section === selectedSection;
+      });
+    }
+    return list;
+  }, [examResultsData, selectedClass, selectedSection]);
 
   // Generate Tabulation Sheet Mutation
   const generateSheetMutation = useMutation({
@@ -230,10 +255,10 @@ export default function TabulationSheetPage() {
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 print:border-none print:shadow-none print:p-0">
             <div className="text-center border-b pb-4 mb-4 border-slate-200 dark:border-slate-800">
               <h2 className="text-base font-extrabold uppercase tracking-wide text-slate-900 dark:text-slate-100">
-                Dhaka Model High School &amp; College
+                {schoolName}
               </h2>
               <p className="text-xs text-slate-500">
-                EIIN: 134567 &bull; Dhaka Education Board &bull; Bangladesh
+                EIIN: {schoolEIIN} &bull; {schoolBoard} Education Board &bull; Bangladesh
               </p>
               <div className="mt-1 font-bold text-emerald-800 dark:text-emerald-400 text-sm">
                 Official Examination Tabulation Sheet (NCTB GPA 5.0)
@@ -343,14 +368,17 @@ export default function TabulationSheetPage() {
                         v{s.version} &bull; {s.generated_at?.slice(0, 10)}
                       </span>
                     </div>
-                    {s.download_url && (
-                      <a href={s.download_url} target="_blank" rel="noreferrer">
-                        <Button variant="outline" size="sm" className="h-7 gap-1 text-xs text-emerald-800">
-                          <Download className="h-3 w-3" />
-                          Download ({s.file_format?.toUpperCase()})
-                        </Button>
-                      </a>
-                    )}
+                    <a
+                      href={s.download_url || `/api/v1/results/tabulation-sheets/${s.id}/download/`}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Button variant="outline" size="sm" className="h-7 gap-1 text-xs text-emerald-800 dark:text-emerald-400">
+                        <Download className="h-3 w-3" />
+                        Download ({s.file_format?.toUpperCase()})
+                      </Button>
+                    </a>
                   </div>
                 ))}
               </div>

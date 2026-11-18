@@ -89,6 +89,41 @@ export const examsApi = {
     return checkResponse(res).results ?? [];
   },
 
+  async createExamType(payload: {
+    name: string;
+    code: string;
+    is_board_exam?: boolean;
+    description?: string;
+  }) {
+    const res = await apiClient.POST("/api/v1/exams/types/", {
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async updateExamType(
+    id: string,
+    payload: Partial<{
+      name: string;
+      code: string;
+      is_board_exam?: boolean;
+      description?: string;
+    }>,
+  ) {
+    const res = await apiClient.PATCH("/api/v1/exams/types/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteExamType(id: string) {
+    const res = await apiClient.DELETE("/api/v1/exams/types/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
+  },
+
   // Exam Subjects
   async getExamSubjects(params?: { exam?: string; class_level?: string; page?: number }) {
     const res = await apiClient.GET("/api/v1/exams/subjects/", {

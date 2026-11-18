@@ -234,6 +234,11 @@ paths:
       summary: List class levels
       parameters:
       - in: query
+        name: branch
+        schema:
+          type: string
+          format: uuid
+      - in: query
         name: has_groups
         schema:
           type: boolean
@@ -275,6 +280,16 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: session
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: shift
+        schema:
+          type: string
+          format: uuid
       tags:
       - Academics
       security:
@@ -1416,16 +1431,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: session
-        schema:
-          type: string
-          format: uuid
-      - in: query
-        name: shift
-        schema:
-          type: string
-          format: uuid
       tags:
       - Academics
       security:
@@ -1664,16 +1669,6 @@ paths:
         description: A search term.
         schema:
           type: string
-      - in: query
-        name: session
-        schema:
-          type: string
-          format: uuid
-      - in: query
-        name: shift
-        schema:
-          type: string
-          format: uuid
       tags:
       - Academics
       requestBody:
@@ -1936,6 +1931,11 @@ paths:
         schema:
           type: string
       - in: query
+        name: original_staff
+        schema:
+          type: string
+          format: uuid
+      - in: query
         name: original_teacher
         schema:
           type: string
@@ -1952,11 +1952,22 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
       - in: query
         name: slot_date
         schema:
           type: string
           format: date
+      - in: query
+        name: substitute_staff
+        schema:
+          type: string
+          format: uuid
       - in: query
         name: substitute_teacher
         schema:
@@ -29296,9 +29307,11 @@ paths:
           - driver
           - other
           - security
+          - superadmin
           - support
           - teacher
         description: |-
+          * `superadmin` - Super Admin (সুপার অ্যাডমিন)
           * `teacher` - Teacher (শিক্ষক)
           * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
           * `support` - Support Staff (সহায়ক কর্মচারী)
@@ -30127,24 +30140,6 @@ paths:
         schema:
           type: string
       - in: query
-        name: staff_type
-        schema:
-          type: string
-          enum:
-          - admin
-          - driver
-          - other
-          - security
-          - support
-          - teacher
-        description: |-
-          * `teacher` - Teacher (শিক্ষক)
-          * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
-          * `support` - Support Staff (সহায়ক কর্মচারী)
-          * `driver` - Driver (চালক)
-          * `security` - Security (নিরাপত্তা কর্মী)
-          * `other` - Other (অন্যান্য)
-      - in: query
         name: status
         schema:
           type: string
@@ -30311,6 +30306,7 @@ paths:
     post:
       operationId: staff_staff_create_portal_account_create
       description: Provision or reset portal access credentials for this staff member.
+      summary: Provision portal access credentials for this staff member
       parameters:
       - in: path
         name: id
@@ -30325,13 +30321,50 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+              $ref: '#/components/schemas/ProvisionPortalAccountRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+              $ref: '#/components/schemas/ProvisionPortalAccountRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/StaffCreateUpdateRequest'
+              $ref: '#/components/schemas/ProvisionPortalAccountRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/staff/staff/{id}/reset-password/:
+    post:
+      operationId: staff_staff_reset_password_create
+      description: Reset portal login password for an employee (Super Admin and Admin
+        only).
+      summary: Reset portal login password for an employee
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Staff Member.
+        required: true
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
         required: true
       security:
       - jwtAuth: []
@@ -30381,6 +30414,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StaffDetail'
+          description: ''
+  /api/v1/staff/staff/summary/:
+    get:
+      operationId: staff_staff_summary_retrieve
+      description: Aggregated staff category counts in a single query.
+      tags:
+      - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/staff/teacher-assignments/:
     get:
@@ -36862,15 +36911,21 @@ components:
     BulkCreateSectionsRequest:
       type: object
       properties:
+        class_id:
+          type: string
+          format: uuid
+          writeOnly: true
         class_level_id:
           type: string
           format: uuid
         shift_id:
           type: string
           format: uuid
+          nullable: true
         session_id:
           type: string
           format: uuid
+          nullable: true
         names:
           type: array
           items:
@@ -36883,10 +36938,7 @@ components:
           minimum: 1
           default: 50
       required:
-      - class_level_id
       - names
-      - session_id
-      - shift_id
     BulkImportJob:
       type: object
       properties:
@@ -37406,6 +37458,28 @@ components:
           type: boolean
           description: Whether students branch into streams/groups (typically Class
             9+ in Bangladesh)
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated shift (optional; null means common across all shifts)
+        shift_name:
+          type: string
+          readOnly: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated academic session (optional; null means common across
+            all sessions)
+        session_name:
+          type: string
+          readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated branch (optional; null means common across all branches)
         sections_count:
           type: integer
           readOnly: true
@@ -37425,6 +37499,8 @@ components:
       - name
       - order
       - sections_count
+      - session_name
+      - shift_name
       - updated_at
     ClassLevelRequest:
       type: object
@@ -37450,6 +37526,22 @@ components:
           type: boolean
           description: Whether students branch into streams/groups (typically Class
             9+ in Bangladesh)
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated shift (optional; null means common across all shifts)
+        session:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated academic session (optional; null means common across
+            all sessions)
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated branch (optional; null means common across all branches)
       required:
       - code
       - name
@@ -37471,8 +37563,6 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Required when class_level.has_groups is True; null for common
-            subjects
         group_name:
           type: string
           readOnly: true
@@ -37522,7 +37612,6 @@ components:
       - class_level
       - class_level_name
       - created_at
-      - group
       - group_name
       - id
       - session
@@ -37542,8 +37631,6 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Required when class_level.has_groups is True; null for common
-            subjects
         session:
           type: string
           format: uuid
@@ -37568,7 +37655,6 @@ components:
           description: True if this subject can be chosen as an optional/4th subject
       required:
       - class_level
-      - group
       - session
       - subject
     ClearanceStatusEnum:
@@ -41286,6 +41372,11 @@ components:
         is_emergency_contact:
           type: boolean
           description: Default emergency call contact flag
+        student_relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentGuardian'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -41300,6 +41391,7 @@ components:
       - id
       - name_en
       - phone
+      - student_relations
       - updated_at
       - user
     GuardianDetail:
@@ -41364,6 +41456,11 @@ components:
         is_emergency_contact:
           type: boolean
           description: Default emergency call contact flag
+        student_relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentGuardian'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -41371,11 +41468,6 @@ components:
         updated_at:
           type: string
           format: date-time
-          readOnly: true
-        student_relations:
-          type: array
-          items:
-            $ref: '#/components/schemas/StudentGuardian'
           readOnly: true
       required:
       - created_at
@@ -41437,6 +41529,11 @@ components:
         is_emergency_contact:
           type: boolean
           description: Default emergency call contact flag
+        student_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentLinkInputRequest'
+          writeOnly: true
       required:
       - name_en
       - phone
@@ -50138,6 +50235,22 @@ components:
           type: boolean
           description: Whether students branch into streams/groups (typically Class
             9+ in Bangladesh)
+        shift:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated shift (optional; null means common across all shifts)
+        session:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated academic session (optional; null means common across
+            all sessions)
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+          description: Associated branch (optional; null means common across all branches)
     PatchedClassSubjectRequest:
       type: object
       properties:
@@ -50148,8 +50261,6 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Required when class_level.has_groups is True; null for common
-            subjects
         session:
           type: string
           format: uuid
@@ -50988,6 +51099,11 @@ components:
         is_emergency_contact:
           type: boolean
           description: Default emergency call contact flag
+        student_links:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentLinkInputRequest'
+          writeOnly: true
     PatchedHolidayRequest:
       type: object
       description: Serializer for Holiday.
@@ -52201,7 +52317,10 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Assigned teacher user account
+        teacher_staff:
+          type: string
+          format: uuid
+          nullable: true
         room:
           type: string
           format: uuid
@@ -52431,6 +52550,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
         staff_type:
           $ref: '#/components/schemas/StaffTypeEnum'
         status:
@@ -52457,6 +52580,16 @@ components:
         emergency_contact_relation:
           type: string
           maxLength: 50
+        give_portal_access:
+          type: boolean
+          writeOnly: true
+          default: false
+        portal_username:
+          type: string
+          writeOnly: true
+        portal_password:
+          type: string
+          writeOnly: true
     PatchedStaffLoanRequest:
       type: object
       description: Serializer for salary advances and staff loans.
@@ -52839,9 +52972,18 @@ components:
           type: string
           format: uuid
           nullable: true
+        original_staff:
+          type: string
+          format: uuid
+          nullable: true
         substitute_teacher:
           type: string
           format: uuid
+          nullable: true
+        substitute_staff:
+          type: string
+          format: uuid
+          nullable: true
         reason:
           type: string
           maxLength: 255
@@ -54520,6 +54662,17 @@ components:
         * `onnorokom` - Onnorokom SMS
         * `teletalk` - Teletalk Govt
         * `mock_console` - Local / Mock Console
+    ProvisionPortalAccountRequest:
+      type: object
+      description: Payload to create or provision portal login credentials for an
+        employee.
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
     PurposeEnum:
       enum:
       - login
@@ -55751,6 +55904,16 @@ components:
         * `fulfilled` - Fulfilled
         * `cancelled` - Cancelled
         * `expired` - Expired
+    ResetPasswordRequest:
+      type: object
+      description: Payload to reset a user's portal login password.
+      properties:
+        password:
+          type: string
+          writeOnly: true
+          minLength: 6
+      required:
+      - password
     ResultApproveRequest:
       type: object
       properties:
@@ -55894,6 +56057,7 @@ components:
       - updated_at
     RoleCategoryEnum:
       enum:
+      - superadmin
       - teacher
       - admin
       - support
@@ -55902,6 +56066,7 @@ components:
       - other
       type: string
       description: |-
+        * `superadmin` - Super Admin (সুপার অ্যাডমিন)
         * `teacher` - Teacher (শিক্ষক)
         * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
         * `support` - Support Staff (সহায়ক কর্মচারী)
@@ -56276,9 +56441,13 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Assigned teacher user account
+        teacher_staff:
+          type: string
+          format: uuid
+          nullable: true
         teacher_name:
           type: string
+          nullable: true
           readOnly: true
         room:
           type: string
@@ -56303,7 +56472,6 @@ components:
       - period_end
       - period_name
       - period_start
-      - room
       - room_name
       - section
       - section_name
@@ -56311,7 +56479,6 @@ components:
       - subject_code
       - subject_name_en
       - teacher_name
-      - teacher_user
       - updated_at
       - weekday
       - weekday_display
@@ -56346,17 +56513,18 @@ components:
           type: string
           format: uuid
           nullable: true
-          description: Assigned teacher user account
+        teacher_staff:
+          type: string
+          format: uuid
+          nullable: true
         room:
           type: string
           format: uuid
           nullable: true
       required:
       - period
-      - room
       - section
       - subject
-      - teacher_user
       - weekday
     RoutineValidationInputRequest:
       type: object
@@ -56373,6 +56541,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        teacher_staff_id:
+          type: string
+          format: uuid
+          nullable: true
         room_id:
           type: string
           format: uuid
@@ -56382,8 +56554,6 @@ components:
           format: uuid
           nullable: true
       required:
-      - period_id
-      - section_id
       - weekday
     RunReportExportRequest:
       type: object
@@ -57108,6 +57278,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
         staff_type:
           $ref: '#/components/schemas/StaffTypeEnum'
         status:
@@ -57200,6 +57374,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
         staff_type:
           $ref: '#/components/schemas/StaffTypeEnum'
         status:
@@ -57226,6 +57404,16 @@ components:
         emergency_contact_relation:
           type: string
           maxLength: 50
+        give_portal_access:
+          type: boolean
+          writeOnly: true
+          default: false
+        portal_username:
+          type: string
+          writeOnly: true
+        portal_password:
+          type: string
+          writeOnly: true
       required:
       - dob
       - full_name_en
@@ -57293,6 +57481,10 @@ components:
           type: string
           format: uuid
           nullable: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
         staff_type:
           $ref: '#/components/schemas/StaffTypeEnum'
         status:
@@ -57325,6 +57517,22 @@ components:
         designation_title:
           type: string
           readOnly: true
+        branch_name:
+          type: string
+          readOnly: true
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        user_type:
+          type: string
+          readOnly: true
+        has_portal_access:
+          type: boolean
+          readOnly: true
         educations:
           type: array
           items:
@@ -57341,6 +57549,7 @@ components:
             $ref: '#/components/schemas/StaffIDCard'
           readOnly: true
       required:
+      - branch_name
       - department_name
       - designation_title
       - dob
@@ -57348,10 +57557,14 @@ components:
       - educations
       - full_name_en
       - gender
+      - has_portal_access
       - id
       - id_cards
       - joining_date
       - phone
+      - user_id
+      - user_type
+      - username
     StaffDocument:
       type: object
       description: Staff archival document serializer.
@@ -57491,8 +57704,26 @@ components:
         designation_title:
           type: string
           readOnly: true
+        branch:
+          type: string
+          format: uuid
+          nullable: true
+          description: Primary campus/branch where this staff member is assigned
+        branch_name:
+          type: string
+          readOnly: true
         staff_type:
           $ref: '#/components/schemas/StaffTypeEnum'
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        user_type:
+          type: string
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
         phone:
           type: string
           description: Primary mobile number in normalized format (+8801XXXXXXXXX)
@@ -57516,6 +57747,7 @@ components:
           format: uri
           nullable: true
       required:
+      - branch_name
       - department_name
       - designation_title
       - employee_id
@@ -57523,6 +57755,9 @@ components:
       - id
       - joining_date
       - phone
+      - user_id
+      - user_type
+      - username
     StaffLoan:
       type: object
       description: Serializer for salary advances and staff loans.
@@ -57875,6 +58110,7 @@ components:
       - staff
     StaffTypeEnum:
       enum:
+      - superadmin
       - teacher
       - admin
       - support
@@ -57883,6 +58119,7 @@ components:
       - other
       type: string
       description: |-
+        * `superadmin` - Super Admin (সুপার অ্যাডমিন)
         * `teacher` - Teacher (শিক্ষক)
         * `admin` - Administrative Staff (প্রশাসনিক কর্মকর্তা)
         * `support` - Support Staff (সহায়ক কর্মচারী)
@@ -58302,6 +58539,11 @@ components:
           items:
             $ref: '#/components/schemas/StudentIDCard'
           readOnly: true
+        guardians:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentLinkedGuardian'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -58317,6 +58559,7 @@ components:
       - documents
       - enrollments
       - gender
+      - guardians
       - id
       - id_cards
       - name_bn
@@ -58805,6 +59048,9 @@ components:
         student_name:
           type: string
           readOnly: true
+        student_id_number:
+          type: string
+          readOnly: true
         guardian:
           type: string
           format: uuid
@@ -58840,7 +59086,36 @@ components:
       - guardian_phone
       - id
       - student
+      - student_id_number
       - student_name
+    StudentGuardianRequest:
+      type: object
+      description: Serializer for Student-Guardian relationship links.
+      properties:
+        student:
+          type: string
+          format: uuid
+        guardian:
+          type: string
+          format: uuid
+        relation:
+          $ref: '#/components/schemas/RelationEnum'
+        is_primary:
+          type: boolean
+          description: Indicates primary contact receiving report cards and primary
+            calls
+        can_pickup:
+          type: boolean
+          description: Authorized to collect the student from school premises
+        receives_sms:
+          type: boolean
+          description: Receives automated attendance and notification SMS
+        financial_responsible:
+          type: boolean
+          description: Responsible for paying academic fees and dues
+      required:
+      - guardian
+      - student
     StudentIDCard:
       type: object
       properties:
@@ -58903,6 +59178,141 @@ components:
       - card_no
       - expiry_date
       - issue_date
+    StudentLinkInput:
+      type: object
+      description: Input payload for linking a student during guardian creation/update.
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        relation:
+          allOf:
+          - $ref: '#/components/schemas/RelationEnum'
+          default: father
+        is_primary:
+          type: boolean
+          default: false
+        can_pickup:
+          type: boolean
+          default: true
+        receives_sms:
+          type: boolean
+          default: true
+        financial_responsible:
+          type: boolean
+          default: false
+      required:
+      - student_id
+    StudentLinkInputRequest:
+      type: object
+      description: Input payload for linking a student during guardian creation/update.
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        relation:
+          allOf:
+          - $ref: '#/components/schemas/RelationEnum'
+          default: father
+        is_primary:
+          type: boolean
+          default: false
+        can_pickup:
+          type: boolean
+          default: true
+        receives_sms:
+          type: boolean
+          default: true
+        financial_responsible:
+          type: boolean
+          default: false
+      required:
+      - student_id
+    StudentLinkedGuardian:
+      type: object
+      description: Serializer for a guardian linked to a student with demographic
+        details.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        guardian_id:
+          type: string
+          format: uuid
+          readOnly: true
+        name_en:
+          type: string
+          readOnly: true
+        name_bn:
+          type: string
+          readOnly: true
+        relation:
+          allOf:
+          - $ref: '#/components/schemas/RelationEnum'
+          readOnly: true
+        phone:
+          type: string
+          readOnly: true
+        alt_phone:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        nid:
+          type: string
+          readOnly: true
+        occupation:
+          type: string
+          readOnly: true
+        present_address:
+          type: string
+          readOnly: true
+        photo:
+          type: string
+          format: uri
+          readOnly: true
+        is_primary:
+          type: boolean
+          readOnly: true
+          description: Indicates primary contact receiving report cards and primary
+            calls
+        can_pickup:
+          type: boolean
+          readOnly: true
+          description: Authorized to collect the student from school premises
+        receives_sms:
+          type: boolean
+          readOnly: true
+          description: Receives automated attendance and notification SMS
+        financial_responsible:
+          type: boolean
+          readOnly: true
+          description: Responsible for paying academic fees and dues
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - alt_phone
+      - can_pickup
+      - created_at
+      - email
+      - financial_responsible
+      - guardian_id
+      - id
+      - is_primary
+      - name_bn
+      - name_en
+      - nid
+      - occupation
+      - phone
+      - photo
+      - present_address
+      - receives_sms
+      - relation
     StudentList:
       type: object
       properties:
@@ -59559,6 +59969,35 @@ components:
         routine_summary:
           type: string
           readOnly: true
+        class_level_name:
+          type: string
+          readOnly: true
+        section_name:
+          type: string
+          readOnly: true
+        subject_name_en:
+          type: string
+          readOnly: true
+        subject_name_bn:
+          type: string
+          readOnly: true
+        subject_code:
+          type: string
+          readOnly: true
+        period_name:
+          type: string
+          readOnly: true
+        period_start:
+          type: string
+          format: time
+          readOnly: true
+        period_end:
+          type: string
+          format: time
+          readOnly: true
+        room_name:
+          type: string
+          readOnly: true
         slot_date:
           type: string
           format: date
@@ -59567,14 +60006,25 @@ components:
           type: string
           format: uuid
           nullable: true
+        original_staff:
+          type: string
+          format: uuid
+          nullable: true
         original_teacher_name:
           type: string
+          nullable: true
           readOnly: true
         substitute_teacher:
           type: string
           format: uuid
+          nullable: true
+        substitute_staff:
+          type: string
+          format: uuid
+          nullable: true
         substitute_teacher_name:
           type: string
+          nullable: true
           readOnly: true
         reason:
           type: string
@@ -59588,13 +60038,21 @@ components:
           format: date-time
           readOnly: true
       required:
+      - class_level_name
       - created_at
       - id
       - original_teacher_name
+      - period_end
+      - period_name
+      - period_start
+      - room_name
       - routine_slot
       - routine_summary
+      - section_name
       - slot_date
-      - substitute_teacher
+      - subject_code
+      - subject_name_bn
+      - subject_name_en
       - substitute_teacher_name
       - updated_at
     SubstituteAssignmentRequest:
@@ -59611,16 +60069,24 @@ components:
           type: string
           format: uuid
           nullable: true
+        original_staff:
+          type: string
+          format: uuid
+          nullable: true
         substitute_teacher:
           type: string
           format: uuid
+          nullable: true
+        substitute_staff:
+          type: string
+          format: uuid
+          nullable: true
         reason:
           type: string
           maxLength: 255
       required:
       - routine_slot
       - slot_date
-      - substitute_teacher
     SubtypeEnum:
       enum:
       - cash
@@ -60863,6 +61329,11 @@ components:
       type: object
       description: Serializer for creating a new user by Admin.
       properties:
+        branch:
+          type: string
+          format: uuid
+          writeOnly: true
+          nullable: true
         username:
           type: string
           minLength: 1

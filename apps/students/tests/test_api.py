@@ -13,6 +13,7 @@ from apps.academics.models import ClassLevel, Section
 from apps.accounts.models import Role, User, UserRole, UserType
 from apps.accounts.test_helpers import api_client_as, make_user
 from apps.admissions.models import AdmissionCircular, Application, ApplicationStatus
+from apps.guardians.models import Guardian, StudentGuardian
 from apps.institutions.models import AcademicSession, Branch, Institution, Shift
 from apps.students.models import EnrollmentStatus, Student, StudentEnrollment
 
@@ -257,6 +258,50 @@ class TestStudentAPI:
             == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         assert len(res.content) > 1000
+
+    def test_student_detail_includes_guardians(self, client, institution):
+        student = Student.objects.create(
+            institution=institution,
+            student_id="2026100099",
+            name_en="Tanvir Ahmed",
+            name_bn="তানভীর আহমেদ",
+            dob=date(2010, 1, 1),
+            gender="male",
+            admission_date=date(2026, 1, 1),
+        )
+        guardian = Guardian.objects.create(
+            institution=institution,
+            name_en="Faruk Ahmed",
+            name_bn="ফারুক আহমেদ",
+            phone="+8801719988776",
+            relation_default="father",
+            occupation="Engineer",
+        )
+        StudentGuardian.objects.create(
+            institution=institution,
+            student=student,
+            guardian=guardian,
+            relation="father",
+            is_primary=True,
+            can_pickup=True,
+            receives_sms=True,
+            financial_responsible=True,
+        )
+
+        res = client.get(f"/api/v1/students/{student.id}/")
+        assert res.status_code == status.HTTP_200_OK
+        data = res.json()
+        assert "guardians" in data
+        assert len(data["guardians"]) == 1
+        g_info = data["guardians"][0]
+        assert g_info["name_en"] == "Faruk Ahmed"
+        assert g_info["name_bn"] == "ফারুক আহমেদ"
+        assert g_info["phone"] == "+8801719988776"
+        assert g_info["relation"] == "father"
+        assert g_info["is_primary"] is True
+        assert g_info["can_pickup"] is True
+        assert g_info["receives_sms"] is True
+        assert g_info["financial_responsible"] is True
 
     def test_id_card_and_transfer_certificate_flow(
         self, client, institution, session, class_level, section

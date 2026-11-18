@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.core.utils.phone import normalize_bd_phone
+from apps.guardians.models import StudentGuardian
 from apps.students.models import (
     EnrollmentStatus,
     PreviousSchool,
@@ -161,11 +162,52 @@ class StudentIDCardSerializer(serializers.ModelSerializer):
         ]
 
 
+class StudentLinkedGuardianSerializer(serializers.ModelSerializer):
+    """Serializer for a guardian linked to a student with demographic details."""
+
+    guardian_id = serializers.UUIDField(source="guardian.id", read_only=True)
+    name_en = serializers.CharField(source="guardian.name_en", read_only=True)
+    name_bn = serializers.CharField(source="guardian.name_bn", read_only=True)
+    phone = serializers.CharField(source="guardian.phone", read_only=True)
+    alt_phone = serializers.CharField(source="guardian.alt_phone", read_only=True)
+    email = serializers.EmailField(source="guardian.email", read_only=True)
+    nid = serializers.CharField(source="guardian.nid", read_only=True)
+    occupation = serializers.CharField(source="guardian.occupation", read_only=True)
+    present_address = serializers.CharField(source="guardian.present_address", read_only=True)
+    photo = serializers.FileField(source="guardian.photo", read_only=True)
+
+    class Meta:
+        model = StudentGuardian
+        fields = [
+            "id",
+            "guardian_id",
+            "name_en",
+            "name_bn",
+            "relation",
+            "phone",
+            "alt_phone",
+            "email",
+            "nid",
+            "occupation",
+            "present_address",
+            "photo",
+            "is_primary",
+            "can_pickup",
+            "receives_sms",
+            "financial_responsible",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
 class StudentDetailSerializer(serializers.ModelSerializer):
     enrollments = StudentEnrollmentBriefSerializer(many=True, read_only=True)
     previous_school = PreviousSchoolSerializer(read_only=True)
     documents = StudentDocumentSerializer(many=True, read_only=True)
     id_cards = StudentIDCardSerializer(many=True, read_only=True)
+    guardians = StudentLinkedGuardianSerializer(
+        source="guardian_relations", many=True, read_only=True
+    )
 
     class Meta:
         model = Student
@@ -195,6 +237,7 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             "previous_school",
             "documents",
             "id_cards",
+            "guardians",
             "created_at",
             "updated_at",
         ]

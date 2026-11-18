@@ -74,7 +74,11 @@ def _get_request_institution(request: Request) -> Institution:
 class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     """Endpoints for student lifecycle management."""
 
-    queryset = Student.objects.all().select_related("institution").prefetch_related("enrollments")
+    queryset = (
+        Student.objects.all()
+        .select_related("institution")
+        .prefetch_related("enrollments", "guardian_relations__guardian")
+    )
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["status", "gender", "religion", "blood_group"]
