@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Staff Salary Profile Management & Roster Synchronization**:
+  - Added "Sync Staff Roster" action (`POST /api/v1/payroll/profiles/sync-roster/`) in `apps/payroll/views.py` and `SalaryProfilesPage.tsx`, enabling school administrators to automatically populate all active school employees into the payroll profile roster with one click.
+  - Implemented the "Assign Salary Profile" modal dialog allowing selection of any school employee, assignment of salary structure templates, monthly basic salary (মূল বেতন), MPO subvention portion, institutional top-up, disbursement channel (BEFTN Bank, MFS bKash/Nagad, Cash, Cheque), and Provident Fund (PF) enrollment.
+  - Added inline "+ Assign Structure" action badge on salary profile table rows when an employee has no structure assigned.
+  - Added profile deletion modal dialog (`DELETE /api/v1/payroll/profiles/{id}/`) with confirmation prompt.
+  - Added typed methods in `frontend/src/features/payroll/api/payrollApi.ts`: `createProfile`, `deleteProfile`, and `syncStaffRoster`.
+  - Added `createStaffSalaryProfileSchema` in `frontend/src/features/payroll/schemas/payrollSchemas.ts`.
+  - Added automated test in `apps/payroll/tests/test_exports_api.py` asserting idempotent roster sync behavior.
+- **Salary Structures & Components Interactive Management (Assign, Edit, Delete)**:
+  - Added "Assign Component" action and interactive modal on each salary structure card in `SalaryStructuresPage.tsx`, allowing administrators to assign any earning or deduction component directly to a structure with custom calculation rules (Fixed BDT, % of Basic, % of Gross) and values.
+  - Added line-item deletion action (`Trash2`) on individual component rules inside each salary structure card, allowing instantaneous component removal (`DELETE /api/v1/payroll/structure-lines/{id}/`).
+  - Added structure edit modal (`Pencil`) and delete modal (`Trash2`) on each structure card header (`PATCH` and `DELETE /api/v1/payroll/structures/{id}/`).
+  - Added component edit modal (`Pencil`) and delete modal (`Trash2`) with system-component protection on the Earnings & Deductions Components table (`PATCH` and `DELETE /api/v1/payroll/components/{id}/`).
+  - Implemented Radix UI `<Dialog>` confirmation modals with transparent soft blur backdrops (`bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)]`).
+  - Added typed API client methods in `frontend/src/features/payroll/api/payrollApi.ts`: `updateComponent`, `deleteComponent`, `updateStructure`, `deleteStructure`, `addStructureLine`, and `deleteStructureLine`.
+- **Assign Student Waiver Action & Modal on Waivers & Scholarships Dashboard**:
+  - Added primary action button "Assign Student Waiver" on `WaiversPage.tsx` and within the empty-state call-to-action.
+  - Implemented an interactive student assignment modal with real-time student searching (by name, ID, class), waiver rule selector, custom benefit configuration (Percentage % or Flat ৳), and validity period.
+  - Added `createStudentWaiver` to `feesApi.ts` connecting to `POST /api/v1/fees/student-waivers/`.
+  - Seamlessly integrated with the two-stage approval workflow (`pending` -> `approved` / `rejected`).
+
 ### Performance
 - **Route-Level Code Splitting & Fast Overview Cold Start**:
   - Implemented on-demand lazy loading using `React.lazy()` and `<Suspense>` across 60+ secondary feature pages in `frontend/src/App.tsx`.
@@ -14,6 +36,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Verified chunk splitting in production build with separate bundles generated per feature module and passing 67/67 tests.
 
 ### Fixed
+- **Reports & Analytics Modals Viewport Centering & Backdrop Alignment**:
+  - Replaced manual un-portalled raw `<div>` overlay structures across all Reports & Analytics pages (`ReportDefinitionsPage`, `ReportExportsPage`, `BulkImportsPage`, `ActivityLogsPage`, and `AuditLogsPage`) with standard Radix UI `<Dialog>`, `<DialogContent>`, `<DialogHeader>`, and `<DialogTitle>`.
+  - Portaled all dialogs directly to `document.body` with viewport-relative centering (`left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`), automatic responsive vertical scrolling (`max-h-[90vh] overflow-y-auto`), keyboard dismissal (`Escape`), and crisp non-blurry contrast overlays (`bg-black/50 dark:bg-black/70`), resolving modal displacement and blurred background artifacts.
+- **Operations & Student Services Modals Viewport Centering & Backdrop Alignment**:
+  - Replaced manual un-portalled raw `<div>` overlay structures across all Operations & Services pages (`HomeworkListPage`, `HomeworkSubmissionsPage`, `LibraryCatalogPage`, `LibraryCirculationPage`, `TransportFleetPage`, `TransportRoutesPage`, and `HostelAllocationsPage`) with standard Radix UI `<Dialog>`, `<DialogContent>`, `<DialogHeader>`, and `<DialogTitle>`.
+  - Portaled all dialogs directly to `document.body` with viewport-relative centering (`left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`), automatic responsive vertical scrolling (`max-h-[90vh] overflow-y-auto`), and crisp non-blurry contrast overlays (`bg-black/50 dark:bg-black/70`), resolving modal displacement and blurred background artifacts.
+- **API Client Mutating Request 401 Token Refresh Transparent Retry**:
+  - Fixed transparent retry failure in `frontend/src/lib/api-client.ts` where mutating HTTP requests (`POST`, `PUT`, `PATCH`, `DELETE`) with request bodies failed after a 401 token refresh because `fetch()` had already marked `request.bodyUsed` as `true`.
+  - Stored a pre-consumption request clone in `onRequest` indexed by `X-Request-ID`, enabling subsequent re-instantiation of `new Request()` with the fresh `Authorization: Bearer <token>` without throwing `TypeError: Cannot construct a Request with a Request object that has already been used`.
+  - Added unit test in `frontend/src/lib/__tests__/api-client.test.ts` verifying seamless retry on 401 with payload preservation.
+- **Message Template & Emergency Alert Modal Positioning & Backdrop Clarity**:
+  - Replaced manual un-portalled raw `<div>` overlays in `EmergencyAlertsPage.tsx` and `TemplatesPage.tsx` (Live Preview & Create Template modals) with standard Radix UI `<Dialog>`, `<DialogContent>`, `<DialogHeader>`, and `<DialogTitle>`.
+  - Eliminated viewport displacement, unwanted background blur, and misaligned scrolling, ensuring exact screen-relative centering (`left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`) and clean backdrop contrast across light and dark themes.
+  - Updated `DialogPrimitive.Overlay` and `Drawer` overlay to crisp, dark transparent overlays (`bg-black/50 dark:bg-black/70`) without distorted backdrop blurs.
+- **Biometric Terminal Registration & Resolve Punch Modal Centering**:
+  - Replaced manual un-portalled overlay `<div>` elements in `DeviceListPage.tsx` with Radix UI `<Dialog>`, `<DialogContent>`, `<DialogHeader>`, and `<DialogTitle>` from `@/components/ui/dialog`.
+  - Resolved modal coordinate displacement and misaligned backdrop blur by portaling directly to `document.body`, ensuring accurate viewport-relative centering (`left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`) regardless of layout scroll or ancestor CSS transforms.
+  - Standardized backdrop styling to the application's transparent soft blur (`bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)]`).
+- **Student Progress Report Card "View Transcript" Modal Centering & Transparent Blur Backdrop**:
+  - Replaced manual un-portalled overlay in `ReportCardsPage.tsx` with Radix UI `<Dialog>` and `<DialogContent>` from `@/components/ui/dialog`.
+  - Fixed modal positioning by portaling directly to `document.body`, eliminating coordinate displacement caused by scroll containers and ancestor CSS transforms.
+  - Applied the standard soft transparent blur backdrop (`bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)]`) and responsive viewport centering (`left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`).
+  - Added header padding `pr-8` in `ReportCardPreview.tsx` to prevent action button collision with the dialog close (`X`) icon and provided accessible `<DialogHeader className="sr-only">`.
 - **Static Media Route Serving in Development & Tabulation Sheet Download**:
   - Registered `static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)` in `config/urls.py` under `if settings.DEBUG:`, resolving HTTP 404 (`Not Found: /media/results/tabulations/...`) when downloading generated tabulation sheets, PDFs, and media assets in local development.
   - Enabled `SERVE_MEDIA_IN_TEST = True` in `config/settings/test.py` with fallback route in `config/urls.py` to allow end-to-end automated testing of media file downloads.

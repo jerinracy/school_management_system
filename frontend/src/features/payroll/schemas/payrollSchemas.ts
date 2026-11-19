@@ -47,6 +47,12 @@ export const staffSalaryProfileSchema = z.object({
 
 export type StaffSalaryProfileFormData = z.infer<typeof staffSalaryProfileSchema>;
 
+export const createStaffSalaryProfileSchema = staffSalaryProfileSchema.extend({
+  staff: z.string().min(1, "Staff member is required"),
+});
+
+export type CreateStaffSalaryProfileFormData = z.infer<typeof createStaffSalaryProfileSchema>;
+
 export const staffLoanSchema = z.object({
   staff: z.string().min(1, "Staff member is required"),
   loan_type: z.enum(["advance", "loan"]),

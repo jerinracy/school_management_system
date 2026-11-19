@@ -9,13 +9,13 @@ import {
   Globe,
   User,
   Eye,
-  X,
   FileText,
 } from "lucide-react";
 import {
   reportsApi,
   type ActivityLog,
 } from "../api/reportsApi";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const ActivityLogsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -259,26 +259,17 @@ export const ActivityLogsPage: React.FC = () => {
       </div>
 
       {/* Modal: Activity Details */}
-      {selectedActivity && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl relative animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-lg font-bold text-gray-900">
-                  {t("reports.activityDetailsTitle", "Activity Log Record")}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedActivity(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-semibold p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Dialog open={!!selectedActivity} onOpenChange={(open) => { if (!open) setSelectedActivity(null); }}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="border-b border-gray-200 pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-emerald-600" />
+              {t("reports.activityDetailsTitle", "Activity Log Record")}
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="mt-4 space-y-4 text-xs">
+          {selectedActivity && (
+            <div className="space-y-4 text-xs pt-1">
               <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
                 <div>
                   <span className="text-gray-500 block">Description:</span>
@@ -330,9 +321,9 @@ export const ActivityLogsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

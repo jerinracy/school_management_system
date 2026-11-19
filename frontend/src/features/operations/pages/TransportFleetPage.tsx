@@ -20,6 +20,7 @@ import {
   vehicleSchema,
   type VehicleFormData,
 } from "../schemas/operationsSchemas";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const TransportFleetPage: React.FC = () => {
   const { t } = useTranslation();
@@ -330,28 +331,20 @@ export const TransportFleetPage: React.FC = () => {
       )}
 
       {/* Add Vehicle Modal */}
-      {isAddVehicleOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">
-                {t("operations.addVehicleModalTitle", "Add Vehicle to Fleet")}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsAddVehicleOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-semibold"
-              >
-                ✕
-              </button>
-            </div>
+      <Dialog open={isAddVehicleOpen} onOpenChange={setIsAddVehicleOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="border-b border-gray-200 pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-900">
+              {t("operations.addVehicleModalTitle", "Add Vehicle to Fleet")}
+            </DialogTitle>
+          </DialogHeader>
 
-            <form
-              onSubmit={(e) => {
-                void handleSubmit(onSubmit)(e);
-              }}
-              className="mt-4 space-y-4"
-            >
+          <form
+            onSubmit={(e) => {
+              void handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4 pt-1"
+          >
               <div>
                 <label htmlFor="veh_reg" className="block text-xs font-semibold text-gray-700 mb-1">
                   BRTA Registration Number *
@@ -458,9 +451,8 @@ export const TransportFleetPage: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

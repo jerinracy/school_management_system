@@ -23,7 +23,7 @@ export function ReportCardPreview({ result, subjectResults = [], onClose }: Repo
   return (
     <div className="space-y-4">
       {/* Action Bar */}
-      <div className="flex items-center justify-between border-b pb-3 print:hidden">
+      <div className="flex items-center justify-between border-b pb-3 pr-8 print:hidden">
         <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
           Official Academic Progress Report Card / অগ্রগতি পত্র
         </h3>

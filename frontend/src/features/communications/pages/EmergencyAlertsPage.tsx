@@ -22,6 +22,7 @@ import {
   emergencyAlertSchema,
   type EmergencyAlertFormData,
 } from "../schemas/communicationSchemas";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const EmergencyAlertsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -282,30 +283,20 @@ export const EmergencyAlertsPage: React.FC = () => {
       </div>
 
       {/* Broadcast Modal */}
-      {isBroadcastOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative border-2 border-rose-500 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <AlertOctagon className="w-6 h-6 text-rose-600 animate-pulse" />
-                <h3 className="text-lg font-bold text-gray-900">
-                  {t("communications.emergencyModalTitle", "Initiate Campus Emergency Broadcast")}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsBroadcastOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-semibold"
-              >
-                ✕
-              </button>
-            </div>
+      <Dialog open={isBroadcastOpen} onOpenChange={setIsBroadcastOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-2 border-rose-500 p-6">
+          <DialogHeader className="border-b border-gray-200 pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <AlertOctagon className="w-6 h-6 text-rose-600 animate-pulse" />
+              {t("communications.emergencyModalTitle", "Initiate Campus Emergency Broadcast")}
+            </DialogTitle>
+          </DialogHeader>
 
-            <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="mt-4 space-y-4">
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-900 leading-relaxed font-medium">
-                ⚠️ Warning: This broadcast triggers instant SMS dispatch across all student guardians and staff phones,
-                overriding any active DND / quiet hour policies.
-              </div>
+          <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 pt-1">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-900 leading-relaxed font-medium">
+              ⚠️ Warning: This broadcast triggers instant SMS dispatch across all student guardians and staff phones,
+              overriding any active DND / quiet hour policies.
+            </div>
 
               <div>
                 <label htmlFor="emergency_title" className="block text-xs font-semibold text-gray-700 mb-1">
@@ -428,9 +419,8 @@ export const EmergencyAlertsPage: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

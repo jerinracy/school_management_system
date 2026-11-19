@@ -22,6 +22,7 @@ import {
   gradeSubmissionSchema,
   type GradeSubmissionFormData,
 } from "../schemas/operationsSchemas";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const HomeworkSubmissionsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -230,27 +231,20 @@ export const HomeworkSubmissionsPage: React.FC = () => {
       </div>
 
       {/* Grade Submission Modal */}
-      {selectedSubmission && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">
-                Grade Submission: {selectedSubmission.student_name}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setSelectedSubmission(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-semibold"
-              >
-                ✕
-              </button>
-            </div>
+      <Dialog open={!!selectedSubmission} onOpenChange={(open) => { if (!open) setSelectedSubmission(null); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="border-b border-gray-200 pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-900">
+              Grade Submission: {selectedSubmission?.student_name}
+            </DialogTitle>
+          </DialogHeader>
 
+          {selectedSubmission && (
             <form
               onSubmit={(e) => {
                 void handleSubmit(onSubmit)(e);
               }}
-              className="mt-4 space-y-4"
+              className="space-y-4 pt-1"
             >
               {selectedSubmission.text_response && (
                 <div>
@@ -311,9 +305,9 @@ export const HomeworkSubmissionsPage: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

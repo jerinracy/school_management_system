@@ -12,7 +12,7 @@ export const DialogContent = forwardRef<
   ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { closeLabel?: string }
 >(({ className, children, closeLabel = "Close", ...props }, ref) => (
   <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade" />
+    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 dark:bg-black/70 animate-data-fade" />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(

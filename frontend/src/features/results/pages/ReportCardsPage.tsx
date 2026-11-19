@@ -16,6 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   resultsApi,
   type ExamResultItem,
 } from "@/features/results/api/resultsApi";
@@ -323,17 +330,23 @@ export default function ReportCardsPage() {
       )}
 
       {/* Modal: Report Card Preview */}
-      {previewResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-            <ReportCardPreview
-              result={previewResult}
-              subjectResults={subjectResults}
-              onClose={() => setPreviewResult(null)}
-            />
-          </div>
-        </div>
-      )}
+      <Dialog open={Boolean(previewResult)} onOpenChange={(open) => !open && setPreviewResult(null)}>
+        <DialogContent className="max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
+          {previewResult && (
+            <>
+              <DialogHeader className="sr-only">
+                <DialogTitle>Official Academic Progress Report Card</DialogTitle>
+                <DialogDescription>Student transcript and performance sheet</DialogDescription>
+              </DialogHeader>
+              <ReportCardPreview
+                result={previewResult}
+                subjectResults={subjectResults}
+                onClose={() => setPreviewResult(null)}
+              />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

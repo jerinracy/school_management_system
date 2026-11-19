@@ -1,9 +1,11 @@
 """DRF Views for Payroll Management, Payslips, Accounting Posting, and Exports."""
 
+from decimal import Decimal
 from typing import Any
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import HttpResponse
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
@@ -15,7 +17,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.accounts.models import User
-from apps.core.mixins import TenantScopedMixin
+from apps.core.mixins import TenantScopedMixin, get_request_institution
 from apps.payroll.models import (
     PayrollRun,
     Payslip,
@@ -60,6 +62,7 @@ from apps.payroll.services import (
     seed_default_salary_components,
     seed_default_salary_structures,
 )
+from apps.staff.models import Staff, StaffStatus
 
 
 def _raise_drf_validation(exc: DjangoValidationError) -> None:
@@ -217,6 +220,49 @@ class StaffSalaryProfileViewSet(TenantScopedMixin, viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: StaffSalaryProfile) -> None:
         instance.delete()
+
+    @extend_schema(
+        summary="Synchronize staff roster to salary profiles",
+        description="Creates baseline salary profiles for active school staff members who do not yet have one.",
+        responses={200: OpenApiTypes.OBJECT},
+        tags=["Payroll - Profiles"],
+    )
+    @action(detail=False, methods=["post"], url_path="sync-roster")
+    def sync_roster(self, request: Request) -> Response:
+        """Create baseline salary profiles for active staff who don't have one yet."""
+        institution = get_request_institution(request)
+        active_staff = Staff.objects.filter(
+            institution=institution,
+            is_deleted=False,
+            status=StaffStatus.ACTIVE,
+        )
+        existing_staff_ids = set(
+            StaffSalaryProfile.objects.filter(
+                institution=institution,
+                is_deleted=False,
+            ).values_list("staff_id", flat=True)
+        )
+        created_count = 0
+        for staff_member in active_staff:
+            if staff_member.id not in existing_staff_ids:
+                StaffSalaryProfile.objects.create(
+                    institution=institution,
+                    staff=staff_member,
+                    basic_salary=Decimal("0.00"),
+                    payment_method="bank_transfer",
+                    effective_from=timezone.localdate(),
+                    is_active=True,
+                )
+                created_count += 1
+
+        return Response(
+            {
+                "created": created_count,
+                "total_staff": active_staff.count(),
+                "message": f"Successfully synchronized {created_count} staff salary profile(s).",
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema_view(

@@ -292,3 +292,27 @@ class TestPayrollExportsAndAPI:
         lock_resp = client.post(reverse("v1_payroll:run-lock", kwargs={"pk": self.run.id}))
         assert lock_resp.status_code == status.HTTP_200_OK
         assert lock_resp.data["is_locked"] is True
+
+    def test_sync_roster_endpoint(self) -> None:
+        client = APIClient()
+        client.force_authenticate(user=self.payroll_mgr)
+
+        # Create a new active staff member without a salary profile
+        new_staff = Staff.objects.create(
+            institution=self.inst_a,
+            employee_id="RPS-999",
+            full_name_en="New Joined Teacher",
+            phone="+8801799999999",
+            dob=date(1995, 6, 20),
+            joining_date=date(2026, 1, 1),
+        )
+
+        resp = client.post(reverse("v1_payroll:profile-sync-roster"))
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["created"] >= 1
+        assert StaffSalaryProfile.objects.filter(staff=new_staff).exists()
+
+        # Idempotent second call should not re-create or duplicate
+        resp2 = client.post(reverse("v1_payroll:profile-sync-roster"))
+        assert resp2.status_code == status.HTTP_200_OK
+        assert resp2.data["created"] == 0

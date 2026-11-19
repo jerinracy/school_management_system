@@ -7,7 +7,6 @@ import {
   Filter,
   Eye,
   Calendar,
-  X,
   FileCode,
   Globe,
   User,
@@ -18,6 +17,7 @@ import {
   type AuditLog,
   type AuditActionType,
 } from "../api/reportsApi";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const ACTION_COLORS: Record<AuditActionType, { bg: string; text: string }> = {
   create: { bg: "bg-emerald-100", text: "text-emerald-800" },
@@ -306,26 +306,17 @@ export const AuditLogsPage: React.FC = () => {
       </div>
 
       {/* Modal: Change Diff Inspection */}
-      {selectedLog && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl relative animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <FileCode className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-lg font-bold text-gray-900">
-                  {t("reports.auditDiffTitle", "Audit Record Diff Inspector")}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedLog(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-semibold p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Dialog open={!!selectedLog} onOpenChange={(open) => { if (!open) setSelectedLog(null); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="border-b border-gray-200 pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <FileCode className="w-5 h-5 text-emerald-600" />
+              {t("reports.auditDiffTitle", "Audit Record Diff Inspector")}
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="mt-4 space-y-4 text-xs">
+          {selectedLog && (
+            <div className="space-y-4 text-xs pt-1">
               {/* Metadata Overview */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
                 <div>
@@ -389,9 +380,9 @@ export const AuditLogsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

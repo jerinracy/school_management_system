@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Calendar,
-  X,
   Eye,
   Info,
 } from "lucide-react";
@@ -19,6 +18,7 @@ import {
   type BulkImportJob,
   type BulkImportStatusType,
 } from "../api/reportsApi";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const BulkImportsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -345,26 +345,17 @@ export const BulkImportsPage: React.FC = () => {
       </div>
 
       {/* Modal: Inspection Breakdown */}
-      {selectedJob && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl relative animate-in fade-in duration-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-lg font-bold text-gray-900">
-                  {t("reports.validationModalTitle", "Import Analysis Breakdown")}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedJob(null)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-semibold p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Dialog open={!!selectedJob} onOpenChange={(open) => { if (!open) setSelectedJob(null); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="border-b border-gray-200 pb-3">
+            <DialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+              {t("reports.validationModalTitle", "Import Analysis Breakdown")}
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="mt-4 space-y-4 text-xs">
+          {selectedJob && (
+            <div className="space-y-4 text-xs pt-1">
               {/* Summary KPIs */}
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
@@ -432,9 +423,9 @@ export const BulkImportsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

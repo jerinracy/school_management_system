@@ -25,6 +25,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   devicesApi,
   type DeviceItem,
@@ -706,305 +707,289 @@ export default function DeviceListPage() {
       )}
 
       {/* Modal: Add / Edit Terminal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Cpu className="h-4 w-4 text-emerald-700" />
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  {editingDevice
-                    ? t("devices.editTerminal", "Edit Biometric Terminal")
-                    : t("devices.addTerminal", "Register Hardware Terminal")}
-                </h2>
-              </div>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="h-4 w-4" />
-              </button>
+      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-emerald-700" />
+              {editingDevice
+                ? t("devices.editTerminal", "Edit Biometric Terminal")
+                : t("devices.addTerminal", "Register Hardware Terminal")}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              void handleTerminalSubmit((data) => saveTerminalMutation.mutate(data))(e);
+            }}
+            className="space-y-4 text-xs pt-1"
+          >
+            <div>
+              <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                {t("devices.terminalName", "Terminal Name")} *
+              </label>
+              <Input
+                {...registerTerminal("name")}
+                placeholder="e.g. Main Gate Terminal A"
+                className="h-9 text-xs"
+              />
+              {terminalErrors.name && (
+                <p className="mt-1 text-[11px] text-rose-600">{terminalErrors.name.message}</p>
+              )}
             </div>
 
-            <form
-              onSubmit={(e) => {
-                void handleTerminalSubmit((data) => saveTerminalMutation.mutate(data))(e);
-              }}
-              className="space-y-4 text-xs"
-            >
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                  {t("devices.terminalName", "Terminal Name")} *
-                </label>
-                <Input
-                  {...registerTerminal("name")}
-                  placeholder="e.g. Main Gate Terminal A"
-                  className="h-9 text-xs"
-                />
-                {terminalErrors.name && (
-                  <p className="mt-1 text-[11px] text-rose-600">{terminalErrors.name.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.vendor", "Brand / Vendor")} *
-                  </label>
-                  <select
-                    {...registerTerminal("vendor")}
-                    className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <option value="ZKTeco">ZKTeco</option>
-                    <option value="Hikvision">Hikvision</option>
-                    <option value="Realtime">Realtime</option>
-                    <option value="Dahua">Dahua</option>
-                    <option value="Suprema">Suprema</option>
-                    <option value="Anviz">Anviz</option>
-                    <option value="Generic">Generic</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.model", "Model Name")}
-                  </label>
-                  <Input
-                    {...registerTerminal("model")}
-                    placeholder="e.g. SpeedFace-V5L"
-                    className="h-9 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.protocol", "Communication Protocol")} *
-                  </label>
-                  <select
-                    {...registerTerminal("protocol")}
-                    className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <option value="push_adms">Push ADMS (Cloud Push)</option>
-                    <option value="generic_http">Generic HTTP Webhook</option>
-                    <option value="mqtt">MQTT IoT Broker</option>
-                    <option value="pull_sdk">Pull SDK (LAN Polling)</option>
-                    <option value="simulator">Hardware Simulator</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.verifyType", "Primary Verify Type")} *
-                  </label>
-                  <select
-                    {...registerTerminal("device_type")}
-                    className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <option value="fingerprint">Fingerprint</option>
-                    <option value="face">Facial Recognition</option>
-                    <option value="rfid">RFID Proximity Card</option>
-                    <option value="palm">Palm Vein</option>
-                    <option value="qr">Dynamic QR Code</option>
-                    <option value="pin">Numeric PIN</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2">
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.ipAddress", "IP Address")}
-                  </label>
-                  <Input
-                    {...registerTerminal("ip_address")}
-                    placeholder="192.168.1.201"
-                    className="h-9 text-xs font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.port", "Port")}
-                  </label>
-                  <Input
-                    type="number"
-                    {...registerTerminal("port")}
-                    placeholder="4370"
-                    className="h-9 text-xs font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.location", "Zone / Location")}
-                  </label>
-                  <Input
-                    {...registerTerminal("location")}
-                    placeholder="e.g. Academic Block Gate 2"
-                    className="h-9 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                    {t("devices.serialNo", "Serial Number")}
-                  </label>
-                  <Input
-                    {...registerTerminal("serial_no")}
-                    placeholder="e.g. ZK9876543210"
-                    className="h-9 text-xs font-mono uppercase"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAddModal(false)}
-                >
-                  {t("common.cancel", "Cancel")}
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isTerminalSubmitting || saveTerminalMutation.isPending}
-                  className="bg-emerald-800 hover:bg-emerald-900 text-white"
-                >
-                  {isTerminalSubmitting ? t("common.saving", "Saving...") : t("common.save", "Save Terminal")}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Resolve Unmapped Punch */}
-      {resolvingPunch && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 dark:bg-black/25 backdrop-blur-sm [backdrop-filter:blur(4px)] [-webkit-backdrop-filter:blur(4px)] animate-data-fade p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Fingerprint className="h-4 w-4 text-emerald-700" />
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  {t("devices.resolvePunchTitle", "Resolve Unmapped Punch")}
-                </h2>
-              </div>
-              <button
-                onClick={() => setResolvingPunch(null)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-3 space-y-1 text-xs">
-              <p className="text-slate-500">
-                {t("devices.punchInfo", "Device PIN")}: <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{resolvingPunch.raw_user_id}</span>
-              </p>
-              <p className="text-slate-500">
-                {t("devices.terminal", "Terminal")}: <span className="font-semibold text-slate-800 dark:text-slate-200">{resolvingPunch.device_name}</span>
-              </p>
-              <p className="text-slate-500 font-mono text-[11px]">
-                {resolvingPunch.device_time}
-              </p>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                  {t("devices.userCategory", "User Category")}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedResolveUserType("student");
-                      setSelectedResolvePersonId("");
-                    }}
-                    className={`py-2 text-center rounded-lg border font-semibold ${
-                      selectedResolveUserType === "student"
-                        ? "border-emerald-700 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        : "border-slate-200 text-slate-600 dark:border-slate-700"
-                    }`}
-                  >
-                    Student
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedResolveUserType("staff");
-                      setSelectedResolvePersonId("");
-                    }}
-                    className={`py-2 text-center rounded-lg border font-semibold ${
-                      selectedResolveUserType === "staff"
-                        ? "border-emerald-700 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        : "border-slate-200 text-slate-600 dark:border-slate-700"
-                    }`}
-                  >
-                    Staff / Teacher
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
-                  {t("devices.selectPerson", "Select Individual Profile")} *
+                  {t("devices.vendor", "Brand / Vendor")} *
                 </label>
                 <select
-                  value={selectedResolvePersonId}
-                  onChange={(e) => setSelectedResolvePersonId(e.target.value)}
+                  {...registerTerminal("vendor")}
                   className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
                 >
-                  <option value="">{t("devices.chooseProfile", "Choose person...")}</option>
-                  {selectedResolveUserType === "student"
-                    ? students.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name_en} ({s.student_id})
-                        </option>
-                      ))
-                    : staffMembers.map((st) => (
-                        <option key={st.id} value={st.id}>
-                          {st.full_name_en} ({st.employee_id}) — {st.designation_title}
-                        </option>
-                      ))}
+                  <option value="ZKTeco">ZKTeco</option>
+                  <option value="Hikvision">Hikvision</option>
+                  <option value="Realtime">Realtime</option>
+                  <option value="Dahua">Dahua</option>
+                  <option value="Suprema">Suprema</option>
+                  <option value="Anviz">Anviz</option>
+                  <option value="Generic">Generic</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.model", "Model Name")}
+                </label>
+                <Input
+                  {...registerTerminal("model")}
+                  placeholder="e.g. SpeedFace-V5L"
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.protocol", "Communication Protocol")} *
+                </label>
+                <select
+                  {...registerTerminal("protocol")}
+                  className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="push_adms">Push ADMS (Cloud Push)</option>
+                  <option value="generic_http">Generic HTTP Webhook</option>
+                  <option value="mqtt">MQTT IoT Broker</option>
+                  <option value="pull_sdk">Pull SDK (LAN Polling)</option>
+                  <option value="simulator">Hardware Simulator</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.verifyType", "Primary Verify Type")} *
+                </label>
+                <select
+                  {...registerTerminal("device_type")}
+                  className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <option value="fingerprint">Fingerprint</option>
+                  <option value="face">Facial Recognition</option>
+                  <option value="rfid">RFID Proximity Card</option>
+                  <option value="palm">Palm Vein</option>
+                  <option value="qr">Dynamic QR Code</option>
+                  <option value="pin">Numeric PIN</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.ipAddress", "IP Address")}
+                </label>
+                <Input
+                  {...registerTerminal("ip_address")}
+                  placeholder="192.168.1.201"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.port", "Port")}
+                </label>
+                <Input
+                  type="number"
+                  {...registerTerminal("port")}
+                  placeholder="4370"
+                  className="h-9 text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.location", "Zone / Location")}
+                </label>
+                <Input
+                  {...registerTerminal("location")}
+                  placeholder="e.g. Academic Block Gate 2"
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                  {t("devices.serialNo", "Serial Number")}
+                </label>
+                <Input
+                  {...registerTerminal("serial_no")}
+                  placeholder="e.g. ZK9876543210"
+                  className="h-9 text-xs font-mono uppercase"
+                />
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setResolvingPunch(null)}
+                onClick={() => setShowAddModal(false)}
               >
                 {t("common.cancel", "Cancel")}
               </Button>
               <Button
+                type="submit"
                 size="sm"
-                disabled={!selectedResolvePersonId || resolvePunchMutation.isPending}
-                onClick={() => {
-                  if (resolvingPunch && selectedResolvePersonId) {
-                    resolvePunchMutation.mutate({
-                      punchId: resolvingPunch.id,
-                      personId: selectedResolvePersonId,
-                      userType: selectedResolveUserType,
-                    });
-                  }
-                }}
+                disabled={isTerminalSubmitting || saveTerminalMutation.isPending}
                 className="bg-emerald-800 hover:bg-emerald-900 text-white"
               >
-                {t("devices.confirmMap", "Confirm & Map PIN")}
+                {isTerminalSubmitting ? t("common.saving", "Saving...") : t("common.save", "Save Terminal")}
               </Button>
             </div>
-          </div>
-        </div>
-      )}
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Resolve Unmapped Punch */}
+      <Dialog open={resolvingPunch !== null} onOpenChange={(open) => !open && setResolvingPunch(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Fingerprint className="h-4 w-4 text-emerald-700" />
+              {t("devices.resolvePunchTitle", "Resolve Unmapped Punch")}
+            </DialogTitle>
+          </DialogHeader>
+
+          {resolvingPunch && (
+            <div className="space-y-4 pt-1">
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-3 space-y-1 text-xs">
+                <p className="text-slate-500">
+                  {t("devices.punchInfo", "Device PIN")}: <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{resolvingPunch.raw_user_id}</span>
+                </p>
+                <p className="text-slate-500">
+                  {t("devices.terminal", "Terminal")}: <span className="font-semibold text-slate-800 dark:text-slate-200">{resolvingPunch.device_name}</span>
+                </p>
+                <p className="text-slate-500 font-mono text-[11px]">
+                  {resolvingPunch.device_time}
+                </p>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                    {t("devices.userCategory", "User Category")}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedResolveUserType("student");
+                        setSelectedResolvePersonId("");
+                      }}
+                      className={`py-2 text-center rounded-lg border font-semibold ${
+                        selectedResolveUserType === "student"
+                          ? "border-emerald-700 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                          : "border-slate-200 text-slate-600 dark:border-slate-700"
+                      }`}
+                    >
+                      Student
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedResolveUserType("staff");
+                        setSelectedResolvePersonId("");
+                      }}
+                      className={`py-2 text-center rounded-lg border font-semibold ${
+                        selectedResolveUserType === "staff"
+                          ? "border-emerald-700 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                          : "border-slate-200 text-slate-600 dark:border-slate-700"
+                      }`}
+                    >
+                      Staff / Teacher
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-600 dark:text-slate-400 mb-1 font-medium">
+                    {t("devices.selectPerson", "Select Individual Profile")} *
+                  </label>
+                  <select
+                    value={selectedResolvePersonId}
+                    onChange={(e) => setSelectedResolvePersonId(e.target.value)}
+                    className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs focus:outline-hidden focus:ring-1 focus:ring-emerald-700 dark:border-slate-700 dark:bg-slate-900"
+                  >
+                    <option value="">{t("devices.chooseProfile", "Choose person...")}</option>
+                    {selectedResolveUserType === "student"
+                      ? students.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name_en} ({s.student_id})
+                          </option>
+                        ))
+                      : staffMembers.map((st) => (
+                          <option key={st.id} value={st.id}>
+                            {st.full_name_en} ({st.employee_id}) — {st.designation_title}
+                          </option>
+                        ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setResolvingPunch(null)}
+                >
+                  {t("common.cancel", "Cancel")}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={!selectedResolvePersonId || resolvePunchMutation.isPending}
+                  onClick={() => {
+                    if (resolvingPunch && selectedResolvePersonId) {
+                      resolvePunchMutation.mutate({
+                        punchId: resolvingPunch.id,
+                        personId: selectedResolvePersonId,
+                        userType: selectedResolveUserType,
+                      });
+                    }
+                  }}
+                  className="bg-emerald-800 hover:bg-emerald-900 text-white"
+                >
+                  {t("devices.confirmMap", "Confirm & Map PIN")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

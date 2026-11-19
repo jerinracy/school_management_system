@@ -368,6 +368,22 @@ export const feesApi = {
     return checkResponse(res);
   },
 
+  async createStudentWaiver(payload: {
+    student: string;
+    waiver_rule?: string | null;
+    title?: string;
+    discount_type?: string;
+    discount_value: string | number;
+    max_discount_amount?: string | number | null;
+    valid_from?: string | null;
+    valid_to?: string | null;
+  }) {
+    const res = await apiClient.POST("/api/v1/fees/student-waivers/", {
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
   async approveStudentWaiver(id: string) {
     const res = await apiClient.POST("/api/v1/fees/student-waivers/{id}/approve/", {
       params: { path: { id } },

@@ -192,6 +192,21 @@ export const payrollApi = {
     return checkResponse<SalaryComponent>(res);
   },
 
+  async updateComponent(id: string, data: Partial<SalaryComponent>): Promise<SalaryComponent> {
+    const res = await apiClient.PATCH("/api/v1/payroll/components/{id}/", {
+      params: { path: { id } },
+      body: data as never,
+    });
+    return checkResponse<SalaryComponent>(res);
+  },
+
+  async deleteComponent(id: string): Promise<void> {
+    const res = await apiClient.DELETE("/api/v1/payroll/components/{id}/", {
+      params: { path: { id } },
+    });
+    checkResponse<void>(res);
+  },
+
   // --- Salary Structures ---
   async getStructures(params?: { is_active?: boolean; search?: string }): Promise<PaginatedResult<SalaryStructure>> {
     const res = await apiClient.GET("/api/v1/payroll/structures/", {
@@ -230,12 +245,67 @@ export const payrollApi = {
     return checkResponse<SalaryStructure>(res);
   },
 
+  async updateStructure(id: string, data: Partial<SalaryStructure>): Promise<SalaryStructure> {
+    const res = await apiClient.PATCH("/api/v1/payroll/structures/{id}/", {
+      params: { path: { id } },
+      body: data as never,
+    });
+    return checkResponse<SalaryStructure>(res);
+  },
+
+  async deleteStructure(id: string): Promise<void> {
+    const res = await apiClient.DELETE("/api/v1/payroll/structures/{id}/", {
+      params: { path: { id } },
+    });
+    checkResponse<void>(res);
+  },
+
+  async addStructureLine(data: {
+    structure: string;
+    component: string;
+    calculation_type: CalculationType;
+    value: string;
+  }): Promise<SalaryStructureLine> {
+    const res = await apiClient.POST("/api/v1/payroll/structure-lines/", {
+      body: data as never,
+    });
+    return checkResponse<SalaryStructureLine>(res);
+  },
+
+  async deleteStructureLine(id: string): Promise<void> {
+    const res = await apiClient.DELETE("/api/v1/payroll/structure-lines/{id}/", {
+      params: { path: { id } },
+    });
+    checkResponse<void>(res);
+  },
+
   // --- Staff Salary Profiles ---
   async getProfiles(params?: { structure?: string; search?: string; page?: number }): Promise<PaginatedResult<StaffSalaryProfile>> {
     const res = await apiClient.GET("/api/v1/payroll/profiles/", {
       params: { query: params as never },
     });
     return checkResponse<PaginatedResult<StaffSalaryProfile>>(res);
+  },
+
+  async createProfile(data: {
+    staff: string;
+    structure?: string | null;
+    basic_salary: string;
+    mpo_portion?: string;
+    institutional_portion?: string;
+    payment_method: PaymentMethod;
+    bank_name?: string;
+    bank_branch?: string;
+    bank_account_number?: string;
+    bank_routing_number?: string;
+    mfs_number?: string;
+    pf_enrolled: boolean;
+    pf_employee_percent?: string;
+  }): Promise<StaffSalaryProfile> {
+    const res = await apiClient.POST("/api/v1/payroll/profiles/", {
+      body: data as never,
+    });
+    return checkResponse<StaffSalaryProfile>(res);
   },
 
   async updateProfile(
@@ -247,6 +317,21 @@ export const payrollApi = {
       body: data as never,
     });
     return checkResponse<StaffSalaryProfile>(res);
+  },
+
+  async deleteProfile(id: string): Promise<void> {
+    const res = await apiClient.DELETE("/api/v1/payroll/profiles/{id}/", {
+      params: { path: { id } },
+    });
+    checkResponse<void>(res);
+  },
+
+  async syncStaffRoster(): Promise<{ created: number; total_staff: number; message: string }> {
+    const res = await (apiClient.POST as unknown as (url: string, options?: unknown) => Promise<{ data?: unknown; error?: unknown; response: Response }>)(
+      "/api/v1/payroll/profiles/sync-roster/",
+      {}
+    );
+    return checkResponse<{ created: number; total_staff: number; message: string }>(res);
   },
 
   // --- Staff Loans & Advances ---

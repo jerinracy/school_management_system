@@ -1,11 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Award, Plus, CheckCircle, XCircle, Clock, ShieldCheck, Tag } from "lucide-react";
+import {
+  Award,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Clock,
+  ShieldCheck,
+  Tag,
+  UserCheck,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { FormField, FormLabel } from "@/components/ui/form";
 import { feesApi, type WaiverRuleItem, type StudentWaiverItem } from "@/features/fees/api/feesApi";
+import { apiClient } from "@/lib/api-client";
 
 export default function WaiversPage() {
   const { t } = useTranslation();
@@ -23,6 +34,20 @@ export default function WaiversPage() {
   const [discountValue, setDiscountValue] = useState("50");
   const [ruleDesc, setRuleDesc] = useState("");
   const [submittingRule, setSubmittingRule] = useState(false);
+
+  // Assign Student Waiver Modal state
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignStudentSearch, setAssignStudentSearch] = useState("");
+  const [studentOptions, setStudentOptions] = useState<Array<{ id: string; student_id: string; name_en: string; class_name?: string }>>([]);
+  const [selectedStudent, setSelectedStudent] = useState<{ id: string; student_id: string; name_en: string; class_name?: string } | null>(null);
+  const [selectedRuleId, setSelectedRuleId] = useState<string>("");
+  const [waiverTitle, setWaiverTitle] = useState("");
+  const [assignDiscountType, setAssignDiscountType] = useState<"percentage" | "flat">("percentage");
+  const [assignDiscountValue, setAssignDiscountValue] = useState("50");
+  const [validFrom, setValidFrom] = useState(new Date().toISOString().slice(0, 10));
+  const [validTo, setValidTo] = useState(new Date(new Date().getFullYear(), 11, 31).toISOString().slice(0, 10));
+  const [submittingAssign, setSubmittingAssign] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -67,6 +92,66 @@ export default function WaiversPage() {
     }
   };
 
+  const handleSearchStudents = useCallback(async (query: string) => {
+    setAssignStudentSearch(query);
+    if (!query || query.length < 2) {
+      setStudentOptions([]);
+      return;
+    }
+    try {
+      const res = await apiClient.GET("/api/v1/students/", {
+        params: { query: { search: query } as never },
+      });
+      if (res.data && "results" in res.data) {
+        setStudentOptions(
+          (res.data.results as Array<{ id: string; student_id: string; name_en: string; class_name?: string }>).slice(0, 8)
+        );
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleSelectRule = (ruleId: string) => {
+    setSelectedRuleId(ruleId);
+    const rule = waiverRules.find((r) => r.id === ruleId);
+    if (rule) {
+      setWaiverTitle(rule.name);
+      setAssignDiscountType(rule.discount_type === "percentage" ? "percentage" : "flat");
+      setAssignDiscountValue(String(rule.discount_value));
+    }
+  };
+
+  const handleAssignSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudent) {
+      setAssignError("Please search and select a student");
+      return;
+    }
+    setSubmittingAssign(true);
+    setAssignError(null);
+    try {
+      await feesApi.createStudentWaiver({
+        student: selectedStudent.id,
+        waiver_rule: selectedRuleId || null,
+        title: waiverTitle || (selectedRuleId ? waiverRules.find((r) => r.id === selectedRuleId)?.name : "Student Concession"),
+        discount_type: assignDiscountType,
+        discount_value: assignDiscountValue,
+        valid_from: validFrom || null,
+        valid_to: validTo || null,
+      });
+      setIsAssignModalOpen(false);
+      setSelectedStudent(null);
+      setAssignStudentSearch("");
+      setSelectedRuleId("");
+      void fetchData();
+    } catch (err: unknown) {
+      setAssignError(err instanceof Error ? err.message : "Failed to assign student waiver");
+    } finally {
+      setSubmittingAssign(false);
+    }
+  };
+
   const handleApprove = async (id: string) => {
     try {
       await feesApi.approveStudentWaiver(id);
@@ -99,8 +184,19 @@ export default function WaiversPage() {
           </p>
         </div>
 
-        <div>
-          <Button onClick={() => setIsRuleModalOpen(true)} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setIsAssignModalOpen(true)}
+            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            <UserCheck className="h-4 w-4" />
+            {t("fees.assignStudentWaiver", "Assign Student Waiver")}
+          </Button>
+          <Button
+            onClick={() => setIsRuleModalOpen(true)}
+            variant="outline"
+            className="gap-2"
+          >
             <Plus className="h-4 w-4" />
             {t("fees.createWaiverRule", "New Waiver Policy")}
           </Button>
@@ -159,7 +255,15 @@ export default function WaiversPage() {
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-slate-500">
                       <Award className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                      {t("fees.noWaiversFound", "No student waiver concessions registered.")}
+                      <p className="text-sm font-medium">{t("fees.noWaiversFound", "No student waiver concessions registered.")}</p>
+                      <Button
+                        size="sm"
+                        onClick={() => setIsAssignModalOpen(true)}
+                        className="mt-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                      >
+                        <UserCheck className="h-3.5 w-3.5" />
+                        {t("fees.assignStudentWaiver", "Assign Student Waiver")}
+                      </Button>
                     </td>
                   </tr>
                 ) : (
@@ -334,6 +438,177 @@ export default function WaiversPage() {
               </Button>
               <Button type="submit" disabled={submittingRule} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 {submittingRule ? t("common.saving", "Saving...") : t("common.create", "Create Policy")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Assign Student Waiver */}
+      <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("fees.assignStudentWaiver", "Assign Student Waiver")}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { void handleAssignSubmit(e); }} className="space-y-4 py-2">
+            {assignError && (
+              <div className="p-3 text-xs bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 rounded-md border border-rose-200 dark:border-rose-900">
+                {assignError}
+              </div>
+            )}
+
+            {/* Student Search & Select */}
+            <FormField>
+              <FormLabel>{t("students.student", "Student")}</FormLabel>
+              {selectedStudent ? (
+                <div className="flex items-center justify-between p-2.5 rounded-lg border border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30">
+                  <div>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm block">
+                      {selectedStudent.name_en}
+                    </span>
+                    <span className="text-xs text-slate-500 font-mono">
+                      {selectedStudent.student_id} {selectedStudent.class_name ? `• ${selectedStudent.class_name}` : ""}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedStudent(null);
+                      setAssignStudentSearch("");
+                    }}
+                    className="h-7 text-xs text-slate-500 hover:text-rose-600"
+                  >
+                    {t("common.change", "Change")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Type student name or ID (e.g. STU-1001)..."
+                      value={assignStudentSearch}
+                      onChange={(e) => { void handleSearchStudents(e.target.value); }}
+                      className="pl-9"
+                    />
+                  </div>
+                  {studentOptions.length > 0 && (
+                    <div className="border border-slate-200 dark:border-slate-800 rounded-lg max-h-40 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900 shadow-md">
+                      {studentOptions.map((st) => (
+                        <button
+                          key={st.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedStudent(st);
+                            setStudentOptions([]);
+                            setAssignError(null);
+                          }}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800 flex justify-between items-center transition-colors"
+                        >
+                          <div>
+                            <span className="font-semibold text-slate-900 dark:text-slate-100 block">
+                              {st.name_en}
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-mono">
+                              {st.student_id}
+                            </span>
+                          </div>
+                          {st.class_name && (
+                            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                              {st.class_name}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </FormField>
+
+            {/* Select Waiver Policy */}
+            <FormField>
+              <FormLabel>{t("fees.waiverPolicy", "Waiver Policy")}</FormLabel>
+              <select
+                value={selectedRuleId}
+                onChange={(e) => handleSelectRule(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+              >
+                <option value="">-- Custom Concession (No preset policy) --</option>
+                {waiverRules.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name} ({r.discount_type === "percentage" ? `${Number(r.discount_value)}%` : `৳${Number(r.discount_value)}`})
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            {/* Concession Title */}
+            <FormField>
+              <FormLabel>{t("fees.waiverTitle", "Concession Title")}</FormLabel>
+              <Input
+                placeholder="e.g. Sibling Discount / Merit Scholarship"
+                value={waiverTitle}
+                onChange={(e) => setWaiverTitle(e.target.value)}
+                required
+              />
+            </FormField>
+
+            {/* Benefit Type & Amount */}
+            <div className="grid grid-cols-2 gap-3">
+              <FormField>
+                <FormLabel>{t("fees.discountType", "Benefit Type")}</FormLabel>
+                <select
+                  value={assignDiscountType}
+                  onChange={(e) => setAssignDiscountType(e.target.value as "percentage" | "flat")}
+                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="flat">Fixed Amount (৳)</option>
+                </select>
+              </FormField>
+
+              <FormField>
+                <FormLabel>{t("fees.discountValue", "Benefit Amount")}</FormLabel>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={assignDiscountValue}
+                  onChange={(e) => setAssignDiscountValue(e.target.value)}
+                  required
+                />
+              </FormField>
+            </div>
+
+            {/* Validity Dates */}
+            <div className="grid grid-cols-2 gap-3">
+              <FormField>
+                <FormLabel>{t("fees.validFrom", "Valid From")}</FormLabel>
+                <Input
+                  type="date"
+                  value={validFrom}
+                  onChange={(e) => setValidFrom(e.target.value)}
+                />
+              </FormField>
+
+              <FormField>
+                <FormLabel>{t("fees.validTo", "Valid To")}</FormLabel>
+                <Input
+                  type="date"
+                  value={validTo}
+                  onChange={(e) => setValidTo(e.target.value)}
+                />
+              </FormField>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsAssignModalOpen(false)}>
+                {t("common.cancel", "Cancel")}
+              </Button>
+              <Button type="submit" disabled={submittingAssign} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                {submittingAssign ? t("common.saving", "Saving...") : t("fees.submitConcession", "Save Concession")}
               </Button>
             </DialogFooter>
           </form>
