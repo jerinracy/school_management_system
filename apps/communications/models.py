@@ -419,8 +419,18 @@ class Notice(TenantOwnedModel, SoftDeleteMixin):
 
 
 class ChatThread(TenantOwnedModel, SoftDeleteMixin):
-    """1-on-1 dialogue thread between a Teacher (Staff) and a Student's Guardian."""
+    """1-on-1 dialogue thread between a Teacher (Staff) and a Student or Student's Guardian."""
 
+    class ThreadType(models.TextChoices):
+        TEACHER_GUARDIAN = "teacher_guardian", "Teacher-Guardian"
+        TEACHER_STUDENT = "teacher_student", "Teacher-Student"
+
+    thread_type = models.CharField(
+        max_length=30,
+        choices=ThreadType.choices,
+        default=ThreadType.TEACHER_GUARDIAN,
+        db_index=True,
+    )
     teacher = models.ForeignKey(
         "staff.Staff",
         on_delete=models.CASCADE,
@@ -428,6 +438,8 @@ class ChatThread(TenantOwnedModel, SoftDeleteMixin):
     )
     guardian = models.ForeignKey(
         "guardians.Guardian",
+        null=True,
+        blank=True,
         on_delete=models.CASCADE,
         related_name="chat_threads_as_guardian",
     )
@@ -442,6 +454,11 @@ class ChatThread(TenantOwnedModel, SoftDeleteMixin):
     is_closed = models.BooleanField(default=False)
     last_message_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    def delete(self, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+
+        raise PermissionDenied("Chat threads cannot be deleted.")
+
     class Meta(TenantOwnedModel.Meta):
         verbose_name = "Chat Thread"
         verbose_name_plural = "Chat Threads"
@@ -449,7 +466,7 @@ class ChatThread(TenantOwnedModel, SoftDeleteMixin):
 
 
 class ChatMessage(TenantOwnedModel, SoftDeleteMixin):
-    """Individual message exchange inside a teacher-guardian chat thread."""
+    """Individual message exchange inside a chat thread."""
 
     thread = models.ForeignKey(
         ChatThread,
@@ -466,6 +483,11 @@ class ChatMessage(TenantOwnedModel, SoftDeleteMixin):
     read_at = models.DateTimeField(null=True, blank=True)
     is_flagged_for_moderation = models.BooleanField(default=False)
     moderation_note = models.CharField(max_length=255, blank=True)
+
+    def delete(self, *args, **kwargs):
+        from django.core.exceptions import PermissionDenied
+
+        raise PermissionDenied("Chat messages cannot be deleted.")
 
     class Meta(TenantOwnedModel.Meta):
         verbose_name = "Chat Message"

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
@@ -293,13 +293,53 @@ class NoticeViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         return Response({"status": "unpinned"})
 
 
+def _resolve_thread_participants(
+    user: Any, data: dict, institution: Any
+) -> tuple[Any, Any, Any, str]:
+    """Helper to resolve teacher, student, guardian, and thread type for chat thread creation."""
+    teacher_id = data.get("teacher")
+    thread_type = data.get("thread_type")
+
+    if hasattr(user, "student_profile") and user.student_profile:
+        return teacher_id, user.student_profile, None, ChatThread.ThreadType.TEACHER_STUDENT
+
+    if hasattr(user, "guardian_profiles") and user.guardian_profiles.exists():
+        guardian = user.guardian_profiles.first()
+        student_id = data.get("student")
+        student = None
+        if student_id:
+            from apps.students.models import Student
+
+            student = Student.objects.filter(id=student_id, institution=institution).first()
+        return teacher_id, student, guardian, ChatThread.ThreadType.TEACHER_GUARDIAN
+
+    if hasattr(user, "staff_profile") and user.staff_profile:
+        teacher_id = teacher_id or str(user.staff_profile.id)
+
+    student_id = data.get("student")
+    student = None
+    if student_id:
+        from apps.students.models import Student
+
+        student = Student.objects.filter(id=student_id, institution=institution).first()
+
+    guardian_id = data.get("guardian")
+    guardian = None
+    if guardian_id:
+        from apps.guardians.models import Guardian
+
+        guardian = Guardian.objects.filter(id=guardian_id, institution=institution).first()
+
+    return teacher_id, student, guardian, thread_type or ChatThread.ThreadType.TEACHER_GUARDIAN
+
+
 @extend_schema_view(
     list=extend_schema(summary="List Teacher-Guardian Chat Threads"),
     create=extend_schema(summary="Initiate Chat Thread"),
     retrieve=extend_schema(summary="Retrieve Chat Thread Details"),
 )
 class ChatThreadViewSet(TenantScopedMixin, viewsets.ModelViewSet):
-    """Manage 1-on-1 dialogue threads between teachers and guardians."""
+    """Manage 1-on-1 dialogue threads between teachers, guardians, and students."""
 
     queryset = ChatThread.objects.none()
     serializer_class = ChatThreadSerializer
@@ -317,14 +357,53 @@ class ChatThreadViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         if not institution:
             return ChatThread.objects.none()
 
-        qs = ChatThread.objects.filter(institution=institution)
+        qs = ChatThread.objects.filter(institution=institution).select_related(
+            "teacher", "guardian", "student"
+        )
         if getattr(user, "is_superuser", False) or "institution_admin" in (
             getattr(user, "user_types", []) or []
         ):
             return qs
 
-        # If user is teacher or guardian
-        return qs.filter(teacher__user=user) | qs.filter(guardian__user=user)
+        # If user is teacher, guardian, or student
+        q = Q(teacher__user=user)
+        if hasattr(user, "guardian_profiles") and user.guardian_profiles.exists():
+            q |= Q(guardian__user=user)
+        if hasattr(user, "student_profile") and user.student_profile:
+            q |= Q(student=user.student_profile, thread_type=ChatThread.ThreadType.TEACHER_STUDENT)
+        return qs.filter(q).distinct()
+
+    def create(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        user = request.user
+        institution = getattr(user, "institution", None)
+        teacher_id, student, guardian, thread_type = _resolve_thread_participants(
+            user, request.data, institution
+        )
+
+        if not teacher_id:
+            raise ValidationError({"teacher": "Teacher ID is required."})
+
+        existing = ChatThread.objects.filter(
+            institution=institution,
+            teacher_id=teacher_id,
+            student=student,
+            guardian=guardian,
+        ).first()
+
+        if existing:
+            serializer = self.get_serializer(existing)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        thread = serializer.save(
+            institution=institution,
+            teacher_id=teacher_id,
+            student=student,
+            guardian=guardian,
+            thread_type=thread_type,
+        )
+        return Response(self.get_serializer(thread).data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         summary="List or Send Messages in Thread",

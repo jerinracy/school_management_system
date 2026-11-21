@@ -213,6 +213,43 @@ class TestTeacherGuardianChat:
         assert list_resp.status_code == status.HTTP_200_OK
         assert len(list_resp.data) == 1
 
+    def test_chat_thread_creation_idempotency_and_metadata(self, chat_setup):
+        inst, teacher_staff, guardian, teacher_user, guardian_user = chat_setup
+        from apps.staff.models import Designation
+
+        desig = Designation.objects.create(
+            institution=inst,
+            title="Senior Teacher",
+            title_bn="সিনিয়র শিক্ষক",
+            code="ST",
+        )
+        teacher_staff.designation = desig
+        teacher_staff.full_name_bn = "রাশিদা বেগম"
+        teacher_staff.save()
+
+        client = APIClient()
+        client.force_authenticate(user=guardian_user)
+
+        # 1st creation call -> 201 Created
+        resp1 = client.post(
+            "/api/v1/communications/chat/threads/",
+            {"teacher": str(teacher_staff.id), "subject": "Math Query"},
+            format="json",
+        )
+        assert resp1.status_code == status.HTTP_201_CREATED
+        thread_id = resp1.data["id"]
+        assert resp1.data["teacher_name_bn"] == "রাশিদা বেগম"
+        assert resp1.data["teacher_designation"] == "Senior Teacher"
+
+        # 2nd creation call with same teacher -> 200 OK (idempotent, returns existing thread)
+        resp2 = client.post(
+            "/api/v1/communications/chat/threads/",
+            {"teacher": str(teacher_staff.id), "subject": "Math Query"},
+            format="json",
+        )
+        assert resp2.status_code == status.HTTP_200_OK
+        assert resp2.data["id"] == thread_id
+
 
 @pytest.mark.django_db
 class TestEmergencyAlerts:

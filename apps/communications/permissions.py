@@ -34,29 +34,21 @@ class IsNoticeAdminOrReadOnly(BasePermission):
 
 
 class IsThreadParticipant(BasePermission):
-    """Allows access only to participants (Teacher or Guardian) or institution admins."""
+    """Allows access only to participants (Teacher, Guardian, or Student) or institution admins."""
 
     def has_object_permission(self, request, view, obj):
         user = getattr(request, "user", None)
         if not user or not user.is_authenticated:
             return False
-        if getattr(user, "is_superuser", False):
-            return True
-        user_types = getattr(user, "user_types", []) or []
-        if "institution_admin" in user_types:
+        if getattr(user, "is_superuser", False) or "institution_admin" in (
+            getattr(user, "user_types", []) or []
+        ):
             return True
 
-        # Check if user is the teacher
-        if hasattr(obj, "teacher") and getattr(obj.teacher, "user_id", None) == user.id:
-            return True
-        # Check if user is the guardian
-        if hasattr(obj, "guardian") and getattr(obj.guardian, "user_id", None) == user.id:
-            return True
-        # If checking a ChatMessage object
-        if hasattr(obj, "thread"):
-            if getattr(obj.thread.teacher, "user_id", None) == user.id:
-                return True
-            if getattr(obj.thread.guardian, "user_id", None) == user.id:
-                return True
-
-        return False
+        target = obj.thread if hasattr(obj, "thread") else obj
+        participant_ids = {
+            getattr(getattr(target, "teacher", None), "user_id", None),
+            getattr(getattr(target, "guardian", None), "user_id", None),
+            getattr(getattr(target, "student", None), "user_id", None),
+        }
+        return user.id in participant_ids

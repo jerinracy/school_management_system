@@ -265,36 +265,84 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatThreadSerializer(serializers.ModelSerializer):
-    """Serializer for Teacher ↔ Guardian chat threads."""
+    """Serializer for Teacher ↔ Guardian and Teacher ↔ Student chat threads."""
 
     teacher_name = serializers.SerializerMethodField()
+    teacher_name_bn = serializers.SerializerMethodField()
+    teacher_designation = serializers.SerializerMethodField()
     guardian_name = serializers.SerializerMethodField()
     student_name = serializers.CharField(source="student.name_en", read_only=True)
+    class_name = serializers.SerializerMethodField()
+    section_name = serializers.SerializerMethodField()
+    last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatThread
         fields = [
             "id",
+            "thread_type",
             "teacher",
             "teacher_name",
+            "teacher_name_bn",
+            "teacher_designation",
             "guardian",
             "guardian_name",
             "student",
             "student_name",
+            "class_name",
+            "section_name",
             "subject",
             "is_closed",
             "last_message_at",
+            "last_message",
             "unread_count",
             "created_at",
         ]
         read_only_fields = ["id", "last_message_at", "created_at"]
+        extra_kwargs = {
+            "guardian": {"required": False, "allow_null": True},
+            "student": {"required": False, "allow_null": True},
+        }
 
     def get_teacher_name(self, obj: ChatThread) -> str:
         return getattr(obj.teacher, "full_name_en", "") or getattr(obj.teacher, "name_en", "")
 
+    def get_teacher_name_bn(self, obj: ChatThread) -> str:
+        if not obj.teacher:
+            return ""
+        return getattr(obj.teacher, "full_name_bn", "") or getattr(obj.teacher, "name_bn", "")
+
+    def get_teacher_designation(self, obj: ChatThread) -> str:
+        if not obj.teacher:
+            return ""
+        desig = getattr(obj.teacher, "designation", None)
+        if desig:
+            return getattr(desig, "title", "") or getattr(desig, "title_bn", "") or str(desig)
+        return ""
+
     def get_guardian_name(self, obj: ChatThread) -> str:
-        return getattr(obj.guardian, "name_en", "")
+        return getattr(obj.guardian, "name_en", "") if obj.guardian else ""
+
+    def get_class_name(self, obj: ChatThread) -> str:
+        if not obj.student:
+            return ""
+        enrollment = (
+            obj.student.enrollments.filter(status="active").select_related("class_level").first()
+        )
+        return enrollment.class_level.name if enrollment and enrollment.class_level else ""
+
+    def get_section_name(self, obj: ChatThread) -> str:
+        if not obj.student:
+            return ""
+        enrollment = (
+            obj.student.enrollments.filter(status="active").select_related("section").first()
+        )
+        return enrollment.section.name if enrollment and enrollment.section else ""
+
+    def get_last_message(self, obj: ChatThread) -> str:
+        last = obj.messages.order_by("-created_at").first()
+        return last.content if last else ""
 
     def get_unread_count(self, obj: ChatThread) -> int:
         request = self.context.get("request")

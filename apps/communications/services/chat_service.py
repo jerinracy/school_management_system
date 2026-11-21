@@ -20,17 +20,21 @@ logger = logging.getLogger(__name__)
 def get_or_create_chat_thread(
     institution: "Institution",
     teacher: "Staff",
-    guardian: "Guardian",
+    guardian: "Guardian | None" = None,
     student: "Student | None" = None,
     subject: str = "",
+    thread_type: str = ChatThread.ThreadType.TEACHER_GUARDIAN,
 ) -> tuple[ChatThread, bool]:
-    """Retrieve or initialize a chat thread between a teacher and a guardian."""
+    """Retrieve or initialize a chat thread between a teacher and a guardian or student."""
+    if not guardian and student:
+        thread_type = ChatThread.ThreadType.TEACHER_STUDENT
+
     thread, created = ChatThread.objects.get_or_create(
         institution=institution,
         teacher=teacher,
         guardian=guardian,
         student=student,
-        defaults={"subject": subject},
+        defaults={"subject": subject, "thread_type": thread_type},
     )
     return thread, created
 
