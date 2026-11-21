@@ -272,6 +272,7 @@ class ChatThreadSerializer(serializers.ModelSerializer):
     teacher_designation = serializers.SerializerMethodField()
     guardian_name = serializers.SerializerMethodField()
     student_name = serializers.CharField(source="student.name_en", read_only=True)
+    student_roll = serializers.SerializerMethodField()
     class_name = serializers.SerializerMethodField()
     section_name = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
@@ -290,6 +291,7 @@ class ChatThreadSerializer(serializers.ModelSerializer):
             "guardian_name",
             "student",
             "student_name",
+            "student_roll",
             "class_name",
             "section_name",
             "subject",
@@ -323,6 +325,17 @@ class ChatThreadSerializer(serializers.ModelSerializer):
 
     def get_guardian_name(self, obj: ChatThread) -> str:
         return getattr(obj.guardian, "name_en", "") if obj.guardian else ""
+
+    def get_student_roll(self, obj: ChatThread) -> str:
+        if not obj.student:
+            return ""
+        enrollment = (
+            obj.student.enrollments.filter(status="active").first()
+            or obj.student.enrollments.first()
+        )
+        if enrollment and enrollment.roll_no is not None:
+            return str(enrollment.roll_no)
+        return ""
 
     def get_class_name(self, obj: ChatThread) -> str:
         if not obj.student:

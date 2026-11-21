@@ -250,6 +250,50 @@ class TestTeacherGuardianChat:
         assert resp2.status_code == status.HTTP_200_OK
         assert resp2.data["id"] == thread_id
 
+        # 3rd creation call with student having enrollment -> asserts student_roll
+        from datetime import date, time
+
+        from apps.academics.models import ClassLevel, Section
+        from apps.institutions.models import AcademicSession, Branch, Shift
+        from apps.students.models import Student, StudentEnrollment
+
+        branch = Branch.objects.create(institution=inst, name="Main", code="MAIN")
+        shift = Shift.objects.create(
+            institution=inst, branch=branch, name="Day", start_time=time(8, 0), end_time=time(14, 0)
+        )
+        session = AcademicSession.objects.create(
+            institution=inst, name="2026", start_date="2026-01-01", end_date="2026-12-31"
+        )
+        cls_lvl = ClassLevel.objects.create(institution=inst, name="Class 6", code="c06", order=6)
+        sec = Section.objects.create(
+            institution=inst, class_level=cls_lvl, shift=shift, session=session, name="A"
+        )
+        std = Student.objects.create(
+            institution=inst,
+            student_id="S001",
+            name_en="Karim Rahman",
+            dob=date(2012, 1, 1),
+            gender="male",
+            admission_date=date(2026, 1, 1),
+        )
+        StudentEnrollment.objects.create(
+            institution=inst,
+            student=std,
+            class_level=cls_lvl,
+            section=sec,
+            session=session,
+            roll_no=12,
+            enrollment_date=date(2026, 1, 1),
+            status="active",
+        )
+        resp3 = client.post(
+            "/api/v1/communications/chat/threads/",
+            {"teacher": str(teacher_staff.id), "student": str(std.id), "subject": "Progress"},
+            format="json",
+        )
+        assert resp3.status_code == status.HTTP_201_CREATED
+        assert resp3.data["student_roll"] == "12"
+
 
 @pytest.mark.django_db
 class TestEmergencyAlerts:
