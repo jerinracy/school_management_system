@@ -5,6 +5,7 @@ from typing import Any
 from django.db import transaction
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
@@ -33,6 +34,7 @@ from apps.academics.selectors import (
     get_routine_for_teacher,
 )
 from apps.academics.serializers import (
+    AssignClassTeacherSerializer,
     BulkCreateSectionsSerializer,
     ClassLevelSerializer,
     ClassSubjectSerializer,
@@ -48,6 +50,7 @@ from apps.academics.serializers import (
 )
 from apps.academics.services.conflicts import validate_routine_slot_conflicts
 from apps.academics.services.copy_session import copy_academic_structure_from_previous_session
+from apps.accounts.models import UserType
 from apps.accounts.permissions import HasModulePermission
 from apps.core.mixins import TenantScopedMixin, get_request_institution
 from apps.core.pagination import StandardResultsSetPagination
@@ -71,6 +74,11 @@ class ClassLevelViewSet(TenantScopedMixin, ModelViewSet):
     search_fields = ["name", "code"]
     ordering_fields = ["order", "name"]
     ordering = ["order"]
+
+    def get_permissions(self) -> list[Any]:
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), HasModulePermission("academics.view_classlevel")()]
 
     def get_queryset(self) -> Any:
         qs = super().get_queryset()
@@ -129,7 +137,7 @@ class GroupViewSet(TenantScopedMixin, ModelViewSet):
 )
 class SectionViewSet(TenantScopedMixin, ModelViewSet):
     queryset = Section.objects.select_related(
-        "class_level", "shift", "session", "teacher_user"
+        "class_level", "shift", "session", "teacher_user", "teacher_staff"
     ).all()
     serializer_class = SectionSerializer
     permission_classes = [IsAuthenticated, HasModulePermission("academics.view_section")]
@@ -139,6 +147,11 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
     search_fields = ["name", "class_level__name"]
     ordering_fields = ["name", "capacity"]
     ordering = ["class_level", "name"]
+
+    def get_permissions(self) -> list[Any]:
+        if self.action in ["list", "retrieve", "teachers", "my_teachers"]:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), HasModulePermission("academics.view_section")()]
 
     def get_queryset(self) -> Any:
         qs = super().get_queryset()
@@ -159,6 +172,21 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
                 Q(session_id=session_id)
                 | Q(session__isnull=True, class_level__session_id=session_id)
             )
+        if params.get("managed_by_me") in ["true", "1", True] or params.get("class_teacher") in [
+            "me",
+            "true",
+            "1",
+        ]:
+            if self.request.user.is_authenticated:
+                qs = qs.filter(
+                    Q(teacher_user=self.request.user) | Q(teacher_staff__user=self.request.user)
+                )
+            else:
+                qs = qs.none()
+        elif params.get("teacher_staff"):
+            qs = qs.filter(teacher_staff_id=params.get("teacher_staff"))
+        elif params.get("teacher_user"):
+            qs = qs.filter(teacher_user_id=params.get("teacher_user"))
         return qs
 
     def perform_create(self, serializer: Any) -> None:
@@ -168,6 +196,281 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
             class_level.branch if class_level else None
         )
         serializer.save(institution=inst, branch=branch)
+
+    @extend_schema(
+        summary="Assign or change Class Teacher for a section",
+        request=AssignClassTeacherSerializer,
+        responses={200: SectionSerializer},
+        tags=["Academics"],
+    )
+    @action(detail=True, methods=["post"], url_path="assign-class-teacher")
+    def assign_class_teacher(self, request: Request, pk: str | None = None) -> Response:
+        section = self.get_object()
+        serializer = AssignClassTeacherSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        staff_id = serializer.validated_data.get("teacher_staff_id")
+        user_id = serializer.validated_data.get("teacher_user_id")
+
+        payload: dict[str, Any] = {}
+        if "teacher_staff_id" in request.data:
+            payload["teacher_staff"] = staff_id
+        if "teacher_user_id" in request.data:
+            payload["teacher_user"] = user_id
+
+        sec_serializer = SectionSerializer(
+            instance=section,
+            data=payload,
+            partial=True,
+            context={"request": request},
+        )
+        sec_serializer.is_valid(raise_exception=True)
+        sec_serializer.save()
+        return Response(sec_serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="List teachers assigned to routine slots for this section",
+        responses={200: OpenApiTypes.OBJECT},
+        tags=["Academics"],
+    )
+    def _build_section_teachers_response(self, section: Section) -> list[dict[str, Any]]:
+        from apps.academics.models import RoutineSlot
+
+        slots = (
+            RoutineSlot.objects.filter(section=section)
+            .select_related(
+                "subject", "teacher_staff", "teacher_staff__designation", "teacher_user"
+            )
+            .order_by("subject__name_en")
+        )
+
+        teachers_map: dict[str, dict[str, Any]] = {}
+
+        if section.teacher_staff:
+            ts = section.teacher_staff
+            t_id = str(ts.id)
+            desig = (
+                str(
+                    ts.designation.title_en
+                    if hasattr(ts.designation, "title_en")
+                    else ts.designation
+                )
+                if ts.designation
+                else "Class Teacher"
+            )
+            phone = ts.phone or (ts.user.phone if ts.user else "")
+            teachers_map[t_id] = {
+                "staff_id": str(ts.id),
+                "user_id": str(ts.user_id) if ts.user_id else None,
+                "name_en": ts.full_name_en or "Class Teacher",
+                "name_bn": getattr(ts, "full_name_bn", "") or "",
+                "designation": desig,
+                "phone": phone or "",
+                "is_class_teacher": True,
+                "subjects": [],
+            }
+
+        for slot in slots:
+            staff = slot.teacher_staff
+            user = slot.teacher_user
+            if not staff and not user:
+                continue
+
+            key = str(staff.id) if staff else f"user_{user.id}"
+            if key not in teachers_map:
+                name = (
+                    (staff.full_name_en or staff.full_name_bn)
+                    if staff
+                    else (user.full_name or user.username or user.phone)
+                )
+                desig = (
+                    str(
+                        staff.designation.title_en
+                        if hasattr(staff.designation, "title_en")
+                        else staff.designation
+                    )
+                    if staff and staff.designation
+                    else "Subject Teacher"
+                )
+                phone = staff.phone if (staff and staff.phone) else (user.phone if user else "")
+                teachers_map[key] = {
+                    "staff_id": str(staff.id) if staff else None,
+                    "user_id": (
+                        str(staff.user_id)
+                        if (staff and staff.user_id)
+                        else (str(user.id) if user else None)
+                    ),
+                    "name_en": name or "Subject Teacher",
+                    "name_bn": getattr(staff, "full_name_bn", "") if staff else "",
+                    "designation": desig,
+                    "phone": phone or "",
+                    "is_class_teacher": bool(
+                        (staff and section.teacher_staff_id == staff.id)
+                        or (user and section.teacher_user_id == user.id)
+                    ),
+                    "subjects": [],
+                }
+
+            subj_name = slot.subject.name_en if slot.subject else ""
+            if subj_name and subj_name not in teachers_map[key]["subjects"]:
+                teachers_map[key]["subjects"].append(subj_name)
+
+        return list(teachers_map.values())
+
+    @extend_schema(
+        summary="List teachers assigned to routine slots for this section",
+        responses={200: OpenApiTypes.OBJECT},
+        tags=["Academics"],
+    )
+    @action(detail=True, methods=["get"], url_path="teachers")
+    def teachers(self, request: Request, pk: str | None = None) -> Response:
+        import uuid
+
+        if pk:
+            try:
+                uuid.UUID(str(pk))
+            except (ValueError, TypeError, AttributeError):
+                return self.my_teachers(request)
+
+        try:
+            section = self.get_object()
+        except Exception:
+            return self.my_teachers(request)
+
+        return Response(self._build_section_teachers_response(section))
+
+    @extend_schema(
+        summary="List teachers assigned to routine slots for current student's section",
+        responses={200: OpenApiTypes.OBJECT},
+        tags=["Academics"],
+    )
+    @action(detail=False, methods=["get"], url_path="my-teachers")
+    def my_teachers(self, request: Request) -> Response:
+        import uuid
+
+        def _is_valid_uuid(val: Any) -> bool:
+            if not val:
+                return False
+            try:
+                uuid.UUID(str(val))
+                return True
+            except (ValueError, TypeError, AttributeError):
+                return False
+
+        institution = get_request_institution(request)
+        sec_id = request.query_params.get("section") or request.query_params.get("section_id")
+        std_id = request.query_params.get("student") or request.query_params.get("student_id")
+        user = request.user
+
+        if sec_id and not _is_valid_uuid(sec_id):
+            sec_id = None
+        if std_id and not _is_valid_uuid(std_id):
+            std_id = None
+
+        if not sec_id and std_id:
+            from apps.students.models import StudentEnrollment
+
+            enr = (
+                StudentEnrollment.objects.filter(
+                    student_id=std_id,
+                    institution=institution,
+                    status="active",
+                )
+                .select_related("section")
+                .order_by("-session__start_date")
+                .first()
+            )
+            if enr:
+                sec_id = enr.section_id
+
+        if not sec_id and user and user.is_authenticated:
+            from apps.guardians.models import StudentGuardian
+            from apps.students.models import StudentEnrollment
+
+            # 1. Direct student user profile link
+            enr = (
+                StudentEnrollment.objects.filter(
+                    student__user_id=user.id,
+                    institution=institution,
+                    status="active",
+                )
+                .select_related("section")
+                .order_by("-session__start_date")
+                .first()
+            )
+            if enr:
+                sec_id = enr.section_id
+
+            # 2. Student matched by phone
+            if not sec_id and getattr(user, "phone", None):
+                enr = (
+                    StudentEnrollment.objects.filter(
+                        student__phone=user.phone,
+                        institution=institution,
+                        status="active",
+                    )
+                    .select_related("section")
+                    .order_by("-session__start_date")
+                    .first()
+                )
+                if enr:
+                    sec_id = enr.section_id
+
+            # 3. Guardian user linked
+            if not sec_id:
+                sg = (
+                    StudentGuardian.objects.filter(
+                        guardian__user_id=user.id,
+                        institution=institution,
+                    )
+                    .select_related("student")
+                    .first()
+                )
+                if not sg and getattr(user, "phone", None):
+                    sg = (
+                        StudentGuardian.objects.filter(
+                            guardian__phone=user.phone,
+                            institution=institution,
+                        )
+                        .select_related("student")
+                        .first()
+                    )
+                if sg:
+                    enr = (
+                        StudentEnrollment.objects.filter(
+                            student_id=sg.student_id,
+                            institution=institution,
+                            status="active",
+                        )
+                        .select_related("section")
+                        .order_by("-session__start_date")
+                        .first()
+                    )
+                    if enr:
+                        sec_id = enr.section_id
+
+        if not sec_id:
+            # Fall back to section with active routine slots, then any section
+            target_sec = (
+                Section.objects.filter(institution=institution, routine_slots__isnull=False)
+                .distinct()
+                .first()
+                or Section.objects.filter(institution=institution).first()
+            )
+            if not target_sec:
+                return Response([])
+            return Response(self._build_section_teachers_response(target_sec))
+
+        section = Section.objects.filter(id=sec_id, institution=institution).first()
+        if not section:
+            target_sec = (
+                Section.objects.filter(institution=institution, routine_slots__isnull=False)
+                .distinct()
+                .first()
+            )
+            if target_sec:
+                return Response(self._build_section_teachers_response(target_sec))
+            return Response([])
+        return Response(self._build_section_teachers_response(section))
 
     @extend_schema(
         summary="Bulk create sections for a class level",
@@ -236,6 +539,38 @@ class SubjectViewSet(TenantScopedMixin, ModelViewSet):
     ordering_fields = ["code", "name_en"]
     ordering = ["code"]
 
+    def get_permissions(self) -> list[Any]:
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), HasModulePermission("academics.view_subject")()]
+
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        params = getattr(self.request, "query_params", getattr(self.request, "GET", {}))
+        class_level_id = params.get("class_level")
+        section_id = params.get("section")
+        if section_id and not class_level_id:
+            sec = Section.objects.filter(id=section_id).first()
+            if sec:
+                class_level_id = sec.class_level_id
+        if class_level_id:
+            from apps.academics.models import ClassSubject, RoutineSlot
+
+            subject_ids = set(
+                ClassSubject.objects.filter(class_level_id=class_level_id).values_list(
+                    "subject_id", flat=True
+                )
+            )
+            routine_slot_filter = Q(section__class_level_id=class_level_id)
+            if section_id:
+                routine_slot_filter |= Q(section_id=section_id)
+            routine_subject_ids = set(
+                RoutineSlot.objects.filter(routine_slot_filter).values_list("subject_id", flat=True)
+            )
+            combined_ids = subject_ids.union(routine_subject_ids)
+            qs = qs.filter(id__in=combined_ids)
+        return qs
+
     def perform_create(self, serializer: Any) -> None:
         serializer.save(institution=get_request_institution(self.request))
 
@@ -261,6 +596,11 @@ class ClassSubjectViewSet(TenantScopedMixin, ModelViewSet):
     filterset_fields = ["class_level", "group", "session", "is_optional_elective"]
     ordering_fields = ["class_level", "subject"]
     ordering = ["class_level", "subject"]
+
+    def get_permissions(self) -> list[Any]:
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), HasModulePermission("academics.view_classsubject")()]
 
     def perform_create(self, serializer: Any) -> None:
         serializer.save(institution=get_request_institution(self.request))
@@ -351,6 +691,11 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
     ordering_fields = ["weekday", "period__order"]
     ordering = ["weekday", "period__order"]
 
+    def get_permissions(self) -> list[Any]:
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), HasModulePermission("academics.view_routineslot")()]
+
     def get_queryset(self) -> Any:
         if getattr(self, "swagger_fake_view", False):
             return RoutineSlot.objects.none()
@@ -368,6 +713,45 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
         w_day = self.request.query_params.get("weekday")
         weekday_int = int(w_day) if w_day is not None and str(w_day).isdigit() else None
 
+        user = self.request.user
+        std_id = self.request.query_params.get("student_id") or self.request.query_params.get(
+            "student"
+        )
+        if not sec_id and std_id:
+            from apps.students.models import StudentEnrollment
+
+            enr = (
+                StudentEnrollment.objects.filter(
+                    student_id=std_id,
+                    institution=institution,
+                    status="active",
+                )
+                .select_related("section")
+                .order_by("-session__start_date")
+                .first()
+            )
+            if enr:
+                sec_id = enr.section_id
+
+        if not sec_id and user and user.is_authenticated:
+            if getattr(user, "user_type", None) == UserType.STUDENT or hasattr(
+                user, "student_profile"
+            ):
+                from apps.students.models import StudentEnrollment
+
+                enr = (
+                    StudentEnrollment.objects.filter(
+                        student__user_id=user.id,
+                        institution=institution,
+                        status="active",
+                    )
+                    .select_related("section")
+                    .order_by("-session__start_date")
+                    .first()
+                )
+                if enr:
+                    sec_id = enr.section_id
+
         if sec_id:
             return get_routine_for_section(
                 institution_id=institution.id, section_id=sec_id, weekday=weekday_int
@@ -379,6 +763,18 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
         if r_id:
             return get_routine_for_room(
                 institution_id=institution.id, room_id=r_id, weekday=weekday_int
+            )
+
+        if (
+            user
+            and user.is_authenticated
+            and (
+                getattr(user, "user_type", None) == UserType.TEACHER
+                or hasattr(user, "staff_profile")
+            )
+        ):
+            return get_routine_for_teacher(
+                institution_id=institution.id, teacher_user_id=user.id, weekday=weekday_int
             )
 
         return super().get_queryset()

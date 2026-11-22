@@ -28,6 +28,15 @@ export const studentCreateSchema = z.object({
       "validation.phoneInvalid",
     ),
 
+  // Student Phone & App Login
+  phone: z
+    .string()
+    .trim()
+    .refine((val) => !val || BD_PHONE_REGEX.test(val), "validation.phoneInvalid")
+    .optional(),
+  give_app_access: z.boolean().default(false),
+  initial_password: z.string().optional(),
+
   // Academic initial enrollment
   session_id: z.string().min(1, "validation.sessionRequired"),
   class_level_id: z.string().min(1, "validation.classRequired"),

@@ -5,8 +5,9 @@ from decimal import Decimal
 from typing import Any
 
 from django.core.cache import cache
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 
+from apps.academics.models import ClassLevel, Section
 from apps.accounts.models import User, UserType
 from apps.attendance.models import (
     AttendanceCorrection,
@@ -18,6 +19,8 @@ from apps.devices.models import Device, DeviceStatus
 from apps.exams.models import Exam
 from apps.fees.models import Invoice, InvoiceStatus, Payment, PaymentStatus
 from apps.institutions.models import Institution
+from apps.staff.models import Staff
+from apps.students.models import EnrollmentStatus, StudentEnrollment
 
 KPI_CACHE_TTL_SECONDS = 60
 
@@ -101,10 +104,74 @@ def get_dashboard_kpis(
         approval_status=CorrectionStatus.PENDING,
     ).count()
 
+    # 4. Institutional Headcount & Shift Distribution
+    active_enrollments = StudentEnrollment.objects.filter(
+        institution=institution,
+        is_deleted=False,
+        status=EnrollmentStatus.ACTIVE,
+    )
+    total_students = active_enrollments.count()
+    morning_shift_students = active_enrollments.filter(
+        Q(shift__name__iexact="morning")
+        | (Q(shift__isnull=True) & Q(section__shift__name__iexact="morning"))
+    ).count()
+    day_shift_students = active_enrollments.filter(
+        Q(shift__name__iexact="day")
+        | (Q(shift__isnull=True) & Q(section__shift__name__iexact="day"))
+    ).count()
+
+    total_teachers = Staff.objects.filter(
+        institution=institution,
+        is_deleted=False,
+        status="active",
+        staff_type="teacher",
+    ).count()
+    total_office_staff = (
+        Staff.objects.filter(
+            institution=institution,
+            is_deleted=False,
+            status="active",
+        )
+        .exclude(staff_type="teacher")
+        .count()
+    )
+
+    total_classes = ClassLevel.objects.filter(
+        institution=institution,
+    ).count()
+    total_sections = Section.objects.filter(
+        institution=institution,
+    ).count()
+
+    # 5. Today's attendance percentage rates
+    student_present = (
+        attendance_summary["student"]["present"] + attendance_summary["student"]["late"]
+    )
+    student_att_rate = (
+        round((student_present / total_students) * 100, 1) if total_students > 0 else 0.0
+    )
+
+    total_staff = total_teachers + total_office_staff
+    staff_present = attendance_summary["staff"]["present"] + attendance_summary["staff"]["late"]
+    staff_att_rate = round((staff_present / total_staff) * 100, 1) if total_staff > 0 else 0.0
+
     payload: dict[str, Any] = {
         "date": day.isoformat(),
         "role_variant": role_variant,
+        "headcount": {
+            "total_teachers": total_teachers,
+            "total_office_staff": total_office_staff,
+            "total_students": total_students,
+            "morning_shift_students": morning_shift_students,
+            "day_shift_students": day_shift_students,
+            "total_classes": total_classes,
+            "total_sections": total_sections,
+        },
         "attendance": attendance_summary,
+        "attendance_rates": {
+            "student_present_pct": student_att_rate,
+            "staff_present_pct": staff_att_rate,
+        },
         "devices": devices_summary,
         "upcoming_exams_count": upcoming_exams_count,
         "pending_approvals": {

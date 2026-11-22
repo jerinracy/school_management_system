@@ -43,6 +43,7 @@ from apps.staff.serializers import (
     StaffCreateUpdateSerializer,
     StaffDetailSerializer,
     StaffListSerializer,
+    StaffPhotoUploadSerializer,
     TeacherAssignmentSerializer,
     WorkloadSummarySerializer,
 )
@@ -165,6 +166,12 @@ class StaffViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), (CanViewStaff | CanManageStaff)()]
         return [permissions.IsAuthenticated(), CanManageStaff()]
 
+    def perform_destroy(self, instance: Staff) -> None:
+        if instance.user:
+            instance.user.is_active = False
+            instance.user.save(update_fields=["is_active"])
+        instance.delete()
+
     @extend_schema(responses={200: dict})
     @action(detail=False, methods=["get"], url_path="summary")
     def summary(self, request: Request) -> Response:
@@ -228,13 +235,39 @@ class StaffViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             emp_id = generate_employee_id(inst)
         serializer.save(institution=inst, employee_id=emp_id)
 
-    @extend_schema(responses={200: StaffDetailSerializer})
-    @action(detail=False, methods=["get"], url_path="me")
+    @extend_schema(
+        methods=["get"],
+        responses={200: StaffDetailSerializer},
+        summary="Retrieve profile of the currently authenticated staff member",
+    )
+    @extend_schema(
+        methods=["patch"],
+        request=StaffPhotoUploadSerializer,
+        responses={200: StaffDetailSerializer},
+        summary="Update profile or upload photo of the currently authenticated staff member",
+    )
+    @action(detail=False, methods=["get", "patch"], url_path="me")
     def me(self, request: Request) -> Response:
-        """Retrieve profile of the currently authenticated staff member."""
+        """Retrieve or update profile of the currently authenticated staff member."""
         staff = _get_request_staff(request)
         if not staff:
             raise ValidationError("Authenticated user is not linked to an active staff profile.")
+
+        if request.method == "PATCH":
+            photo = request.FILES.get("photo")
+            if photo:
+                if photo.size > 5 * 1024 * 1024:
+                    raise ValidationError({"photo": "Image file size cannot exceed 5MB."})
+                staff.photo = photo
+                staff.save(update_fields=["photo", "updated_at"])
+                if staff.user:
+                    staff.user.avatar = photo
+                    staff.user.save(update_fields=["avatar"])
+            else:
+                serializer = StaffCreateUpdateSerializer(staff, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
         return Response(StaffDetailSerializer(staff).data, status=status.HTTP_200_OK)
 
     @extend_schema(responses={200: WorkloadSummarySerializer})

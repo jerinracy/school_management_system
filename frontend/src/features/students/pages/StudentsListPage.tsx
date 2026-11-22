@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Download,
+  Edit2,
   Plus,
   RotateCcw,
   Search,
+  Smartphone,
+  Trash2,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +24,8 @@ import {
 } from "@/components/ui/select";
 import { studentsApi, type StudentListItem } from "@/features/students/api/studentsApi";
 import { Can } from "@/features/auth/permissions";
+import { EditStudentDialog } from "@/features/students/components/EditStudentDialog";
+import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
 
 export function StudentsListPage() {
   const { t, i18n } = useTranslation();
@@ -31,6 +37,22 @@ export function StudentsListPage() {
   const [genderFilter, setGenderFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [page, setPage] = useState(1);
+
+  const queryClient = useQueryClient();
+  const [selectedStudentForEdit, setSelectedStudentForEdit] = useState<StudentListItem | null>(null);
+  const [selectedStudentForDelete, setSelectedStudentForDelete] = useState<StudentListItem | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => studentsApi.deleteStudent(id),
+    onSuccess: () => {
+      toast.success(t("students.deleteSuccess", "Student deleted successfully."));
+      void queryClient.invalidateQueries({ queryKey: ["students"] });
+      setSelectedStudentForDelete(null);
+    },
+    onError: (err: unknown) => {
+      toast.error((err as Error).message || "Failed to delete student.");
+    },
+  });
 
   // TanStack Query for student list
   const { data, isLoading, isError, refetch } = useQuery({
@@ -285,9 +307,21 @@ export function StudentsListPage() {
                             >
                               {currentLang === "bn" && student.name_bn ? student.name_bn : student.name_en}
                             </Link>
-                            <p className="text-[11px] font-mono text-slate-400">
-                              {student.student_id}
-                            </p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[11px] font-mono text-slate-400">
+                                {student.student_id}
+                              </span>
+                              {student.has_app_account ? (
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
+                                  <Smartphone className="h-2.5 w-2.5" />
+                                  <span>{student.phone || "App"}</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                                  <span>{t("students.noAppLogin", "No App")}</span>
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -339,17 +373,42 @@ export function StudentsListPage() {
 
                       {/* Action */}
                       <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            void navigate(`/students/${student.id}`);
-                          }}
-                          className="h-8 px-2.5 text-xs text-emerald-800 dark:text-emerald-400 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg"
-                        >
-                          <span>{t("common.view", "View")}</span>
-                          <span className="ml-1">&rarr;</span>
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              void navigate(`/students/${student.id}`);
+                            }}
+                            className="h-8 px-2 text-xs text-emerald-800 dark:text-emerald-400 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg"
+                            title={t("common.view", "View")}
+                          >
+                            <span>{t("common.view", "View")}</span>
+                            <span className="ml-1">&rarr;</span>
+                          </Button>
+
+                          <Can perm="students.manage">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedStudentForEdit(student)}
+                              className="h-8 w-8 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg"
+                              title={t("common.edit", "Edit")}
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedStudentForDelete(student)}
+                              className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg"
+                              title={t("common.delete", "Delete")}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </Can>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -388,6 +447,36 @@ export function StudentsListPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Student Dialog */}
+      <EditStudentDialog
+        open={Boolean(selectedStudentForEdit)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStudentForEdit(null);
+        }}
+        student={selectedStudentForEdit}
+      />
+
+      {/* Delete Student Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(selectedStudentForDelete)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStudentForDelete(null);
+        }}
+        title={t("students.deleteConfirmTitle", "Delete Student Profile")}
+        description={t(
+          "students.deleteConfirmDesc",
+          "Are you sure you want to delete this student? Their profile and mobile app access will be deactivated. This action can be restored by an administrator."
+        )}
+        destructive
+        loading={deleteMutation.isPending}
+        confirmLabel={t("common.delete", "Delete")}
+        onConfirm={() => {
+          if (selectedStudentForDelete) {
+            deleteMutation.mutate(selectedStudentForDelete.id);
+          }
+        }}
+      />
     </div>
   );
 }

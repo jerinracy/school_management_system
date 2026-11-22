@@ -18,6 +18,7 @@ from apps.academics.models import (
 from apps.accounts.models import User, UserType
 from apps.accounts.test_helpers import api_client_as, make_user
 from apps.institutions.models import AcademicSession, Branch, Institution, Shift
+from apps.staff.models import Staff
 
 
 @pytest.fixture
@@ -897,3 +898,115 @@ class TestSubstituteAssignmentAPI:
         assert res2.status_code == status.HTTP_400_BAD_REQUEST
         details = res2.data.get("details", res2.data)
         assert "slot_date" in details
+
+    def test_section_class_teacher_assignment_and_conflict(
+        self,
+        institution: Institution,
+        admin_user: User,
+        shift: Shift,
+        session: AcademicSession,
+    ) -> None:
+        client = api_client_as(admin_user)
+
+        # Create two sections in the same session
+        cls = ClassLevel.objects.create(
+            institution=institution, name="Class 8", code="C08", order=8
+        )
+        sec_a = Section.objects.create(
+            institution=institution, class_level=cls, shift=shift, session=session, name="Padma"
+        )
+        sec_b = Section.objects.create(
+            institution=institution, class_level=cls, shift=shift, session=session, name="Meghna"
+        )
+
+        # Create a teacher staff with an attached login user
+        t_user = User.objects.create_user(
+            username="teacher_supervisor",
+            phone="+8801750000001",
+            full_name="Mahbub Alam",
+            institution=institution,
+        )
+        teacher_staff = Staff.objects.create(
+            institution=institution,
+            user=t_user,
+            employee_id="TCH-501",
+            phone="+8801750000001",
+            full_name_en="Mahbub Alam",
+            dob=date(1988, 5, 1),
+            joining_date=date(2020, 1, 1),
+            staff_type="teacher",
+        )
+
+        # 1. Assign teacher as Class Teacher to Section A
+        res_assign = client.post(
+            f"/api/v1/academics/sections/{sec_a.id}/assign-class-teacher/",
+            {"teacher_staff_id": str(teacher_staff.id)},
+            format="json",
+        )
+        assert res_assign.status_code == status.HTTP_200_OK
+        assert str(res_assign.data["teacher_staff"]) == str(teacher_staff.id)
+        assert res_assign.data["teacher_staff_name"] == "Mahbub Alam"
+        assert str(res_assign.data["teacher_user"]) == str(t_user.id)
+
+        sec_a.refresh_from_db()
+        assert sec_a.teacher_staff == teacher_staff
+        assert sec_a.teacher_user == t_user
+
+        # 2. Attempt assigning the same teacher to Section B in the SAME session -> 400 Bad Request
+        res_conflict = client.post(
+            f"/api/v1/academics/sections/{sec_b.id}/assign-class-teacher/",
+            {"teacher_staff_id": str(teacher_staff.id)},
+            format="json",
+        )
+        assert res_conflict.status_code == status.HTTP_400_BAD_REQUEST
+        details = str(res_conflict.data)
+        assert (
+            "already assigned as Class Teacher" in details
+            or "unique" in details
+            or "must make a unique set" in details
+        )
+
+        # 3. Create another session and verify assigning to another session succeeds
+        other_session = AcademicSession.objects.create(
+            institution=institution,
+            name="2027 Academic Session",
+            start_date=date(2027, 1, 1),
+            end_date=date(2027, 12, 31),
+        )
+        sec_2027 = Section.objects.create(
+            institution=institution,
+            class_level=cls,
+            shift=shift,
+            session=other_session,
+            name="Padma 2027",
+        )
+        res_other_sess = client.post(
+            f"/api/v1/academics/sections/{sec_2027.id}/assign-class-teacher/",
+            {"teacher_staff_id": str(teacher_staff.id)},
+            format="json",
+        )
+        assert res_other_sess.status_code == status.HTTP_200_OK
+        assert str(res_other_sess.data["teacher_staff"]) == str(teacher_staff.id)
+
+        # 4. Unassign / clear Class Teacher from Section A
+        res_clear = client.post(
+            f"/api/v1/academics/sections/{sec_a.id}/assign-class-teacher/",
+            {"teacher_staff_id": None},
+            format="json",
+        )
+        assert res_clear.status_code == status.HTTP_200_OK
+        assert res_clear.data["teacher_staff"] is None
+        assert res_clear.data["teacher_user"] is None
+
+        sec_a.refresh_from_db()
+        assert sec_a.teacher_staff is None
+        assert sec_a.teacher_user is None
+
+        # 5. Now that Section A is unassigned, assigning to Section B in the original session succeeds
+        res_reassign = client.post(
+            f"/api/v1/academics/sections/{sec_b.id}/assign-class-teacher/",
+            {"teacher_staff_id": str(teacher_staff.id)},
+            format="json",
+        )
+        assert res_reassign.status_code == status.HTTP_200_OK
+        assert str(res_reassign.data["teacher_staff"]) == str(teacher_staff.id)

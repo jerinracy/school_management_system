@@ -235,8 +235,8 @@
     "triggerToast": "টোস্ট দেখান"
   },
   "dashboard": {
-    "title": "প্রতিষ্ঠান সারসংক্ষেপ",
-    "subtitle": "একাডেমিক ওয়ার্কস্পেসের লাইভ সিস্টেম অবস্থা ও কার্যকারিতা।",
+    "title": "বিদ্যালয় ওভারভিউ",
+    "subtitle": "দৈনিক প্রাতিষ্ঠানিক নির্দেশক, উপস্থিতি ও কার্যক্রম।",
     "refresh": "রিফ্রেশ",
     "refreshing": "রিফ্রেশ হচ্ছে...",
     "lastChecked": "সর্বশেষ যাচাই",
@@ -244,7 +244,23 @@
       "apiStatus": "এপিআই গেটওয়ে",
       "database": "পোস্টগ্রেএসকিউএল",
       "redis": "রেডিস ক্যাশ",
-      "apiVersion": "কন্ট্র্যাক্ট সংস্করণ"
+      "apiVersion": "কন্ট্র্যাক্ট সংস্করণ",
+      "totalStudents": "মোট শিক্ষার্থী",
+      "morningShiftStudents": "সকালের শিফট শিক্ষার্থী",
+      "dayShiftStudents": "দিবা শিফট শিক্ষার্থী",
+      "totalTeachers": "শিক্ষক মণ্ডলী",
+      "totalOfficeStaff": "অফিস ও সহায়ক কর্মী",
+      "studentAttendanceRate": "শিক্ষার্থী উপস্থিতি",
+      "staffAttendanceRate": "কর্মী উপস্থিতি",
+      "totalClasses": "মোট শ্রেণি",
+      "totalSections": "মোট শাখা",
+      "activeEnrolled": "সক্রিয় শিক্ষার্থী",
+      "morningBadge": "সকাল শিফট",
+      "dayBadge": "দিবা শিফট",
+      "facultyBadge": "কর্মরত শিক্ষক",
+      "staffBadge": "প্রশাসন ও সহায়ক",
+      "presentToday": "আজ উপস্থিত",
+      "onDutyToday": "আজ দায়িত্বে উপস্থিত"
     },
     "states": {
       "ok": "সচল",
@@ -275,6 +291,43 @@
         "title": "ফি ও হিসাবরক্ষণ",
         "desc": "বিকাশ, নগদ, SSLCommerz ও দৈনিক ক্যাশবুক"
       }
+    },
+    "greetingMorning": "শুভ সকাল",
+    "greetingAfternoon": "শুভ অপরাহ্ন",
+    "greetingEvening": "শুভ সন্ধ্যা",
+    "todayLabel": "আজ",
+    "academicYear": "শিক্ষাবর্ষ",
+    "quickActions": {
+      "title": "দ্রুত কাজ",
+      "takeAttendance": "উপস্থিতি",
+      "newAdmission": "শিক্ষার্থী",
+      "collectFees": "ফি",
+      "weeklyRoutine": "রুটিন",
+      "staffDirectory": "কর্মী"
+    },
+    "attendance": {
+      "title": "আজকের উপস্থিতি",
+      "students": "শিক্ষার্থী",
+      "staff": "শিক্ষক ও কর্মী",
+      "present": "উপস্থিত",
+      "late": "বিলম্ব",
+      "absent": "অনুপস্থিত",
+      "leave": "ছুটি"
+    },
+    "structure": {
+      "title": "একাডেমিক কাঠামো",
+      "morningShift": "সকাল শিফট",
+      "dayShift": "দিবা শিফট",
+      "classes": "শ্রেণি",
+      "sections": "শাখা"
+    },
+    "system": {
+      "title": "সিস্টেম ও ডিভাইস",
+      "devices": "বায়োমেট্রিক ডিভাইস",
+      "devicesOnline": "টার্মিনাল সচল",
+      "upcomingExams": "আসন্ন পরীক্ষা",
+      "pendingApprovals": "পেন্ডিং আবেদন",
+      "health": "সিস্টেম অবস্থা"
     }
   },
   "placeholder": {
@@ -518,7 +571,7 @@
     "addClass": "নতুন শ্রেণি",
     "sectionsTitle": "শাখা ও আসন সক্ষমতা",
     "bulkCreateSectionsBtn": "একযোগে শাখা তৈরি",
-    "noSections": "এই শ্রেণির কোনো শাখা তৈরি করা হয়নি।",
+    "noSections": "কোনো শাখা নেই",
     "room": "কক্ষ",
     "capacity": "সক্ষমতা",
     "newClassTitle": "শ্রেণি তৈরি করুন",
@@ -534,7 +587,7 @@
     "loadClassesError": "শ্রেণি লোড করা যায়নি।",
     "subjectsTitle": "পাঠ্যবিষয় ও মূল্যায়ন কাঠামো",
     "subjectsSubtitle": "তত্ত্বীয়, ব্যবহারিক ও নৈর্বাচনিক বিষয়সমূহ ক্যাটালগভুক্ত করে শ্রেণিতে যুক্ত করুন।",
-    "selectClass": "শ্রেণি নির্বাচন করুন:",
+    "selectClass": "শ্রেণি নির্বাচন করুন",
     "addCatalogSubject": "মূল ক্যাটালগে বিষয় যোগ",
     "mapToClass": "এই শ্রেণিতে যুক্ত করুন",
     "mappedSubjectsList": "শ্রেণিতে পাঠদানকৃত বিষয়সমূহ:",
@@ -595,10 +648,8 @@
     "break": "বিরতি",
     "subject": "বিষয়",
     "day": "দিন",
-    "selectClass": "শ্রেণি নির্বাচন করুন",
     "selectSection": "শাখা নির্বাচন করুন",
     "selectPeriod": "পিরিয়ড নির্বাচন করুন",
-    "noSections": "কোনো শাখা নেই",
     "teacherOptional": "শিক্ষক (ঐচ্ছিক - পরে বরাদ্দ করুন)",
     "selectTeacher": "শিক্ষক নির্বাচন করুন...",
     "noneAssignLater": "কোনো শিক্ষক নয় (পরে বরাদ্দ করুন)",
@@ -672,7 +723,11 @@
     "routine": "সাপ্তাহিক ক্লাস রুটিন",
     "routineDesc": "সংঘর্ষমুক্ত রুটিন গ্রিড তৈরি করুন",
     "review": "পর্যালোচনা",
-    "configure": "কনফিগার"
+    "configure": "কনফিগার",
+    "of": "এর মধ্যে",
+    "completed": "মাইলফলক সম্পন্ন",
+    "hideSteps": "লুকান",
+    "viewSteps": "ধাপসমূহ দেখুন"
   },
   "students": {
     "officialCard": "প্রাতিষ্ঠানিক শিক্ষার্থী পরিচয়পত্র",

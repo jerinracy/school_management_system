@@ -46,7 +46,9 @@ def get_routine_for_teacher(
     weekday: int | None = None,
 ) -> QuerySet[RoutineSlot]:
     qs = get_routine_slots_queryset(institution_id).filter(
-        Q(teacher_user__id=teacher_user_id) | Q(teacher_staff__id=teacher_user_id)
+        Q(teacher_user__id=teacher_user_id)
+        | Q(teacher_staff__id=teacher_user_id)
+        | Q(teacher_staff__user__id=teacher_user_id)
     )
     if weekday is not None:
         qs = qs.filter(weekday=weekday)

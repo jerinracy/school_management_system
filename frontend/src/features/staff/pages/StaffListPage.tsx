@@ -1,17 +1,21 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Briefcase,
   ChevronDown,
   ChevronRight,
   Download,
+  Edit2,
   GraduationCap,
   Plus,
   RotateCcw,
   Search,
   ShieldCheck,
+  Smartphone,
+  Trash2,
   UserCheck,
   UserCog,
   Users,
@@ -30,6 +34,8 @@ import {
 import { staffApi, type StaffListItem } from "@/features/staff/api/staffApi";
 import { Can } from "@/features/auth/permissions";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { EditStaffDialog } from "@/features/staff/components/EditStaffDialog";
+import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
 
 type SectionKey = "ALL" | "SUPERADMIN" | "ADMIN" | "TEACHER" | "STAFF";
 
@@ -65,6 +71,23 @@ export function StaffListPage() {
       [key]: !prev[key],
     }));
   };
+
+  const queryClient = useQueryClient();
+  const [selectedStaffForEdit, setSelectedStaffForEdit] = useState<StaffListItem | null>(null);
+  const [selectedStaffForDelete, setSelectedStaffForDelete] = useState<StaffListItem | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => staffApi.deleteStaff(id),
+    onSuccess: () => {
+      toast.success(t("staff.deleteSuccess", "Employee record deleted successfully."));
+      void queryClient.invalidateQueries({ queryKey: ["staff"] });
+      void queryClient.invalidateQueries({ queryKey: ["staff-summary"] });
+      setSelectedStaffForDelete(null);
+    },
+    onError: (err: unknown) => {
+      toast.error((err as Error).message || "Failed to delete employee.");
+    },
+  });
 
   // Top KPI Summary Query (Single DB aggregate query)
   const { data: summaryData, isLoading: isSummaryLoading } = useQuery({
@@ -327,11 +350,18 @@ export function StaffListPage() {
                           >
                             {member.phone}
                           </a>
-                          {member.email && (
-                            <span className="text-slate-400 text-[10px] font-mono truncate block max-w-[150px]">
-                              {member.email}
-                            </span>
-                          )}
+                          <div className="mt-0.5">
+                            {member.has_portal_access || member.user_id ? (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
+                                <Smartphone className="h-2.5 w-2.5" />
+                                <span>{t("staff.appLoginActive", "App Active")}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                                <span>{t("staff.noAppLogin", "No App Login")}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
 
@@ -362,17 +392,42 @@ export function StaffListPage() {
 
                       {/* Actions */}
                       <td className="px-3.5 py-2.5 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            void navigate(`/staff/${member.id}`);
-                          }}
-                          className="h-7 px-2 text-[11px] text-emerald-800 dark:text-emerald-400 hover:text-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 rounded-md"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          <span>{t("common.view", "View")}</span>
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              void navigate(`/staff/${member.id}`);
+                            }}
+                            className="h-7 px-2 text-[11px] text-emerald-800 dark:text-emerald-400 hover:text-emerald-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 rounded-md"
+                            title={t("common.view", "View")}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            <span>{t("common.view", "View")}</span>
+                          </Button>
+
+                          <Can perm="staff.manage">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedStaffForEdit(member)}
+                              className="h-7 w-7 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md"
+                              title={t("common.edit", "Edit")}
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedStaffForDelete(member)}
+                              className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md"
+                              title={t("common.delete", "Delete")}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </Can>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -826,6 +881,36 @@ export function StaffListPage() {
             )}
         </div>
       )}
+
+      {/* Edit Staff Dialog */}
+      <EditStaffDialog
+        open={Boolean(selectedStaffForEdit)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStaffForEdit(null);
+        }}
+        staff={selectedStaffForEdit}
+      />
+
+      {/* Delete Staff Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(selectedStaffForDelete)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStaffForDelete(null);
+        }}
+        title={t("staff.deleteConfirmTitle", "Delete Employee Record")}
+        description={t(
+          "staff.deleteConfirmDesc",
+          "Are you sure you want to delete this employee? Their profile and portal access will be deactivated. This action can be restored by an administrator."
+        )}
+        destructive
+        loading={deleteMutation.isPending}
+        confirmLabel={t("common.delete", "Delete")}
+        onConfirm={() => {
+          if (selectedStaffForDelete) {
+            deleteMutation.mutate(selectedStaffForDelete.id);
+          }
+        }}
+      />
     </div>
   );
 }

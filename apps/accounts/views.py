@@ -81,7 +81,12 @@ class LoginView(APIView):
         user = None
         if validate_bd_phone(identifier):
             normalized_phone = normalize_bd_phone(identifier)
-            user = User.objects.filter(phone=normalized_phone).first()
+            user = (
+                User.objects.filter(phone=normalized_phone).first()
+                or User.objects.filter(username=identifier).first()
+                or User.objects.filter(username=normalized_phone).first()
+                or User.objects.filter(phone=identifier).first()
+            )
         else:
             user = User.objects.filter(username=identifier).first()
 

@@ -235,8 +235,8 @@
     "triggerToast": "Trigger Toast"
   },
   "dashboard": {
-    "title": "Institution Overview",
-    "subtitle": "Live system telemetry and operational readiness for the academic workspace.",
+    "title": "School Overview",
+    "subtitle": "Daily institutional metrics, attendance, and operational status.",
     "refresh": "Refresh",
     "refreshing": "Refreshing...",
     "lastChecked": "Last checked",
@@ -244,7 +244,23 @@
       "apiStatus": "API Gateway",
       "database": "PostgreSQL",
       "redis": "Redis Cache",
-      "apiVersion": "Contract Version"
+      "apiVersion": "Contract Version",
+      "totalStudents": "Total Students",
+      "morningShiftStudents": "Morning Shift Students",
+      "dayShiftStudents": "Day Shift Students",
+      "totalTeachers": "Teaching Faculty",
+      "totalOfficeStaff": "Office & Support Staff",
+      "studentAttendanceRate": "Student Attendance",
+      "staffAttendanceRate": "Staff Attendance",
+      "totalClasses": "Active Classes",
+      "totalSections": "Active Sections",
+      "activeEnrolled": "active enrollments",
+      "morningBadge": "Morning Shift",
+      "dayBadge": "Day Shift",
+      "facultyBadge": "Active Teachers",
+      "staffBadge": "Admin & Support",
+      "presentToday": "present today",
+      "onDutyToday": "on duty today"
     },
     "states": {
       "ok": "Operational",
@@ -275,6 +291,43 @@
         "title": "Fees & Accounting",
         "desc": "bKash, Nagad, SSLCommerz & daily cashbook"
       }
+    },
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "todayLabel": "Today",
+    "academicYear": "Academic Year",
+    "quickActions": {
+      "title": "Quick Actions",
+      "takeAttendance": "Take Attendance",
+      "newAdmission": "Students",
+      "collectFees": "Fees",
+      "weeklyRoutine": "Routine",
+      "staffDirectory": "Staff"
+    },
+    "attendance": {
+      "title": "Today's Attendance",
+      "students": "Students",
+      "staff": "Staff",
+      "present": "Present",
+      "late": "Late",
+      "absent": "Absent",
+      "leave": "Leave"
+    },
+    "structure": {
+      "title": "Academic Structure",
+      "morningShift": "Morning Shift",
+      "dayShift": "Day Shift",
+      "classes": "Classes",
+      "sections": "Sections"
+    },
+    "system": {
+      "title": "System & Terminals",
+      "devices": "Biometric Devices",
+      "devicesOnline": "terminals online",
+      "upcomingExams": "Upcoming Exams",
+      "pendingApprovals": "Pending Requests",
+      "health": "System Health"
     }
   },
   "placeholder": {
@@ -518,7 +571,7 @@
     "addClass": "New Class",
     "sectionsTitle": "Class Sections & Capacity",
     "bulkCreateSectionsBtn": "Batch Create Sections",
-    "noSections": "No sections configured for this class.",
+    "noSections": "No Sections",
     "room": "Room",
     "capacity": "Capacity",
     "newClassTitle": "Create Class Grade",
@@ -534,7 +587,7 @@
     "loadClassesError": "Failed to load classes.",
     "subjectsTitle": "Curriculum Subjects & Evaluation Components",
     "subjectsSubtitle": "Catalog theory, practical, and optional subjects and map them to grades with pass mark rules.",
-    "selectClass": "Select Class Grade:",
+    "selectClass": "Select Class",
     "addCatalogSubject": "Master Catalog Subject",
     "mapToClass": "Map to this Class",
     "mappedSubjectsList": "Subjects Taught in",
@@ -595,10 +648,8 @@
     "break": "Break",
     "subject": "Subject",
     "day": "Day",
-    "selectClass": "Select Class",
     "selectSection": "Select Section",
     "selectPeriod": "Select Period",
-    "noSections": "No Sections",
     "teacherOptional": "Teacher (Optional - Assign Later)",
     "selectTeacher": "Select teacher...",
     "noneAssignLater": "None (Assign Later)",
@@ -672,7 +723,11 @@
     "routine": "Weekly Class Routine & Timetable",
     "routineDesc": "Build conflict-checked timetable grid",
     "review": "Review",
-    "configure": "Configure"
+    "configure": "Configure",
+    "of": "of",
+    "completed": "milestones completed",
+    "hideSteps": "Hide",
+    "viewSteps": "View Steps"
   },
   "students": {
     "officialCard": "Institutional Student Identity Card",

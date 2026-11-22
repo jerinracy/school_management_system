@@ -2,11 +2,17 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowLeft,
+  Edit2,
+  Eye,
+  EyeOff,
   KeyRound,
   Plus,
   Search,
+  Smartphone,
+  Sparkles,
   Trash2,
   UserCheck,
 } from "lucide-react";
@@ -30,6 +36,9 @@ import {
 } from "@/components/ui/select";
 import { studentsApi, type GuardianItem } from "@/features/students/api/studentsApi";
 import { Can } from "@/features/auth/permissions";
+import { cn } from "@/lib/utils";
+import { EditGuardianDialog } from "@/features/students/components/EditGuardianDialog";
+import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
 import type { components } from "@/types/api";
 
 type RelationType = components["schemas"]["RelationEnum"];
@@ -61,6 +70,34 @@ export function GuardiansListPage() {
   const [nid, setNid] = useState("");
   const [occupation, setOccupation] = useState("");
   const [modalError, setModalError] = useState<string | null>(null);
+
+  // App Login inside Add Modal
+  const [givePortalAccess, setGivePortalAccess] = useState(false);
+  const [initialPassword, setInitialPassword] = useState("");
+  const [showInitialPassword, setShowInitialPassword] = useState(false);
+
+  // Manage / Reset Guardian Login Modal State
+  const [selectedGuardianForLogin, setSelectedGuardianForLogin] = useState<GuardianItem | null>(null);
+  const [manageLoginPhone, setManageLoginPhone] = useState("");
+  const [manageLoginPassword, setManageLoginPassword] = useState("");
+  const [showManageLoginPassword, setShowManageLoginPassword] = useState(false);
+  const [manageLoginError, setManageLoginError] = useState<string | null>(null);
+
+  // Edit & Delete State
+  const [selectedGuardianForEdit, setSelectedGuardianForEdit] = useState<GuardianItem | null>(null);
+  const [selectedGuardianForDelete, setSelectedGuardianForDelete] = useState<GuardianItem | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => studentsApi.deleteGuardian(id),
+    onSuccess: () => {
+      toast.success(t("guardians.deleteSuccess", "Guardian record deleted successfully."));
+      void queryClient.invalidateQueries({ queryKey: ["guardians"] });
+      setSelectedGuardianForDelete(null);
+    },
+    onError: (err: unknown) => {
+      toast.error((err as Error).message || "Failed to delete guardian.");
+    },
+  });
 
   // Student Linking inside Modal
   const [studentSearch, setStudentSearch] = useState("");
@@ -134,7 +171,27 @@ export function GuardiansListPage() {
     setOccupation("");
     setStudentSearch("");
     setSelectedStudents([]);
+    setGivePortalAccess(false);
+    setInitialPassword("");
     setModalError(null);
+  };
+
+  const handleGenerateGuardianPassword = () => {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%";
+    let pass = "";
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setInitialPassword(pass);
+  };
+
+  const handleGenerateManagePassword = () => {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%";
+    let pass = "";
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setManageLoginPassword(pass);
   };
 
   const createGuardianMutation = useMutation({
@@ -146,6 +203,8 @@ export function GuardiansListPage() {
         nid: nid || undefined,
         occupation: occupation || undefined,
         relation_default: selectedStudents[0]?.relation ?? "father",
+        give_portal_access: givePortalAccess,
+        initial_password: givePortalAccess ? initialPassword : undefined,
         student_links:
           selectedStudents.length > 0
             ? selectedStudents.map((s) => ({
@@ -168,11 +227,25 @@ export function GuardiansListPage() {
     },
   });
 
-  const portalAccountMutation = useMutation({
-    mutationFn: (guardianId: string) =>
-      studentsApi.createGuardianPortalAccount(guardianId),
+  const manageGuardianLoginMutation = useMutation({
+    mutationFn: () => {
+      if (!selectedGuardianForLogin) throw new Error("No guardian selected");
+      if (!manageLoginPassword || manageLoginPassword.length < 6) {
+        throw new Error("Password must be at least 6 characters.");
+      }
+      return studentsApi.createGuardianPortalAccount(selectedGuardianForLogin.id, {
+        phone: manageLoginPhone || undefined,
+        password: manageLoginPassword,
+      });
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["guardians"] });
+      setSelectedGuardianForLogin(null);
+      setManageLoginPassword("");
+      setManageLoginError(null);
+    },
+    onError: (err: unknown) => {
+      setManageLoginError((err as Error).message || "Failed to set guardian login credentials.");
     },
   });
 
@@ -289,8 +362,22 @@ export function GuardiansListPage() {
                       {currentLang === "bn" && g.name_bn ? g.name_bn : g.name_en}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono font-medium text-slate-700 dark:text-slate-300">
-                    {g.phone}
+                  <td className="px-4 py-3">
+                    <div className="font-mono font-medium text-slate-700 dark:text-slate-300">
+                      {g.phone}
+                    </div>
+                    <div className="mt-0.5">
+                      {g.has_portal_account ? (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
+                          <Smartphone className="h-2.5 w-2.5" />
+                          <span>{t("students.loginActive", "App Active")}</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                          <span>{t("students.noLogin", "No App Login")}</span>
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 font-mono text-slate-500">
                     {g.nid || "—"}
@@ -329,16 +416,51 @@ export function GuardiansListPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Can perm="students.manage">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => portalAccountMutation.mutate(g.id)}
-                        disabled={portalAccountMutation.isPending}
-                        className="h-8 gap-1 text-xs text-emerald-800 dark:text-emerald-400 hover:bg-emerald-50"
-                      >
-                        <KeyRound className="h-3.5 w-3.5" />
-                        <span>{t("students.portalAccount", "Portal Access")}</span>
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant={g.has_portal_account ? "ghost" : "default"}
+                          size="sm"
+                          onClick={() => {
+                            setSelectedGuardianForLogin(g);
+                            setManageLoginPhone(g.phone);
+                            setManageLoginPassword("");
+                            setManageLoginError(null);
+                          }}
+                          className={cn(
+                            "h-8 gap-1.5 text-xs rounded-lg",
+                            g.has_portal_account
+                              ? "text-emerald-800 dark:text-emerald-400 hover:bg-emerald-50"
+                              : "bg-emerald-800 hover:bg-emerald-900 text-white font-semibold"
+                          )}
+                        >
+                          <KeyRound className="h-3.5 w-3.5" />
+                          <span>
+                            {g.has_portal_account
+                              ? t("students.resetPassword", "Reset Password")
+                              : t("students.createLoginDetails", "Create Login Details")}
+                          </span>
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedGuardianForEdit(g)}
+                          className="h-8 w-8 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg"
+                          title={t("common.edit", "Edit")}
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedGuardianForDelete(g)}
+                          className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg"
+                          title={t("common.delete", "Delete")}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </Can>
                   </td>
                 </tr>
@@ -456,6 +578,81 @@ export function GuardiansListPage() {
                   className="h-9 text-xs rounded-lg"
                 />
               </FormField>
+            </div>
+
+            {/* Mobile App Login Credentials Section in Modal */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="h-4 w-4 text-emerald-800 dark:text-emerald-400" />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                      {t("students.appLoginSection", "Mobile App & Portal Login")}
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      {t("students.guardianAppLoginHelp", "Allow this guardian to log into the mobile app using their phone number.")}
+                    </p>
+                  </div>
+                </div>
+
+                <label className="inline-flex items-center gap-2 cursor-pointer select-none bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={givePortalAccess}
+                    onChange={(e) => setGivePortalAccess(e.target.checked)}
+                    className="h-3.5 w-3.5 rounded border-slate-300 text-emerald-800 focus:ring-emerald-700"
+                  />
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    {t("students.giveAppAccess", "Grant App Access (লগইন দিন)")}
+                  </span>
+                </label>
+              </div>
+
+              {givePortalAccess && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                  <div>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                      {t("students.loginPhone", "Login Mobile Number")}
+                    </span>
+                    <div className="h-9 px-3 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center text-slate-700 dark:text-slate-300">
+                      {phone || t("students.enterPhoneAbove", "Enter mobile number above")}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                        {t("students.initialPassword", "Initial Password")} *
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleGenerateGuardianPassword}
+                        className="inline-flex items-center gap-1 text-[11px] text-emerald-800 dark:text-emerald-400 hover:underline font-medium"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        <span>{t("common.generate", "Auto Generate")}</span>
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showInitialPassword ? "text" : "password"}
+                        placeholder="Min. 6 characters"
+                        value={initialPassword}
+                        onChange={(e) => setInitialPassword(e.target.value)}
+                        className="h-9 text-xs rounded-lg pr-8 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowInitialPassword(!showInitialPassword)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        aria-label={showInitialPassword ? "Hide password" : "Show password"}
+                      >
+                        {showInitialPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Link Students Section */}
@@ -679,6 +876,156 @@ export function GuardiansListPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Manage / Reset Guardian App Login Dialog */}
+      <Dialog
+        open={Boolean(selectedGuardianForLogin)}
+        onOpenChange={(open) => !open && setSelectedGuardianForLogin(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-emerald-800 dark:text-emerald-400" />
+              <span>
+                {selectedGuardianForLogin?.has_portal_account
+                  ? t("students.resetGuardianPasswordTitle", "Reset Guardian App Password")
+                  : t("students.setupGuardianLoginTitle", "Setup Guardian Mobile App Login")}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {t(
+                "students.setupGuardianLoginDesc",
+                "Assign or update login credentials for this guardian to access the parent mobile app."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {manageLoginError && (
+            <div className="rounded-lg border border-danger/20 bg-danger/10 p-2.5 text-xs text-danger font-medium">
+              {manageLoginError}
+            </div>
+          )}
+
+          {selectedGuardianForLogin && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-3 text-xs border border-slate-200 dark:border-slate-700">
+                <span className="text-slate-400 block">{t("students.guardianName", "Guardian Name")}</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                  {selectedGuardianForLogin.name_en}
+                </span>
+              </div>
+
+              <FormField>
+                <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  {t("students.loginPhone", "Guardian Mobile Number (Login ID)")}
+                </FormLabel>
+                <Input
+                  placeholder="+8801XXXXXXXXX"
+                  value={manageLoginPhone}
+                  onChange={(e) => setManageLoginPhone(e.target.value)}
+                  className="h-9 text-xs font-mono rounded-lg"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {t("students.guardianPhoneLoginHint", "Guardian will use this phone number to sign in.")}
+                </p>
+              </FormField>
+
+              <FormField>
+                <div className="flex items-center justify-between">
+                  <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    {t("students.initialPassword", "Initial Password")}
+                  </FormLabel>
+                  <button
+                    type="button"
+                    onClick={handleGenerateManagePassword}
+                    className="inline-flex items-center gap-1 text-[11px] text-emerald-800 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>{t("common.generate", "Auto Generate")}</span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
+                    type={showManageLoginPassword ? "text" : "password"}
+                    placeholder="Min. 6 characters"
+                    value={manageLoginPassword}
+                    onChange={(e) => setManageLoginPassword(e.target.value)}
+                    className="h-9 text-xs rounded-lg pr-9 font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowManageLoginPassword(!showManageLoginPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    aria-label={showManageLoginPassword ? "Hide password" : "Show password"}
+                  >
+                    {showManageLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {t("students.guardianPasswordHint", "Guardian can use this initial password or change it in the mobile app.")}
+                </p>
+              </FormField>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedGuardianForLogin(null)}
+              className="text-xs rounded-lg"
+            >
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => manageGuardianLoginMutation.mutate()}
+              disabled={
+                manageGuardianLoginMutation.isPending ||
+                !manageLoginPassword ||
+                manageLoginPassword.length < 6
+              }
+              className="text-xs bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg"
+            >
+              {manageGuardianLoginMutation.isPending
+                ? t("common.saving", "Saving...")
+                : selectedGuardianForLogin?.has_portal_account
+                ? t("students.savePassword", "Update Password")
+                : t("students.createLoginBtn", "Create App Login")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Guardian Dialog */}
+      <EditGuardianDialog
+        open={Boolean(selectedGuardianForEdit)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedGuardianForEdit(null);
+        }}
+        guardian={selectedGuardianForEdit}
+      />
+
+      {/* Delete Guardian Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(selectedGuardianForDelete)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedGuardianForDelete(null);
+        }}
+        title={t("guardians.deleteConfirmTitle", "Delete Guardian Profile")}
+        description={t(
+          "guardians.deleteConfirmDesc",
+          "Are you sure you want to delete this guardian? Their profile and parent portal login will be deactivated. This action can be restored by an administrator."
+        )}
+        destructive
+        loading={deleteMutation.isPending}
+        confirmLabel={t("common.delete", "Delete")}
+        onConfirm={() => {
+          if (selectedGuardianForDelete) {
+            deleteMutation.mutate(selectedGuardianForDelete.id);
+          }
+        }}
+      />
     </div>
   );
 }

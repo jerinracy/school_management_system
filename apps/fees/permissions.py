@@ -17,7 +17,7 @@ CanRefundPayment = HasModulePermission("fees.refund")
 
 
 class CanViewInvoiceDetail(BasePermission):
-    """Allows staff with `fees.view` or the student/guardian whose invoice it is."""
+    """Allows staff with `fees.view` or the guardian of the student."""
 
     def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
         if not request.user or not request.user.is_authenticated:
@@ -30,12 +30,7 @@ class CanViewInvoiceDetail(BasePermission):
         if CanViewFees().has_permission(request, view):
             return True
 
-        # Check if student
-        stu_profile = getattr(request.user, "student_profile", None)
-        if stu_profile and getattr(obj, "student_id", None) == stu_profile.id:
-            return True
-
-        # Check if guardian of student
+        # Guardians of student can view
         guardians = (
             list(request.user.guardian_profiles.all())
             if hasattr(request.user, "guardian_profiles")

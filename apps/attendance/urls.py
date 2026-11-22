@@ -11,6 +11,7 @@ from apps.attendance.views import (
     MobileCheckinViewSet,
     PeriodAttendanceViewSet,
     PolicyAssignmentViewSet,
+    StudentLeaveRequestViewSet,
 )
 
 app_name = "attendance"
@@ -23,6 +24,7 @@ router.register("periods", PeriodAttendanceViewSet, basename="period")
 router.register("corrections", AttendanceCorrectionViewSet, basename="correction")
 router.register("events", AttendanceEventViewSet, basename="event")
 router.register("mobile-checkin", MobileCheckinViewSet, basename="mobile-checkin")
+router.register("student-leaves", StudentLeaveRequestViewSet, basename="student-leave")
 
 urlpatterns = [
     path("", include(router.urls)),

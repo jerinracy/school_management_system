@@ -181,10 +181,78 @@ class Section(TenantOwnedModel):
                 fields=["class_level", "shift", "session", "name"],
                 name="unique_section_per_class_shift_session",
             ),
+            models.UniqueConstraint(
+                fields=["session", "teacher_user"],
+                condition=models.Q(teacher_user__isnull=False),
+                name="unique_class_teacher_user_per_session",
+                violation_error_message="This teacher is already assigned as Class Teacher to another section in this academic session.",
+            ),
+            models.UniqueConstraint(
+                fields=["session", "teacher_staff"],
+                condition=models.Q(teacher_staff__isnull=False),
+                name="unique_class_teacher_staff_per_session",
+                violation_error_message="This teacher is already assigned as Class Teacher to another section in this academic session.",
+            ),
         ]
 
     def __str__(self) -> str:
         return f"{self.class_level.name} - {self.name} ({self.session.name})"
+
+    def _sync_and_validate_teachers(self) -> None:
+        """Bidirectional synchronization and session conflict check for class teachers."""
+        if self.teacher_staff_id and not self.teacher_user_id:
+            if getattr(self.teacher_staff, "user_id", None):
+                self.teacher_user = self.teacher_staff.user
+        elif self.teacher_user_id and not self.teacher_staff_id:
+            from apps.staff.models import Staff
+
+            stf = Staff.objects.filter(
+                institution_id=self.institution_id,
+                user_id=self.teacher_user_id,
+                is_deleted=False,
+            ).first()
+            if stf:
+                self.teacher_staff = stf
+
+        if self.teacher_staff_id and self.session_id:
+            conflict_staff = (
+                Section.objects.filter(
+                    session_id=self.session_id,
+                    teacher_staff_id=self.teacher_staff_id,
+                )
+                .exclude(pk=self.pk)
+                .select_related("class_level")
+                .first()
+            )
+            if conflict_staff:
+                raise ValidationError(
+                    {
+                        "teacher_staff": (
+                            f"This teacher is already assigned as Class Teacher for "
+                            f"{conflict_staff.class_level.name} - {conflict_staff.name} in this session."
+                        )
+                    }
+                )
+
+        if self.teacher_user_id and self.session_id:
+            conflict = (
+                Section.objects.filter(
+                    session_id=self.session_id,
+                    teacher_user_id=self.teacher_user_id,
+                )
+                .exclude(pk=self.pk)
+                .select_related("class_level")
+                .first()
+            )
+            if conflict:
+                raise ValidationError(
+                    {
+                        "teacher_user": (
+                            f"This teacher is already assigned as Class Teacher for "
+                            f"{conflict.class_level.name} - {conflict.name} in this session."
+                        )
+                    }
+                )
 
     def clean(self) -> None:
         super().clean()
@@ -196,6 +264,8 @@ class Section(TenantOwnedModel):
             raise ValidationError({"shift": "Shift must belong to the same institution."})
         if self.session_id and self.session.institution_id != self.institution_id:
             raise ValidationError({"session": "Session must belong to the same institution."})
+
+        self._sync_and_validate_teachers()
 
 
 class Subject(TenantOwnedModel):

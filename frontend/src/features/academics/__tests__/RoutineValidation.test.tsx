@@ -174,8 +174,28 @@ describe("RoutineBuilderPage & Conflict Pre-Check", () => {
     );
 
     expect(screen.getByText("Sunday")).toBeInTheDocument();
-    expect(screen.getByText("Dr. Rahman")).toBeInTheDocument();
+    expect(screen.getAllByText("Dr. Rahman").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Science Lab 201")).toBeInTheDocument();
+    expect(screen.getByText(/Class Teacher \(Section Supervisor\)/i)).toBeInTheDocument();
+  });
+
+  it("renders Class Teacher supervisor banner and allows opening assignment modal", async () => {
+    renderRoutinePage();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Class Teacher \(Section Supervisor\)/i)).toBeInTheDocument();
+    });
+
+    const assignTeacherBtn = screen.getByRole("button", { name: /Class Teacher/i });
+    expect(assignTeacherBtn).toBeInTheDocument();
+    await userEvent.click(assignTeacherBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Assign Section Class Teacher/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/A teacher can only be assigned as Class Teacher to ONE section per session/i)
+      ).toBeInTheDocument();
+    });
   });
 
   it("triggers conflict validation pre-check and renders warnings and errors", async () => {

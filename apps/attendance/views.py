@@ -1,6 +1,6 @@
 """API ViewSets for attendance policies, daily records, period tracking, corrections, and mobile check-ins."""
 
-from datetime import date
+from datetime import date, timedelta
 from typing import Any, cast
 
 from django.db.models import Count, Q, Sum
@@ -26,6 +26,9 @@ from apps.attendance.models import (
     PeriodAttendance,
     PolicyAssignment,
     PunchDirection,
+    StudentLeaveApplicantType,
+    StudentLeaveRequest,
+    StudentLeaveStatus,
 )
 from apps.attendance.permissions import (
     CanApproveCorrection,
@@ -49,6 +52,8 @@ from apps.attendance.serializers import (
     PolicySimulateRequestSerializer,
     PolicySimulateResultSerializer,
     RecomputeAttendanceRequestSerializer,
+    StudentLeaveDecisionSerializer,
+    StudentLeaveRequestSerializer,
 )
 from apps.attendance.services import (
     decide_attendance_correction,
@@ -144,7 +149,7 @@ class DailyAttendanceViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewSet):
     )
     serializer_class = DailyAttendanceSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["date", "user_type", "status", "is_overridden"]
+    filterset_fields = ["date", "user_type", "status", "is_overridden", "student", "staff"]
     search_fields = [
         "student__name_en",
         "student__student_id",
@@ -156,7 +161,9 @@ class DailyAttendanceViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_permissions(self) -> list[Any]:
         if self.action in ["list", "retrieve", "staff_summary"]:
-            return [permissions.IsAuthenticated(), (CanViewAttendance | CanManageAttendance)()]
+            return [permissions.IsAuthenticated()]
+        if self.action == "bulk_manual":
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticated(), CanManageAttendance()]
 
     @action(detail=False, methods=["post"], url_path="bulk-manual")
@@ -166,6 +173,26 @@ class DailyAttendanceViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewSet):
         serializer = BulkManualAttendanceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+
+        if getattr(request.user, "user_type", "") == "teacher":
+            # If a teacher is submitting student attendance, verify they are the designated Class Teacher
+            student_ids = [r["student_id"] for r in data.get("records", []) if "student_id" in r]
+            if student_ids:
+                from apps.academics.models import Section
+
+                sections = Section.objects.filter(
+                    enrollments__student_id__in=student_ids,
+                    enrollments__status="active",
+                ).distinct()
+                for sec in sections:
+                    if (
+                        sec.teacher_user_id != request.user.id
+                        and getattr(sec.teacher_staff, "user_id", None) != request.user.id
+                    ):
+                        raise PermissionDenied(
+                            f"You are not the designated Class Teacher for section {sec.class_level.name} - {sec.name}. "
+                            f"Only the designated Class Teacher can take daily attendance for this section."
+                        )
 
         records = submit_manual_attendance(
             institution=institution,
@@ -470,4 +497,193 @@ class MobileCheckinViewSet(
                 "event_id": str(event.id) if event else None,
             },
             status=resp_status,
+        )
+
+
+class StudentLeaveRequestViewSet(TenantScopedMixin, viewsets.ModelViewSet):
+    """Student leave application management submitted by Guardian or Student, reviewed by Class Teacher."""
+
+    queryset = StudentLeaveRequest.objects.select_related(
+        "student",
+        "enrollment",
+        "section",
+        "section__class_level",
+        "session",
+        "applied_by",
+        "reviewed_by",
+    ).all()
+    serializer_class = StudentLeaveRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = [
+        "status",
+        "section",
+        "student",
+        "start_date",
+        "end_date",
+        "applicant_type",
+    ]
+    search_fields = ["student__name_en", "student__name_bn", "reason"]
+    ordering_fields = ["created_at", "start_date", "status"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        user = self.request.user
+        if not user.is_authenticated:
+            return qs.none()
+
+        # If teacher: show leaves for sections where user is the Class Teacher
+        if getattr(user, "user_type", "") == "teacher":
+            qs = qs.filter(Q(section__teacher_user=user) | Q(section__teacher_staff__user=user))
+        # If guardian: show leaves for their linked wards
+        elif getattr(user, "user_type", "") == "guardian":
+            qs = qs.filter(student__guardians__guardian__user=user)
+        # If student: show leaves for themselves
+        elif getattr(user, "user_type", "") == "student":
+            qs = qs.filter(student__user=user)
+        # Otherwise (management, admin): see all in institution
+        return qs
+
+    def perform_create(self, serializer: Any) -> None:
+        user = self.request.user
+        inst = _get_request_institution(self.request)
+        student = serializer.validated_data.get("student")
+
+        applicant_type = (
+            StudentLeaveApplicantType.STUDENT
+            if getattr(user, "user_type", "") == "student"
+            else StudentLeaveApplicantType.GUARDIAN
+        )
+
+        enrollment = serializer.validated_data.get("enrollment")
+        section = serializer.validated_data.get("section")
+        session = serializer.validated_data.get("session")
+
+        if not enrollment and student:
+            enrollment = student.enrollments.filter(status="active").first()
+        if not section and enrollment:
+            section = enrollment.section
+        if not session and enrollment:
+            session = enrollment.session
+
+        start = serializer.validated_data.get("start_date")
+        end = serializer.validated_data.get("end_date")
+        days = (end - start).days + 1 if (start and end and end >= start) else 1
+
+        leave_req = serializer.save(
+            institution=inst,
+            applied_by=user,
+            applicant_type=applicant_type,
+            enrollment=enrollment,
+            section=section,
+            session=session,
+            days_count=days,
+        )
+
+        # If student submitted, automatically notify linked guardian(s)
+        if applicant_type == StudentLeaveApplicantType.STUDENT and student:
+            try:
+                from apps.communications.models import NotificationEvent
+                from apps.guardians.models import StudentGuardian
+
+                guardians = StudentGuardian.objects.filter(student=student).select_related(
+                    "guardian__user"
+                )
+                for _sg in guardians:
+                    NotificationEvent.objects.create(
+                        institution=inst,
+                        event_type="attendance_alert",
+                        title="Student Leave Application Alert",
+                        body=(
+                            f"Your child {student.full_name_en} has submitted a leave application "
+                            f"from {start} to {end}. Reason: {leave_req.reason}"
+                        ),
+                        priority="high",
+                        recipient_count=1,
+                        data={
+                            "leave_request_id": str(leave_req.id),
+                            "student_id": str(student.id),
+                            "action": "student_leave_submitted",
+                        },
+                    )
+                leave_req.guardian_notified = True
+                leave_req.save(update_fields=["guardian_notified"])
+            except Exception:
+                pass
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request: Request, pk: str | None = None) -> Response:
+        leave_req = self.get_object()
+        user = request.user
+        if getattr(user, "user_type", "") == "teacher":
+            is_class_teacher = leave_req.section and (
+                leave_req.section.teacher_user_id == user.id
+                or getattr(leave_req.section.teacher_staff, "user_id", None) == user.id
+            )
+            if not is_class_teacher:
+                raise PermissionDenied(
+                    "Only the designated Class Teacher of this section can approve this leave."
+                )
+
+        serializer = StudentLeaveDecisionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        remarks = serializer.validated_data.get("remarks", "")
+
+        leave_req.status = StudentLeaveStatus.APPROVED
+        leave_req.reviewed_by = user
+        leave_req.reviewed_at = timezone.now()
+        leave_req.reviewer_remarks = remarks
+        leave_req.save(update_fields=["status", "reviewed_by", "reviewed_at", "reviewer_remarks"])
+
+        # Automatically mark DailyAttendance for the date range
+        try:
+            curr = leave_req.start_date
+            while curr <= leave_req.end_date:
+                DailyAttendance.objects.update_or_create(
+                    institution=leave_req.institution,
+                    student=leave_req.student,
+                    date=curr,
+                    defaults={
+                        "user_type": "student",
+                        "status": AttendanceStatus.LEAVE,
+                        "remarks": f"Approved leave: {leave_req.reason}",
+                    },
+                )
+                curr += timedelta(days=1)
+        except Exception:
+            pass
+
+        return Response(
+            StudentLeaveRequestSerializer(leave_req).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request: Request, pk: str | None = None) -> Response:
+        leave_req = self.get_object()
+        user = request.user
+        if getattr(user, "user_type", "") == "teacher":
+            is_class_teacher = leave_req.section and (
+                leave_req.section.teacher_user_id == user.id
+                or getattr(leave_req.section.teacher_staff, "user_id", None) == user.id
+            )
+            if not is_class_teacher:
+                raise PermissionDenied(
+                    "Only the designated Class Teacher of this section can reject this leave."
+                )
+
+        serializer = StudentLeaveDecisionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        remarks = serializer.validated_data.get("remarks", "")
+
+        leave_req.status = StudentLeaveStatus.REJECTED
+        leave_req.reviewed_by = user
+        leave_req.reviewed_at = timezone.now()
+        leave_req.reviewer_remarks = remarks
+        leave_req.save(update_fields=["status", "reviewed_by", "reviewed_at", "reviewer_remarks"])
+
+        return Response(
+            StudentLeaveRequestSerializer(leave_req).data,
+            status=status.HTTP_200_OK,
         )

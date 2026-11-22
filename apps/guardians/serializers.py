@@ -88,6 +88,8 @@ class GuardianSerializer(serializers.ModelSerializer):
     phone = serializers.CharField()
     alt_phone = serializers.CharField(required=False, allow_blank=True)
     has_portal_account = serializers.SerializerMethodField()
+    give_portal_access = serializers.BooleanField(required=False, default=False, write_only=True)
+    initial_password = serializers.CharField(required=False, allow_blank=True, write_only=True)
     student_links = StudentLinkInputSerializer(many=True, required=False, write_only=True)
     student_relations = StudentGuardianSerializer(many=True, read_only=True)
 
@@ -113,6 +115,8 @@ class GuardianSerializer(serializers.ModelSerializer):
             "is_emergency_contact",
             "student_links",
             "student_relations",
+            "give_portal_access",
+            "initial_password",
             "created_at",
             "updated_at",
         ]
@@ -138,6 +142,8 @@ class GuardianSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data: dict[str, Any]) -> Guardian:
+        give_portal = validated_data.pop("give_portal_access", False)
+        initial_password = validated_data.pop("initial_password", None)
         student_links_data = validated_data.pop("student_links", [])
         guardian = super().create(validated_data)
         institution = guardian.institution
@@ -161,6 +167,56 @@ class GuardianSerializer(serializers.ModelSerializer):
                         receives_sms=link_data.get("receives_sms", True),
                         financial_responsible=link_data.get("financial_responsible", False),
                     )
+
+        if give_portal:
+            from apps.guardians.services.guardian_service import create_portal_user_for_guardian
+
+            create_portal_user_for_guardian(
+                guardian, password=initial_password, phone=guardian.phone
+            )
+
+        return guardian
+
+    @transaction.atomic
+    def update(self, instance: Guardian, validated_data: dict[str, Any]) -> Guardian:
+        give_portal = validated_data.pop("give_portal_access", False)
+        initial_password = validated_data.pop("initial_password", None)
+        student_links_data = validated_data.pop("student_links", None)
+
+        old_phone = instance.phone
+        guardian = super().update(instance, validated_data)
+
+        # Sync phone with linked user if changed
+        if guardian.user and guardian.phone and guardian.phone != old_phone:
+            guardian.user.phone = guardian.phone
+            guardian.user.save(update_fields=["phone"])
+
+        if student_links_data is not None and guardian.institution:
+            from apps.guardians.services.guardian_service import link_student_guardian
+
+            for link_data in student_links_data:
+                student = Student.objects.filter(
+                    id=link_data["student_id"],
+                    institution=guardian.institution,
+                ).first()
+                if student:
+                    link_student_guardian(
+                        institution=guardian.institution,
+                        student=student,
+                        guardian=guardian,
+                        relation=link_data.get("relation", guardian.relation_default),
+                        is_primary=link_data.get("is_primary", False),
+                        can_pickup=link_data.get("can_pickup", True),
+                        receives_sms=link_data.get("receives_sms", True),
+                        financial_responsible=link_data.get("financial_responsible", False),
+                    )
+
+        if give_portal and not guardian.user:
+            from apps.guardians.services.guardian_service import create_portal_user_for_guardian
+
+            create_portal_user_for_guardian(
+                guardian, password=initial_password, phone=guardian.phone
+            )
 
         return guardian
 
@@ -278,7 +334,19 @@ class MyChildrenSerializer(serializers.Serializer):
             return {
                 "session_name": latest.session.name,
                 "class_name": latest.class_level.name,
+                "class_level_id": str(latest.class_level.id) if latest.class_level else None,
                 "section_name": latest.section.name,
+                "section_id": str(latest.section.id) if latest.section else None,
                 "roll_no": latest.roll_no,
             }
         return None
+
+
+class GuardianAssignLoginSerializer(serializers.Serializer):
+    phone = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(min_length=6, required=False, allow_blank=True)
+
+    def validate_phone(self, value: str) -> str:
+        if value:
+            return normalize_bd_phone(value)
+        return value

@@ -143,6 +143,21 @@ export const studentsApi = {
     return checkResponse(res);
   },
 
+  async updateGuardian(id: string, data: Partial<GuardianCreateInput>) {
+    const res = await apiClient.PATCH("/api/v1/guardians/guardians/{id}/", {
+      params: { path: { id } },
+      body: data as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteGuardian(id: string) {
+    const res = await apiClient.DELETE("/api/v1/guardians/guardians/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
+  },
+
   async linkGuardian(guardianId: string, data: LinkStudentInput) {
     const res = await apiClient.POST("/api/v1/guardians/guardians/{id}/link-student/", {
       params: { path: { id: guardianId } },
@@ -159,12 +174,20 @@ export const studentsApi = {
     return checkResponse(res);
   },
 
-  async createGuardianPortalAccount(guardianId: string) {
+  async assignStudentLogin(studentId: string, data: { phone?: string; password: string }) {
+    const res = await apiClient.POST("/api/v1/students/{id}/assign-login/", {
+      params: { path: { id: studentId } },
+      body: data,
+    });
+    return checkResponse(res);
+  },
+
+  async createGuardianPortalAccount(guardianId: string, data?: { phone?: string; password?: string }) {
     const res = await apiClient.POST(
       "/api/v1/guardians/guardians/{id}/create-portal-account/",
       {
         params: { path: { id: guardianId } },
-        body: {} as never,
+        body: (data || {}) as never,
       },
     );
     return checkResponse(res);

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Eye, EyeOff, KeyRound } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Smartphone, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,16 @@ export function StaffCreatePage() {
   const isSuperAdmin = currentUser?.user_type === "superadmin" || currentUser?.user_type === "super_admin";
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleGenerateStaffPassword = () => {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%";
+    let pass = "";
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    form.setValue("portal_password", pass, { shouldValidate: true });
+    form.setValue("portal_password_confirm", pass, { shouldValidate: true });
+  };
 
   const form = useForm<StaffCreateFormData>({
     resolver: zodResolver(staffCreateSchema) as never,
@@ -536,19 +546,19 @@ export function StaffCreatePage() {
           </div>
         </div>
 
-        {/* Section 6: Portal Login & Security Access */}
+        {/* Section 6: Mobile App & Portal Login */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-800 dark:text-emerald-300">
-                <KeyRound className="h-4 w-4" />
+                <Smartphone className="h-4 w-4" />
               </div>
               <div>
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-                  {t("staff.portalAccessSection", "Portal & System Login Access")}
+                  {t("staff.portalAccessSection", "Mobile App & Portal Login Access")}
                 </h2>
                 <p className="text-[11px] text-slate-500">
-                  {t("staff.portalAccessSectionSubtitle", "Create login credentials for dashboard access.")}
+                  {t("staff.portalAccessSectionSubtitle", "Create login credentials for mobile app and web dashboard access.")}
                 </p>
               </div>
             </div>
@@ -561,7 +571,7 @@ export function StaffCreatePage() {
                 className="h-4 w-4 rounded border-slate-300 text-emerald-800 focus:ring-emerald-700"
               />
               <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                {t("staff.givePortalAccess", "Grant Portal Login Access (লগইন দিন)")}
+                {t("staff.givePortalAccess", "Grant Mobile App & Portal Access (লগইন দিন)")}
               </span>
             </label>
           </div>
@@ -570,22 +580,32 @@ export function StaffCreatePage() {
             <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField>
                 <FormLabel className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                  {t("staff.portalUsername", "Portal Username")}
+                  {t("staff.portalUsername", "Login Mobile Number / Username")}
                 </FormLabel>
                 <Input
-                  placeholder={form.watch("phone") || "Username (leave blank for Phone)"}
+                  placeholder={form.watch("phone") || "Mobile Phone Number"}
                   className="h-9 text-xs rounded-lg font-mono"
                   {...form.register("portal_username")}
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  {t("staff.usernameHint", "Defaults to Employee ID or Phone if blank")}
+                  {t("staff.usernameHint", "Defaults to Employee Phone number")}
                 </p>
               </FormField>
 
               <FormField>
-                <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                  {t("staff.portalPassword", "Login Password")}
-                </FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    {t("staff.portalPassword", "Initial Password")}
+                  </FormLabel>
+                  <button
+                    type="button"
+                    onClick={handleGenerateStaffPassword}
+                    className="inline-flex items-center gap-1 text-[11px] text-emerald-800 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>{t("common.generate", "Auto Generate")}</span>
+                  </button>
+                </div>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}

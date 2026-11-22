@@ -88,28 +88,39 @@ def create_or_update_guardian(
 
 def create_portal_user_for_guardian(
     guardian: Guardian,
+    password: str | None = None,
+    phone: str | None = None,
 ) -> tuple[User, str]:
     """Create or link a user account for the guardian and send access credentials via SMS."""
-    temp_password = secrets.token_urlsafe(8)
+    final_password = password.strip() if password and password.strip() else secrets.token_urlsafe(8)
+    target_phone = phone.strip() if phone and phone.strip() else guardian.phone
+
+    if target_phone and guardian.phone != target_phone:
+        guardian.phone = target_phone
+        guardian.save(update_fields=["phone"])
 
     with transaction.atomic():
         if guardian.user:
             user = guardian.user
-            user.set_password(temp_password)
-            user.save(update_fields=["password"])
+            if target_phone and user.phone != target_phone:
+                user.phone = target_phone
+            user.set_password(final_password)
+            user.must_change_password = False
+            user.save()
         else:
             user, created = User.objects.get_or_create(
-                phone=guardian.phone,
+                phone=target_phone,
                 institution=guardian.institution,
                 defaults={
-                    "username": guardian.phone,
+                    "username": target_phone,
                     "full_name": guardian.name_en[:150],
                     "email": guardian.email,
                     "user_type": UserType.GUARDIAN,
                 },
             )
-            user.set_password(temp_password)
-            user.save(update_fields=["password"])
+            user.set_password(final_password)
+            user.must_change_password = False
+            user.save()
 
             guardian.user = user
             guardian.save(update_fields=["user"])
@@ -131,15 +142,15 @@ def create_portal_user_for_guardian(
     institution_name = getattr(guardian.institution, "name_en", "School")
     message = (
         f"Welcome to {institution_name} Parent Portal! "
-        f"Login: {guardian.phone} | Password: {temp_password}"
+        f"Login: {target_phone} | Password: {final_password}"
     )
     try:
         sms_service = get_sms_service()
-        sms_service.send_sms(guardian.phone, message)
+        sms_service.send_sms(target_phone, message)
     except Exception as exc:  # pragma: no cover
-        logger.warning("Failed to send portal credentials SMS to %s: %s", guardian.phone, exc)
+        logger.warning("Failed to send portal credentials SMS to %s: %s", target_phone, exc)
 
-    return user, temp_password
+    return user, final_password
 
 
 def link_student_guardian(

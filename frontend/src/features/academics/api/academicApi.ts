@@ -78,6 +78,22 @@ export const academicApi = {
     return checkResponse(res);
   },
 
+  async updateSection(id: string, payload: { teacher_staff?: string | null; teacher_user?: string | null; name?: string; capacity?: number }) {
+    const res = await apiClient.PATCH("/api/v1/academics/sections/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async assignClassTeacher(sectionId: string, payload: { teacher_staff_id?: string | null; teacher_user_id?: string | null }) {
+    const res = await apiClient.POST("/api/v1/academics/sections/{id}/assign-class-teacher/", {
+      params: { path: { id: sectionId } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
   async bulkCreateSections(payload: {
     class_id: string;
     names: string[];

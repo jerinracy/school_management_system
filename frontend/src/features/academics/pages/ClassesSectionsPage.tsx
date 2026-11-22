@@ -174,12 +174,29 @@ export function ClassesSectionsPage() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                 {sections.map((sec) => (
                   <div key={sec.id} className="rounded-md border border-border bg-canvas p-3 text-xs">
-                    <p className="font-semibold text-sm text-ink">{sec.name}</p>
-                    <p className="mt-1 text-[11px] text-ink-muted">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-sm text-ink">{sec.name}</p>
+                      {sec.teacher_staff_name || sec.teacher_name ? (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                          {sec.teacher_staff_name || sec.teacher_name}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                          {t("academics.noTeacher", "No Teacher")}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-ink-muted">
                       {t("academics.shift", "Shift")}: <span className="font-mono font-medium text-ink">{sec.shift_name || "—"}</span>
                     </p>
                     <p className="text-[11px] text-ink-muted">
                       {t("academics.capacity", "Capacity")}: <span className="font-mono font-medium text-ink">{sec.capacity || 50}</span>
+                    </p>
+                    <p className="text-[11px] text-ink-muted mt-0.5">
+                      {t("academics.classTeacher", "Class Teacher")}:{" "}
+                      <span className="font-medium text-ink">
+                        {sec.teacher_staff_name || sec.teacher_name || t("academics.unassigned", "Unassigned")}
+                      </span>
                     </p>
                   </div>
                 ))}

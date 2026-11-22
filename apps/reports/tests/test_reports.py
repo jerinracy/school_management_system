@@ -130,6 +130,13 @@ def test_dashboard_kpis_and_role_variants(reports_env):
     assert resp.data["attendance"]["student"]["present"] == 1
     assert resp.data["devices"]["online"] == 1
     assert resp.data["finance"]["collected_today"] == "1500.00"
+    assert "headcount" in resp.data
+    assert "total_students" in resp.data["headcount"]
+    assert "total_teachers" in resp.data["headcount"]
+    assert "morning_shift_students" in resp.data["headcount"]
+    assert "day_shift_students" in resp.data["headcount"]
+    assert "attendance_rates" in resp.data
+    assert "student_present_pct" in resp.data["attendance_rates"]
 
     # Teacher gets attendance/devices KPIs but NOT financial KPIs
     teacher_client = APIClient()

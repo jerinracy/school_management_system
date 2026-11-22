@@ -565,6 +565,29 @@ export interface paths {
         patch: operations["academics_sections_partial_update"];
         trace?: never;
     };
+    "/api/v1/academics/sections/{id}/assign-class-teacher/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign or change Class Teacher for a section
+         * @description Mixin for DRF ViewSets ensuring strict tenant data isolation.
+         *
+         *     1. Filters get_queryset() to only return objects belonging to the current user's institution.
+         *     2. Automatically assigns request.user.institution on perform_create().
+         */
+        post: operations["academics_sections_assign_class_teacher_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/academics/sections/{id}/timetable/": {
         parameters: {
             query?: never;
@@ -2418,6 +2441,78 @@ export interface paths {
         put?: never;
         /** @description Dry-run policy evaluation on sample punch timestamps. */
         post: operations["attendance_policies_simulate_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/student-leaves/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        get: operations["attendance_student_leaves_list"];
+        put?: never;
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        post: operations["attendance_student_leaves_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/student-leaves/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        get: operations["attendance_student_leaves_retrieve"];
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        put: operations["attendance_student_leaves_update"];
+        post?: never;
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        delete: operations["attendance_student_leaves_destroy"];
+        options?: never;
+        head?: never;
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        patch: operations["attendance_student_leaves_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/attendance/student-leaves/{id}/approve/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        post: operations["attendance_student_leaves_approve_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/attendance/student-leaves/{id}/reject/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Student leave application management submitted by Guardian or Student, reviewed by Class Teacher. */
+        post: operations["attendance_student_leaves_reject_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6026,7 +6121,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Generate and deliver login credentials for the Guardian portal. */
+        /**
+         * Assign or Reset Guardian App Login
+         * @description Generate, assign, or reset login credentials for the Guardian portal & mobile app.
+         */
         post: operations["guardians_guardians_create_portal_account_create"];
         delete?: never;
         options?: never;
@@ -9011,6 +9109,26 @@ export interface paths {
         patch: operations["payroll_profiles_partial_update"];
         trace?: never;
     };
+    "/api/v1/payroll/profiles/sync-roster/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Synchronize staff roster to salary profiles
+         * @description Creates baseline salary profiles for active school staff members who do not yet have one.
+         */
+        post: operations["payroll_profiles_sync_roster_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payroll/runs/": {
         parameters: {
             query?: never;
@@ -10673,6 +10791,26 @@ export interface paths {
          * @description Endpoints for student lifecycle management.
          */
         patch: operations["students_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/students/{id}/assign-login/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign or Reset Student App Login
+         * @description Endpoints for student lifecycle management.
+         */
+        post: operations["students_assign_login_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/students/{id}/id-card/": {
@@ -12358,6 +12496,12 @@ export interface components {
             is_published?: boolean;
             is_public_to_guardians?: boolean;
         };
+        /**
+         * @description * `guardian` - Guardian
+         *     * `student` - Student
+         * @enum {string}
+         */
+        ApplicantTypeEnum: "guardian" | "student";
         Application: {
             /** Format: uuid */
             readonly id: string;
@@ -12579,6 +12723,12 @@ export interface components {
          * @enum {string}
          */
         ApprovalStatusEnum: "pending" | "approved" | "rejected";
+        AssignClassTeacherRequest: {
+            /** Format: uuid */
+            teacher_staff_id?: string | null;
+            /** Format: uuid */
+            teacher_user_id?: string | null;
+        };
         /**
          * @description * `student` - Student
          *     * `staff` - Staff
@@ -14530,8 +14680,12 @@ export interface components {
             readonly student_name: string;
             readonly student_code: string;
             readonly roll_no: number;
-            readonly section_name: string;
+            /** Format: uuid */
+            readonly class_level: string;
             readonly class_level_name: string;
+            /** Format: uuid */
+            readonly section: string;
+            readonly section_name: string;
             /** Format: decimal */
             readonly total_marks: string;
             /** Format: decimal */
@@ -15412,6 +15566,10 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        GuardianAssignLoginRequest: {
+            phone?: string;
+            password?: string;
+        };
         /** @description Detailed guardian serializer embedding linked students. */
         GuardianDetail: {
             /** Format: uuid */
@@ -15483,6 +15641,9 @@ export interface components {
             /** @description Default emergency call contact flag */
             is_emergency_contact?: boolean;
             student_links?: components["schemas"]["StudentLinkInputRequest"][];
+            /** @default false */
+            give_portal_access: boolean;
+            initial_password?: string;
         };
         /** @description Serializer for Holiday. */
         Holiday: {
@@ -19481,6 +19642,21 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["StudentFeeAssignment"][];
         };
+        PaginatedStudentLeaveRequestList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["StudentLeaveRequest"][];
+        };
         PaginatedStudentListList: {
             /** @example 123 */
             count: number;
@@ -20638,6 +20814,9 @@ export interface components {
             /** @description Default emergency call contact flag */
             is_emergency_contact?: boolean;
             student_links?: components["schemas"]["StudentLinkInputRequest"][];
+            /** @default false */
+            give_portal_access: boolean;
+            initial_password?: string;
         };
         /** @description Serializer for Holiday. */
         PatchedHolidayRequest: {
@@ -21343,6 +21522,8 @@ export interface components {
             name?: string;
             /** @description Maximum student capacity */
             capacity?: number;
+            /** Format: uuid */
+            teacher_staff?: string | null;
             /**
              * Format: uuid
              * @description Class teacher user account reference
@@ -21485,6 +21666,7 @@ export interface components {
             name_en?: string;
             /** @description Full name in Bangla script. */
             name_bn?: string;
+            phone?: string;
             /**
              * Format: date
              * @description Date of birth.
@@ -21510,6 +21692,9 @@ export interface components {
             has_stipend?: boolean;
             emergency_contact_name?: string;
             emergency_contact_phone?: string;
+            /** @default false */
+            give_app_access: boolean;
+            initial_password?: string;
         };
         PatchedStudentEnrollmentCreateUpdateRequest: {
             /** Format: uuid */
@@ -21545,6 +21730,25 @@ export interface components {
             /** @description If True, student is 100% exempt from this fee head. */
             is_exempt?: boolean;
             notes?: string;
+        };
+        PatchedStudentLeaveRequestRequest: {
+            /** Format: uuid */
+            student?: string;
+            /** Format: uuid */
+            enrollment?: string | null;
+            /** Format: uuid */
+            section?: string | null;
+            /** Format: uuid */
+            session?: string | null;
+            /** Format: date */
+            start_date?: string;
+            /** Format: date */
+            end_date?: string;
+            reason_category?: string;
+            reason?: string;
+            /** Format: binary */
+            attachment?: string | null;
+            reviewer_remarks?: string;
         };
         PatchedStudentOptionalSubjectRequest: {
             /** Format: uuid */
@@ -23144,6 +23348,8 @@ export interface components {
             /** Format: uuid */
             section: string;
             readonly section_name: string;
+            /** Format: uuid */
+            readonly class_level: string;
             readonly class_level_name: string;
             /**
              * @description Day of the week (0=Saturday, 6=Friday)
@@ -23444,11 +23650,15 @@ export interface components {
             name: string;
             /** @description Maximum student capacity */
             capacity?: number;
+            /** Format: uuid */
+            teacher_staff?: string | null;
+            readonly teacher_staff_name: string;
+            readonly teacher_employee_id: string;
             /**
              * Format: uuid
              * @description Class teacher user account reference
              */
-            teacher_user?: string | null;
+            teacher_user: string | null;
             readonly teacher_name: string;
             /** Format: date-time */
             readonly created_at: string;
@@ -23466,11 +23676,13 @@ export interface components {
             name: string;
             /** @description Maximum student capacity */
             capacity?: number;
+            /** Format: uuid */
+            teacher_staff?: string | null;
             /**
              * Format: uuid
              * @description Class teacher user account reference
              */
-            teacher_user?: string | null;
+            teacher_user: string | null;
         };
         /** @description Serializer for ad-hoc manual SMS testing. */
         SendDirectSMSRequest: {
@@ -23770,6 +23982,7 @@ export interface components {
             readonly user_id: string;
             readonly user_type: string;
             readonly username: string;
+            readonly has_portal_access: boolean;
             /** @description Primary mobile number in normalized format (+8801XXXXXXXXX) */
             phone: string;
             /** Format: email */
@@ -24083,6 +24296,10 @@ export interface components {
          * @enum {string}
          */
         StatusDf7Enum: "draft" | "submitted" | "paid" | "shortlisted" | "test_scheduled" | "admitted" | "waitlisted" | "rejected" | "withdrawn";
+        StudentAssignLoginRequest: {
+            phone?: string;
+            password: string;
+        };
         StudentCreateUpdate: {
             /** Format: uuid */
             readonly id: string;
@@ -24091,6 +24308,7 @@ export interface components {
             name_en: string;
             /** @description Full name in Bangla script. */
             name_bn: string;
+            phone?: string;
             /**
              * Format: date
              * @description Date of birth.
@@ -24123,6 +24341,7 @@ export interface components {
             name_en: string;
             /** @description Full name in Bangla script. */
             name_bn: string;
+            phone?: string;
             /**
              * Format: date
              * @description Date of birth.
@@ -24148,6 +24367,9 @@ export interface components {
             has_stipend?: boolean;
             emergency_contact_name?: string;
             emergency_contact_phone?: string;
+            /** @default false */
+            give_app_access: boolean;
+            initial_password?: string;
         };
         StudentDetail: {
             /** Format: uuid */
@@ -24158,6 +24380,12 @@ export interface components {
             name_en: string;
             /** @description Full name in Bangla script. */
             name_bn: string;
+            /** @description Student's mobile number for app login (+8801XXXXXXXXX). */
+            phone?: string | null;
+            readonly has_app_account: boolean;
+            /** Format: uuid */
+            readonly user_id: string;
+            readonly login_phone: string;
             /**
              * Format: date
              * @description Date of birth.
@@ -24200,6 +24428,8 @@ export interface components {
             name_en: string;
             /** @description Full name in Bangla script. */
             name_bn: string;
+            /** @description Student's mobile number for app login (+8801XXXXXXXXX). */
+            phone?: string | null;
             /**
              * Format: date
              * @description Date of birth.
@@ -24262,6 +24492,15 @@ export interface components {
             readonly id: string;
             /** Format: uuid */
             student: string;
+            /** @default  */
+            readonly student_name_en: string;
+            /** @default  */
+            readonly student_name_bn: string;
+            /** @default  */
+            readonly student_id_number: string;
+            /** @default M */
+            readonly gender: string;
+            readonly avatar_url: string | null;
             /** Format: uuid */
             session: string;
             readonly session_name: string;
@@ -24469,6 +24708,78 @@ export interface components {
             /** Format: date-time */
             printed_at?: string | null;
         };
+        StudentLeaveRequest: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            student: string;
+            readonly student_name_en: string;
+            readonly student_name_bn: string;
+            /** @default  */
+            readonly student_roll: string;
+            /** @default  */
+            readonly class_name: string;
+            /** @default  */
+            readonly section_name: string;
+            /** Format: uuid */
+            enrollment?: string | null;
+            /** Format: uuid */
+            section?: string | null;
+            /** Format: uuid */
+            session?: string | null;
+            /** Format: uuid */
+            readonly applied_by: string;
+            readonly applicant_name: string;
+            readonly applicant_type: components["schemas"]["ApplicantTypeEnum"];
+            /** Format: date */
+            start_date: string;
+            /** Format: date */
+            end_date: string;
+            readonly days_count: number;
+            reason_category?: string;
+            reason: string;
+            /** Format: uri */
+            attachment?: string | null;
+            readonly status: components["schemas"]["StudentLeaveStatusEnum"];
+            /** Format: uuid */
+            readonly reviewed_by: string | null;
+            readonly reviewed_by_name: string;
+            reviewer_remarks?: string;
+            /** Format: date-time */
+            readonly reviewed_at: string | null;
+            readonly guardian_notified: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        StudentLeaveRequestRequest: {
+            /** Format: uuid */
+            student: string;
+            /** Format: uuid */
+            enrollment?: string | null;
+            /** Format: uuid */
+            section?: string | null;
+            /** Format: uuid */
+            session?: string | null;
+            /** Format: date */
+            start_date: string;
+            /** Format: date */
+            end_date: string;
+            reason_category?: string;
+            reason: string;
+            /** Format: binary */
+            attachment?: string | null;
+            reviewer_remarks?: string;
+        };
+        /**
+         * @description * `pending` - Pending
+         *     * `approved` - Approved
+         *     * `rejected` - Rejected
+         *     * `cancelled` - Cancelled
+         * @enum {string}
+         */
+        StudentLeaveStatusEnum: "pending" | "approved" | "rejected" | "cancelled";
         /** @description Input payload for linking a student during guardian creation/update. */
         StudentLinkInput: {
             /** Format: uuid */
@@ -24537,6 +24848,8 @@ export interface components {
             name_en: string;
             /** @description Full name in Bangla script. */
             name_bn: string;
+            /** @description Student's mobile number for app login (+8801XXXXXXXXX). */
+            phone?: string | null;
             gender: components["schemas"]["GenderEnum"];
             blood_group?: components["schemas"]["BloodGroup9d3Enum"];
             religion?: components["schemas"]["ReligionEnum"];
@@ -24546,6 +24859,9 @@ export interface components {
             readonly active_enrollment: {
                 [key: string]: unknown;
             } | null;
+            readonly has_app_account: boolean;
+            /** Format: uuid */
+            readonly user_id: string;
         };
         StudentOptionalSubject: {
             /** Format: uuid */
@@ -26867,6 +27183,34 @@ export interface operations {
                 "application/json": components["schemas"]["PatchedSectionRequest"];
                 "application/x-www-form-urlencoded": components["schemas"]["PatchedSectionRequest"];
                 "multipart/form-data": components["schemas"]["PatchedSectionRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Section"];
+                };
+            };
+        };
+    };
+    academics_sections_assign_class_teacher_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Section. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AssignClassTeacherRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AssignClassTeacherRequest"];
+                "multipart/form-data": components["schemas"]["AssignClassTeacherRequest"];
             };
         };
         responses: {
@@ -30021,6 +30365,7 @@ export interface operations {
                 page_size?: number;
                 /** @description A search term. */
                 search?: string;
+                staff?: string;
                 /**
                  * @description * `present` - Present (উপস্থিত)
                  *     * `late` - Late (বিলম্বিত)
@@ -30031,6 +30376,7 @@ export interface operations {
                  *     * `weekend` - Weekend (সাপ্তাহিক ছুটি)
                  */
                 status?: "absent" | "half_day" | "holiday" | "late" | "leave" | "present" | "weekend";
+                student?: string;
                 /**
                  * @description * `student` - Student
                  *     * `staff` - Staff
@@ -30641,6 +30987,230 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AttendancePolicy"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_list: {
+        parameters: {
+            query?: {
+                /**
+                 * @description * `guardian` - Guardian
+                 *     * `student` - Student
+                 */
+                applicant_type?: "guardian" | "student";
+                end_date?: string;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+                section?: string;
+                start_date?: string;
+                /**
+                 * @description * `pending` - Pending
+                 *     * `approved` - Approved
+                 *     * `rejected` - Rejected
+                 *     * `cancelled` - Cancelled
+                 */
+                status?: "approved" | "cancelled" | "pending" | "rejected";
+                student?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedStudentLeaveRequestList"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentLeaveRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentLeaveRequestRequest"];
+                "multipart/form-data": components["schemas"]["StudentLeaveRequestRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentLeaveRequest"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student leave request. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentLeaveRequest"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student leave request. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentLeaveRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentLeaveRequestRequest"];
+                "multipart/form-data": components["schemas"]["StudentLeaveRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentLeaveRequest"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student leave request. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    attendance_student_leaves_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student leave request. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedStudentLeaveRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStudentLeaveRequestRequest"];
+                "multipart/form-data": components["schemas"]["PatchedStudentLeaveRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentLeaveRequest"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_approve_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student leave request. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentLeaveRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentLeaveRequestRequest"];
+                "multipart/form-data": components["schemas"]["StudentLeaveRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentLeaveRequest"];
+                };
+            };
+        };
+    };
+    attendance_student_leaves_reject_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student leave request. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentLeaveRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentLeaveRequestRequest"];
+                "multipart/form-data": components["schemas"]["StudentLeaveRequestRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentLeaveRequest"];
                 };
             };
         };
@@ -39393,11 +39963,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
-                "application/json": components["schemas"]["GuardianRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["GuardianRequest"];
-                "multipart/form-data": components["schemas"]["GuardianRequest"];
+                "application/json": components["schemas"]["GuardianAssignLoginRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GuardianAssignLoginRequest"];
+                "multipart/form-data": components["schemas"]["GuardianAssignLoginRequest"];
             };
         };
         responses: {
@@ -45855,6 +46425,33 @@ export interface operations {
             };
         };
     };
+    payroll_profiles_sync_roster_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffSalaryProfileRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StaffSalaryProfileRequest"];
+                "multipart/form-data": components["schemas"]["StaffSalaryProfileRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     payroll_runs_list: {
         parameters: {
             query?: {
@@ -47001,6 +47598,8 @@ export interface operations {
     results_exam_results_list: {
         parameters: {
             query?: {
+                /** @description Filter student results by class level UUID */
+                class_level?: string;
                 exam?: string;
                 final_grade?: string;
                 is_passed?: boolean;
@@ -47012,6 +47611,8 @@ export interface operations {
                 page_size?: number;
                 /** @description A search term. */
                 search?: string;
+                /** @description Filter student results by section UUID */
+                section?: string;
                 /**
                  * @description * `draft` - Draft (Tabulating)
                  *     * `approved` - Approved by Head Teacher
@@ -49762,6 +50363,36 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentCreateUpdate"];
+                };
+            };
+        };
+    };
+    students_assign_login_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this student. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentAssignLoginRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["StudentAssignLoginRequest"];
+                "multipart/form-data": components["schemas"]["StudentAssignLoginRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };

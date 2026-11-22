@@ -3,6 +3,7 @@
 from decimal import Decimal
 from typing import Any
 
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -21,6 +22,7 @@ from apps.students.models import (
     TransferCertificate,
 )
 from apps.students.services.intake import generate_next_student_id
+from apps.students.services.student_service import create_portal_user_for_student
 
 
 class StudentEnrollmentBriefSerializer(serializers.ModelSerializer):
@@ -29,12 +31,35 @@ class StudentEnrollmentBriefSerializer(serializers.ModelSerializer):
     session_name = serializers.CharField(source="session.name", read_only=True)
     group_name = serializers.CharField(source="group.name", read_only=True, default=None)
     shift_name = serializers.CharField(source="shift.name", read_only=True, default=None)
+    student_name_en = serializers.CharField(source="student.name_en", read_only=True, default="")
+    student_name_bn = serializers.CharField(source="student.name_bn", read_only=True, default="")
+    student_id_number = serializers.CharField(
+        source="student.student_id", read_only=True, default=""
+    )
+    gender = serializers.CharField(source="student.gender", read_only=True, default="M")
+    avatar_url = serializers.SerializerMethodField(read_only=True)
+
+    def get_avatar_url(self, obj: StudentEnrollment) -> str | None:
+        if obj.student and getattr(obj.student, "photo", None):
+            try:
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(obj.student.photo.url)
+                return obj.student.photo.url
+            except Exception:
+                return None
+        return None
 
     class Meta:
         model = StudentEnrollment
         fields = [
             "id",
             "student",
+            "student_name_en",
+            "student_name_bn",
+            "student_id_number",
+            "gender",
+            "avatar_url",
             "session",
             "session_name",
             "class_level",
@@ -88,8 +113,50 @@ class StudentEnrollmentCreateUpdateSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class StudentLinkedGuardianSerializer(serializers.ModelSerializer):
+    """Serializer for a guardian linked to a student with demographic details."""
+
+    guardian_id = serializers.UUIDField(source="guardian.id", read_only=True)
+    name_en = serializers.CharField(source="guardian.name_en", read_only=True)
+    name_bn = serializers.CharField(source="guardian.name_bn", read_only=True)
+    phone = serializers.CharField(source="guardian.phone", read_only=True)
+    alt_phone = serializers.CharField(source="guardian.alt_phone", read_only=True)
+    email = serializers.EmailField(source="guardian.email", read_only=True)
+    nid = serializers.CharField(source="guardian.nid", read_only=True)
+    occupation = serializers.CharField(source="guardian.occupation", read_only=True)
+    present_address = serializers.CharField(source="guardian.present_address", read_only=True)
+    photo = serializers.FileField(source="guardian.photo", read_only=True)
+
+    class Meta:
+        model = StudentGuardian
+        fields = [
+            "id",
+            "guardian_id",
+            "name_en",
+            "name_bn",
+            "relation",
+            "phone",
+            "alt_phone",
+            "email",
+            "nid",
+            "occupation",
+            "present_address",
+            "photo",
+            "is_primary",
+            "can_pickup",
+            "receives_sms",
+            "financial_responsible",
+            "created_at",
+        ]
+
+
 class StudentListSerializer(serializers.ModelSerializer):
     active_enrollment = serializers.SerializerMethodField()
+    has_app_account = serializers.SerializerMethodField()
+    user_id = serializers.UUIDField(source="user.id", read_only=True, default=None)
+    guardians = StudentLinkedGuardianSerializer(
+        source="guardian_relations", many=True, read_only=True
+    )
 
     class Meta:
         model = Student
@@ -98,13 +165,21 @@ class StudentListSerializer(serializers.ModelSerializer):
             "student_id",
             "name_en",
             "name_bn",
+            "phone",
+            "photo",
             "gender",
             "blood_group",
             "religion",
             "status",
             "admission_date",
             "active_enrollment",
+            "has_app_account",
+            "user_id",
+            "guardians",
         ]
+
+    def get_has_app_account(self, obj: Student) -> bool:
+        return obj.user_id is not None
 
     def get_active_enrollment(self, obj: Student) -> dict[str, Any] | None:
         enrollment = (
@@ -162,44 +237,6 @@ class StudentIDCardSerializer(serializers.ModelSerializer):
         ]
 
 
-class StudentLinkedGuardianSerializer(serializers.ModelSerializer):
-    """Serializer for a guardian linked to a student with demographic details."""
-
-    guardian_id = serializers.UUIDField(source="guardian.id", read_only=True)
-    name_en = serializers.CharField(source="guardian.name_en", read_only=True)
-    name_bn = serializers.CharField(source="guardian.name_bn", read_only=True)
-    phone = serializers.CharField(source="guardian.phone", read_only=True)
-    alt_phone = serializers.CharField(source="guardian.alt_phone", read_only=True)
-    email = serializers.EmailField(source="guardian.email", read_only=True)
-    nid = serializers.CharField(source="guardian.nid", read_only=True)
-    occupation = serializers.CharField(source="guardian.occupation", read_only=True)
-    present_address = serializers.CharField(source="guardian.present_address", read_only=True)
-    photo = serializers.FileField(source="guardian.photo", read_only=True)
-
-    class Meta:
-        model = StudentGuardian
-        fields = [
-            "id",
-            "guardian_id",
-            "name_en",
-            "name_bn",
-            "relation",
-            "phone",
-            "alt_phone",
-            "email",
-            "nid",
-            "occupation",
-            "present_address",
-            "photo",
-            "is_primary",
-            "can_pickup",
-            "receives_sms",
-            "financial_responsible",
-            "created_at",
-        ]
-        read_only_fields = fields
-
-
 class StudentDetailSerializer(serializers.ModelSerializer):
     enrollments = StudentEnrollmentBriefSerializer(many=True, read_only=True)
     previous_school = PreviousSchoolSerializer(read_only=True)
@@ -208,6 +245,9 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     guardians = StudentLinkedGuardianSerializer(
         source="guardian_relations", many=True, read_only=True
     )
+    has_app_account = serializers.SerializerMethodField()
+    user_id = serializers.UUIDField(source="user.id", read_only=True, default=None)
+    login_phone = serializers.CharField(source="user.phone", read_only=True, default=None)
 
     class Meta:
         model = Student
@@ -216,6 +256,10 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             "student_id",
             "name_en",
             "name_bn",
+            "phone",
+            "has_app_account",
+            "user_id",
+            "login_phone",
             "dob",
             "gender",
             "blood_group",
@@ -242,6 +286,9 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def get_has_app_account(self, obj: Student) -> bool:
+        return obj.user_id is not None
+
     def to_representation(self, instance: Student) -> dict[str, Any]:
         data = super().to_representation(instance)
         request = self.context.get("request")
@@ -266,6 +313,9 @@ class StudentDetailSerializer(serializers.ModelSerializer):
 
 class StudentCreateUpdateSerializer(serializers.ModelSerializer):
     student_id = serializers.CharField(max_length=32, required=False)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    give_app_access = serializers.BooleanField(required=False, default=False, write_only=True)
+    initial_password = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
         model = Student
@@ -274,6 +324,7 @@ class StudentCreateUpdateSerializer(serializers.ModelSerializer):
             "student_id",
             "name_en",
             "name_bn",
+            "phone",
             "dob",
             "gender",
             "blood_group",
@@ -291,10 +342,15 @@ class StudentCreateUpdateSerializer(serializers.ModelSerializer):
             "has_stipend",
             "emergency_contact_name",
             "emergency_contact_phone",
+            "give_app_access",
+            "initial_password",
         ]
         read_only_fields = ["id"]
 
     def create(self, validated_data: dict[str, Any]) -> Student:
+        give_app_access = validated_data.pop("give_app_access", False)
+        initial_password = validated_data.pop("initial_password", None)
+
         if not validated_data.get("student_id"):
             institution = validated_data.get("institution")
             current_year = str(timezone.localdate().year)
@@ -306,7 +362,46 @@ class StudentCreateUpdateSerializer(serializers.ModelSerializer):
                 )
             else:
                 validated_data["student_id"] = f"{current_year}010001"
-        return super().create(validated_data)
+
+        student = super().create(validated_data)
+
+        if give_app_access:
+            create_portal_user_for_student(
+                student,
+                phone=student.phone,
+                password=initial_password,
+            )
+
+        return student
+
+    @transaction.atomic
+    def update(self, instance: Student, validated_data: dict[str, Any]) -> Student:
+        give_app_access = validated_data.pop("give_app_access", False)
+        initial_password = validated_data.pop("initial_password", None)
+
+        old_phone = instance.phone
+        student = super().update(instance, validated_data)
+
+        # Sync phone with linked user if phone changed and user exists
+        if student.user and student.phone and student.phone != old_phone:
+            user = student.user
+            user.phone = student.phone
+            user.save(update_fields=["phone"])
+
+        # Create portal user if requested and not yet linked
+        if give_app_access and not student.user:
+            create_portal_user_for_student(
+                student,
+                phone=student.phone,
+                password=initial_password,
+            )
+
+        return student
+
+    def validate_phone(self, value: str | None) -> str | None:
+        if value:
+            return normalize_bd_phone(value)
+        return value
 
     def validate_birth_reg_no(self, value: str | None) -> str | None:
         if value:
@@ -322,6 +417,16 @@ class StudentCreateUpdateSerializer(serializers.ModelSerializer):
         if value:
             return normalize_bd_phone(value)
         return ""
+
+
+class StudentAssignLoginSerializer(serializers.Serializer):
+    phone = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(min_length=6, required=True)
+
+    def validate_phone(self, value: str) -> str:
+        if value:
+            return normalize_bd_phone(value)
+        return value
 
 
 class AdmitFromApplicationSerializer(serializers.Serializer):

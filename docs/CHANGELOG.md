@@ -7,6 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Professional Operational Overview Dashboard Redesign (Task F19)**:
+  - **School Operational Headcount & Shift KPI Cards**:
+    - Replaced generic infrastructure status cards with operational school management KPI cards: Total Students, Morning Shift Students, Day Shift Students, Teaching Faculty, Office & Support Staff, Student Attendance Rate Today, and Staff Attendance Rate Today.
+    - Omitted financial collection/due cards per user specification to focus strictly on academic and operational management metrics.
+  - **Backend KPI Service Expansion (`apps/reports/services/kpi_service.py`)**:
+    - Added `headcount` aggregation returning `total_students`, `morning_shift_students`, `day_shift_students` (via `StudentEnrollment` and shift joins), `total_teachers` and `total_office_staff` (via `Staff`), `total_classes`, and `total_sections`.
+    - Added real-time attendance rate percentage computations for students and staff with 60-second Redis caching.
+  - **Compact & Collapsible Setup Checklist**:
+    - Redesigned `SetupProgressCard` into a non-intrusive compact milestone banner (`X of Y milestones completed (Z%)`) with a collapsible `View Steps / Hide` toggle so operational metrics remain front and center.
+  - **Quick Operations & Attendance Snapshot**:
+    - Added 5 direct quick action shortcuts for high-frequency daily workflows: Take Attendance, Student Registry, Fees & Payments, Weekly Timetable, and Staff Directory.
+    - Added visual stacked attendance progress bars comparing student check-ins (Present, Late, Absent, Leave) and staff on-duty ratios.
+    - Added Academic Structure & Capacity cards breaking down student distribution across Morning and Day shifts.
+    - Added compact Biometric Terminals telemetry and Server/Database health widgets.
+  - **Full Bilingual Parity (EN & BN)**:
+    - Added complete English and Bengali localization keys in `en.json` and `bn.json` with Bengali numeral localization (`toLocaleDigits`).
+- **Class Teacher Assignment & Supervision Integration in Routine Builder (Task F18 / ACAD-01)**:
+  - **Routine Builder Class Teacher Option**:
+    - Added dedicated **Class Teacher (Section Supervisor)** card banner on `RoutineBuilderPage.tsx` displaying the current supervisor status (Teacher Name, Employee ID, or *Unassigned*).
+    - Added Class Teacher assignment modal dialog allowing administrators to select from all teaching staff (`staff_type="teacher"`), change, or unassign the Class Teacher.
+    - Added proactive session conflict detection in the teacher selector dropdown: teachers already assigned to another section in the current session are shown with an informative badge (e.g. `[Assigned: Class 6 - Padma]`) and disabled to prevent accidental double-assignment.
+  - **Single Section Assignment Rule (Database & Model Enforced)**:
+    - Added database-level `UniqueConstraint(fields=["session", "teacher_staff"], condition=models.Q(teacher_staff__isnull=False))` on `Section` model (`apps/academics/migrations/0008_section_unique_class_teacher_staff_per_session.py`).
+    - Added bidirectional synchronization and session conflict validation in `Section.clean()` and `SectionSerializer`: assigning a teacher automatically syncs `teacher_staff` $\leftrightarrow$ `teacher_user`.
+    - Added dedicated endpoint `POST /api/v1/academics/sections/{id}/assign-class-teacher/` and `academicApi.assignClassTeacher()` client method.
+  - **Section Supervisor Role Enforcement (Attendance & Student Leave Requests)**:
+    - Hardened attendance taking permissions in `apps/attendance/views.py`: restricted daily attendance taking so only the designated Class Teacher of the section can submit daily student attendance.
+    - Hardened student leave request workflow (`StudentLeaveRequest`): teachers can only view, approve, or reject student leave requests for sections where they are the designated Class Teacher.
+  - **Sections Management Visibility**:
+    - Displayed the assigned Class Teacher for each section card in `ClassesSectionsPage.tsx`.
+- **Edit, Update & Delete Lifecycle Management for Students, Teachers, Staff, and Guardians (Task F17)**:
+  - **Student Edit & Soft-Delete**:
+    - Implemented `update()` on `StudentCreateUpdateSerializer` to handle partial updates, pop non-model write-only fields, and automatically synchronize the phone number on linked portal `User` accounts when changed.
+    - Implemented `perform_destroy()` on `StudentViewSet` to deactivate the linked portal `User` (`is_active=False`) upon student soft-deletion.
+    - Added `EditStudentDialog` component with tabbed editing for demographic, contact, identification, and quota/disability information.
+    - Added "Edit Profile" and "Delete" actions with safe `ConfirmDialog` prompts on `StudentDetailPage` and `StudentsListPage`.
+  - **Teacher & Staff Edit & Soft-Delete**:
+    - Implemented `update()` on `StaffCreateUpdateSerializer` to pop non-model fields, update branch links, and sync `phone` and `email` with linked portal `User` accounts.
+    - Implemented `perform_destroy()` on `StaffViewSet` to deactivate the linked portal `User` (`is_active=False`) upon staff/teacher soft-deletion.
+    - Added `EditStaffDialog` component allowing updates to personal details, staff classification (`teacher`, `admin`, `support`, `driver`), department, designation, campus branch, MPO index, TIN, and emergency contacts.
+    - Added "Edit Profile" (or "Edit Teacher") and "Delete" actions with `ConfirmDialog` prompts on `StaffDetailPage` and `StaffListPage`.
+  - **Guardian Edit & Soft-Delete**:
+    - Implemented `update()` on `GuardianSerializer` to pop non-model fields, update student links, and sync `phone` on linked portal `User` accounts.
+    - Implemented `perform_destroy()` on `GuardianViewSet` to deactivate the linked portal `User` (`is_active=False`) upon guardian soft-deletion.
+    - Added `EditGuardianDialog` component supporting edits to name, phone, alternate phone, NID, occupation, annual income, default relation, and emergency contact status.
+    - Added "Edit" and "Delete" actions with `ConfirmDialog` prompts on `GuardiansListPage`.
+    - Added `updateGuardian` and `deleteGuardian` API client methods to `studentsApi`.
+- **Mobile App & Portal Login Provisioning for Students, Guardians, and Teachers**:
+  - Added `user` (`OneToOneField` to `User`, `related_name="student_profile"`) and `phone` (`CharField(max_length=20, null=True, blank=True)`) to `Student` model with safe migration `0002_student_phone_student_user.py`.
+  - Created `create_portal_user_for_student` service in `apps/students/services/student_service.py` to provision login user accounts with `UserType.STUDENT`, role `student`, default read permissions, and credential dispatch.
+  - Added `POST /api/v1/students/{id}/assign-login/` endpoint to configure or reset student mobile app login credentials.
+  - Updated `create_portal_user_for_guardian` in `apps/guardians/services/guardian_service.py` to accept custom admin-assigned initial passwords.
+  - Added support for `give_app_access` and `initial_password` in `StudentSerializer` and `GuardianSerializer`.
+  - Updated `create-portal-account` action on Guardians to accept custom passwords and phone updates.
+  - Updated `StudentCreatePage.tsx` with a dedicated "Mobile App & Student Portal Login" section with phone input and initial password assignment with auto-generation helper.
+  - Updated `StudentDetailPage.tsx` with mobile app account status badge and "Setup / Reset App Password" modal.
+  - Updated `StudentsListPage.tsx` with visual indicators for mobile app login configuration.
+  - Updated `GuardiansListPage.tsx` with "Grant Mobile App Access" toggle and initial password input during guardian creation, plus a "Create Login Details / Reset Password" dialog for existing guardians.
+  - Updated `StaffCreatePage.tsx`, `StaffListPage.tsx`, and `StaffDetailPage.tsx` to clearly present mobile app and portal login credentials with phone number login ID and auto-generate password helpers.
+  - Regenerated OpenAPI 3.0 schema and synchronized frontend TypeScript API types.
+- **OpenAPI 3.0 Schema & Mobile API Contract Synchronization**:
+  - Regenerated and validated the complete OpenAPI 3.0 schema (`schema/schema.yml`) via `python manage.py spectacular --file schema/schema.yml --validate` with 0 errors.
+  - Added newly exposed backend endpoints to the schema including `POST /api/v1/payroll/profiles/sync-roster/`, query parameters `class_level` and `section` on `GET /api/v1/results/student-results/`, and expanded student result schema properties.
+  - Regenerated frontend TypeScript API types in `frontend/src/types/api.ts` via `npm run gen:api` and verified 100% strict type safety across all components and test suites.
+  - Updated `docs/API_CONTRACT.md` with synchronization workflows, schema commands, and guidelines for React and Flutter consumers.
+  - Updated `docs/MOBILE_API_BRIEF.md` with comprehensive documentation for student exam result filters/rankings, student waivers, staff payroll self-service endpoints (`GET /api/v1/payroll/payslips/`, `POST /api/v1/payroll/profiles/sync-roster/`), and Section 12 Flutter Client Synchronization & Contract Guidelines.
 - **Staff Salary Profile Management & Roster Synchronization**:
   - Added "Sync Staff Roster" action (`POST /api/v1/payroll/profiles/sync-roster/`) in `apps/payroll/views.py` and `SalaryProfilesPage.tsx`, enabling school administrators to automatically populate all active school employees into the payroll profile roster with one click.
   - Implemented the "Assign Salary Profile" modal dialog allowing selection of any school employee, assignment of salary structure templates, monthly basic salary (মূল বেতন), MPO subvention portion, institutional top-up, disbursement channel (BEFTN Bank, MFS bKash/Nagad, Cash, Cheque), and Provident Fund (PF) enrollment.

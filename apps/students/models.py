@@ -125,6 +125,21 @@ class Student(TenantOwnedModel, SoftDeleteMixin):
     has_stipend = models.BooleanField(default=False)
 
     # Contact & Guardianship placeholder (Task 07 will wire full Guardian models)
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        db_index=True,
+        help_text="Student's mobile number for app login (+8801XXXXXXXXX).",
+    )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="student_profile",
+        help_text="Login user account for mobile app / portal",
+    )
     emergency_contact_name = models.CharField(max_length=255, blank=True)
     emergency_contact_phone = models.CharField(max_length=20, blank=True)
 

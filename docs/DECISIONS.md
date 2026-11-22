@@ -502,14 +502,34 @@
 
 ---
 
-## ADR-027: Whitelisted Report Builder, Role-Scoped KPI Caching & Dry-Run Bulk Imports
-- **Date**: 2026-11-12
+## ADR-028: Unified Phone & Initial Password Provisioning for Students, Guardians, and Teachers
+- **Date**: 2026-11-19
 - **Status**: Accepted
 - **Context**:
-  - Admins, head teachers, accountants, and teachers need fast dashboard KPIs, custom data exports (CSV/XLSX/PDF), and bulk student/staff CSV imports without SQL injection or partial-import corruption.
+  - The mobile app requires Students, Guardians, and Teachers to authenticate using their Bangladeshi mobile phone number (`+8801XXXXXXXXX`) and password.
+  - Previously, `Student` had no direct relationship with `User` or dedicated mobile phone field, `Guardian` could only receive randomly generated temporary passwords via SMS without admin preview, and existing records without login accounts had no straightforward UI for administrators to assign initial credentials.
 - **Decision**:
-  - **Strict Whitelist Engine (`apps/reports/services/report_service.py`)**: `REPORT_DATASETS` maps allowed dataset keys to Django models, allowed columns, and allowed filter fields; unknown datasets, columns, or filters raise `ValidationError` before any ORM query executes, and every export logs `AuditAction.EXPORT`.
-  - **Role-Scoped Cached KPIs (`apps/reports/services/kpi_service.py`)**: KPIs are cached for 60s per `(institution_id, role_variant, date)`, omitting financial figures for non-financial roles (`teacher`, `staff`).
-  - **Dry-Run Bulk Imports (`apps/reports/services/import_service.py`)**: CSV imports validate all rows first (`dry_run=True` default) and only persist via `transaction.atomic` + `bulk_create` when `dry_run=False` and `error_rows == 0`.
+  - **Student Model Extension**: Added `user` (`OneToOneField` to `accounts.User`, `related_name="student_profile"`) and `phone` (`CharField(max_length=20, null=True, blank=True)`) to `Student`.
+  - **Flexible Initial Password Policy**: Admins assign initial passwords during creation or at any subsequent time via dedicated assign-login modals. `must_change_password` is set to `False` so users can either continue with the admin-assigned password or change it whenever they prefer via `/api/v1/auth/password/change/`.
+  - **Phone Number Login Convention**: Mobile login (`/api/v1/auth/login/`) recognizes normalized Bangladeshi mobile numbers or usernames. Phone number uniqueness is enforced per institution.
+  - **Proactive Management for Existing Users**: Table rows and profile detail pages in the dashboard display visual indicators (`has_app_account` / `has_portal_access`) and explicit actions ("Create Login Details" or "Reset Password") to provision credentials for existing records.
 - **Consequences**:
-  - Zero raw SQL exposure, fast dashboard loads, auditable exports, and safe all-or-nothing bulk imports.
+  - Unifies authentication provisioning across all roles, allows both upfront and retrospective credential management, and provides a seamless mobile login experience with zero breaking changes to existing endpoints.
+
+## ADR-029: Decoupled Edit and Soft-Delete Lifecycle for Core Profiles
+- **Date**: 2026-11-19
+- **Status**: Accepted
+- **Context**:
+  - Administrators need full capabilities to update demographic and employment details for Students, Teachers, Staff, and Guardians, as well as the ability to delete profiles cleanly.
+  - Updating a user's phone or email could cause authentication drift if the linked `User` record was not updated in tandem.
+  - Deleting a profile should preserve historical data (attendance, grades, payroll, fee receipts) while immediately barring deactivated users from mobile app and portal login.
+- **Decision**:
+  - **Synchronized Partial Updates**:
+    - `StudentCreateUpdateSerializer`, `StaffCreateUpdateSerializer`, and `GuardianSerializer` override `update()` inside `transaction.atomic` to strip non-model fields and synchronize `phone` and `email` on linked `User` accounts when changed.
+  - **Soft-Delete with Immediate User Deactivation**:
+    - `StudentViewSet`, `StaffViewSet`, and `GuardianViewSet` implement `perform_destroy()`: when an administrator deletes an entity, `instance.user.is_active` is immediately set to `False`, and `instance.delete()` sets `is_deleted=True` and `deleted_at=now()`.
+    - This prevents deactivated users from obtaining or refreshing JWT auth tokens while maintaining audit and transaction history.
+  - **Modular Dashboard Dialogs**:
+    - Provided `EditStudentDialog`, `EditStaffDialog`, and `EditGuardianDialog` components with full tabbed editing support, and `ConfirmDialog` confirmation prompts with `destructive=True` to prevent accidental deletions.
+- **Consequences**:
+  - Complete control over person records, zero credential synchronization drift, safe soft-deletions, and full reversibility for institutional administrators.

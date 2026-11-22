@@ -20,7 +20,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.models import User
+from apps.accounts.models import User, UserType
 from apps.core.mixins import TenantScopedMixin
 from apps.homework.models import (
     AVScanStatus,
@@ -40,6 +40,7 @@ from apps.homework.models import (
 )
 from apps.homework.permissions import (
     CanManageHomework,
+    CanManageHomeworkOrTeacher,
     CanReadLearningContent,
     CanSubmitHomeworkOrTakeQuiz,
     CanViewHomework,
@@ -176,7 +177,7 @@ class HomeworkViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             return [IsAuthenticated(), CanSubmitHomeworkOrTakeQuiz()]
         if self.action in ("list", "retrieve", "submissions"):
             return [IsAuthenticated(), CanReadLearningContent()]
-        return [IsAuthenticated(), CanManageHomework()]
+        return [IsAuthenticated(), CanManageHomeworkOrTeacher()]
 
     def get_queryset(self) -> QuerySet[Homework]:
         qs = super().get_queryset()
@@ -288,6 +289,8 @@ class HomeworkViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         if not (
             CanViewHomework().has_permission(request, self)
             or CanManageHomework().has_permission(request, self)
+            or getattr(request.user, "user_type", None) == UserType.TEACHER
+            or hasattr(request.user, "staff_profile")
         ):
             student_ids = resolve_visible_student_ids(request.user)
             qs = qs.filter(student_id__in=student_ids)
@@ -320,9 +323,12 @@ class HomeworkSubmissionViewSet(TenantScopedMixin, viewsets.ReadOnlyModelViewSet
 
     def get_queryset(self) -> QuerySet[HomeworkSubmission]:
         qs = super().get_queryset()
-        if CanViewHomework().has_permission(
-            self.request, self
-        ) or CanManageHomework().has_permission(self.request, self):
+        if (
+            CanViewHomework().has_permission(self.request, self)
+            or CanManageHomework().has_permission(self.request, self)
+            or getattr(self.request.user, "user_type", None) == UserType.TEACHER
+            or hasattr(self.request.user, "staff_profile")
+        ):
             return qs
         student_ids = resolve_visible_student_ids(self.request.user)
         return qs.filter(student_id__in=student_ids)

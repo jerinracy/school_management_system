@@ -244,13 +244,45 @@ class TestGuardianAPI:
             phone="+8801755443322",
         )
 
-        res = client.post(f"/api/v1/guardians/guardians/{guardian.id}/create-portal-account/")
+        res = client.post(
+            f"/api/v1/guardians/guardians/{guardian.id}/create-portal-account/",
+            data={"password": "GuardianSecret123!"},
+        )
         assert res.status_code == status.HTTP_200_OK
         assert "user_id" in res.json()
 
         guardian.refresh_from_db()
         assert guardian.user is not None
         assert guardian.user.phone == "+8801755443322"
+        assert guardian.user.check_password("GuardianSecret123!")
+
+        # Verify login with guardian phone & password
+        anon = APIClient()
+        login_res = anon.post(
+            "/api/v1/auth/login/",
+            data={"identifier": "01755443322", "password": "GuardianSecret123!"},
+        )
+        assert login_res.status_code == status.HTTP_200_OK
+
+    def test_create_guardian_with_app_login(self, client_for, staff_user, institution):
+        client = client_for(staff_user)
+        payload = {
+            "name_en": "Salma Khatun",
+            "name_bn": "সালমা খাতুন",
+            "phone": "01999887766",
+            "relation_default": "mother",
+            "give_portal_access": True,
+            "initial_password": "MotherPassword789!",
+        }
+        res = client.post("/api/v1/guardians/guardians/", data=payload)
+        assert res.status_code == status.HTTP_201_CREATED
+        guardian_id = res.json()["id"]
+
+        guardian = Guardian.objects.get(id=guardian_id)
+        assert guardian.user is not None
+        assert guardian.user.phone == "+8801999887766"
+        assert guardian.user.check_password("MotherPassword789!")
+        assert guardian.user.user_type == UserType.GUARDIAN
 
     def test_my_children_and_guardian_access_control(
         self, client_for, institution, student, other_student, student_permissions
@@ -361,3 +393,70 @@ class TestGuardianAPI:
         # Attempting to retrieve other tenant's guardian returns 404
         res = client.get(f"/api/v1/guardians/guardians/{other_guardian.id}/")
         assert res.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_update_guardian_and_sync_user_phone(self, client_for, staff_user, institution):
+        client = client_for(staff_user)
+        # Create guardian with portal account
+        create_res = client.post(
+            "/api/v1/guardians/guardians/",
+            {
+                "name_en": "Update Guardian Test",
+                "phone": "+8801777112233",
+                "occupation": "Banker",
+                "give_portal_access": True,
+                "initial_password": "InitialGuardianPass1#",
+            },
+        )
+        assert create_res.status_code == status.HTTP_201_CREATED
+        guardian_id = create_res.json()["id"]
+
+        guardian = Guardian.objects.get(id=guardian_id)
+        assert guardian.user is not None
+        assert guardian.user.phone == "+8801777112233"
+
+        # Update guardian
+        patch_res = client.patch(
+            f"/api/v1/guardians/guardians/{guardian_id}/",
+            {
+                "name_en": "Updated Guardian Name",
+                "phone": "+8801888112233",
+                "occupation": "Senior Banker",
+            },
+        )
+        assert patch_res.status_code == status.HTTP_200_OK
+        guardian.refresh_from_db()
+        guardian.user.refresh_from_db()
+
+        assert guardian.name_en == "Updated Guardian Name"
+        assert guardian.phone == "+8801888112233"
+        assert guardian.occupation == "Senior Banker"
+        assert guardian.user.phone == "+8801888112233"
+
+    def test_delete_guardian_deactivates_user_and_soft_deletes(
+        self, client_for, staff_user, institution
+    ):
+        client = client_for(staff_user)
+        create_res = client.post(
+            "/api/v1/guardians/guardians/",
+            {
+                "name_en": "Delete Guardian Test",
+                "phone": "+8801766998877",
+                "give_portal_access": True,
+                "initial_password": "InitialGuardianPass1#",
+            },
+        )
+        assert create_res.status_code == status.HTTP_201_CREATED
+        guardian_id = create_res.json()["id"]
+
+        del_res = client.delete(f"/api/v1/guardians/guardians/{guardian_id}/")
+        assert del_res.status_code == status.HTTP_204_NO_CONTENT
+
+        # Confirm soft deleted
+        assert not Guardian.objects.filter(id=guardian_id).exists()
+        guardian = Guardian.all_objects.get(id=guardian_id)
+        assert guardian.is_deleted is True
+        assert guardian.deleted_at is not None
+
+        # Confirm user deactivated
+        guardian.user.refresh_from_db()
+        assert guardian.user.is_active is False

@@ -25,7 +25,11 @@ from apps.students.models import (
     Testimonial,
     TransferCertificate,
 )
-from apps.students.permissions import CanManageStudents, CanViewStudents, IsGuardianOfStudent
+from apps.students.permissions import (
+    CanManageStudents,
+    CanViewStudentsOrTeacher,
+    IsGuardianOfStudent,
+)
 from apps.students.serializers import (
     AdmitFromApplicationSerializer,
     AutoAssignRollsSerializer,
@@ -34,6 +38,7 @@ from apps.students.serializers import (
     IssueTestimonialSerializer,
     PromotionBatchSerializer,
     PromotionPreviewRequestSerializer,
+    StudentAssignLoginSerializer,
     StudentCreateUpdateSerializer,
     StudentDetailSerializer,
     StudentEnrollmentBriefSerializer,
@@ -47,6 +52,7 @@ from apps.students.services import (
     admit_from_application,
     apply_promotion,
     auto_assign_section_rolls,
+    create_portal_user_for_student,
     import_students_from_excel,
     issue_or_renew_id_card,
     issue_testimonial,
@@ -87,9 +93,41 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     ordering = ["student_id"]
 
     def get_permissions(self) -> list[Any]:
-        if self.action in ["list", "retrieve"]:
-            return [IsAuthenticated(), (CanViewStudents | IsGuardianOfStudent)()]
+        if self.action in ["list", "retrieve", "me"]:
+            return [IsAuthenticated(), (CanViewStudentsOrTeacher | IsGuardianOfStudent)()]
         return [IsAuthenticated(), CanManageStudents()]
+
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        section_id = self.request.query_params.get("section") or self.request.query_params.get(
+            "section_id"
+        )
+        if section_id:
+            qs = qs.filter(
+                enrollments__section_id=section_id, enrollments__status="active"
+            ).distinct()
+        return qs
+
+    @extend_schema(
+        summary="Retrieve logged-in student profile",
+        tags=["Students"],
+        responses={200: StudentDetailSerializer},
+    )
+    @action(detail=False, methods=["get"], url_path="me")
+    def me(self, request: Request) -> Response:
+        user = request.user
+        if hasattr(user, "student_profile") and user.student_profile:
+            serializer = StudentDetailSerializer(user.student_profile, context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if hasattr(user, "phone") and user.phone:
+            inst = _get_request_institution(request)
+            stu = Student.objects.filter(institution=inst, phone=user.phone).first()
+            if stu:
+                serializer = StudentDetailSerializer(stu, context={"request": request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "No student profile linked to this user."}, status=status.HTTP_404_NOT_FOUND
+        )
 
     def get_serializer_class(self) -> type[Any]:
         if self.action == "list":
@@ -97,6 +135,12 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         if self.action in ["create", "update", "partial_update"]:
             return StudentCreateUpdateSerializer
         return StudentDetailSerializer
+
+    def perform_destroy(self, instance: Student) -> None:
+        if instance.user:
+            instance.user.is_active = False
+            instance.user.save(update_fields=["is_active"])
+        instance.delete()
 
     @extend_schema(summary="Admit applicant from admission module", tags=["Students"])
     @action(detail=False, methods=["post"], url_path="admit-from-application")
@@ -216,6 +260,33 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(
+        summary="Assign or Reset Student App Login",
+        tags=["Students"],
+        request=StudentAssignLoginSerializer,
+        responses={200: dict},
+    )
+    @action(detail=True, methods=["post"], url_path="assign-login")
+    def assign_login(self, request: Request, pk: str | None = None) -> Response:
+        student = self.get_object()
+        serializer = StudentAssignLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone = serializer.validated_data.get("phone")
+        password = serializer.validated_data["password"]
+
+        user, final_password = create_portal_user_for_student(
+            student, phone=phone, password=password
+        )
+        return Response(
+            {
+                "message": "Student app login details set successfully.",
+                "user_id": str(user.id),
+                "phone": user.phone,
+                "username": user.username,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 @extend_schema_view(
     list=extend_schema(summary="List student enrollments", tags=["Students - Enrollments"]),
@@ -242,7 +313,7 @@ class StudentEnrollmentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
 
     def get_permissions(self) -> list[Any]:
         if self.action in ["list", "retrieve"]:
-            return [IsAuthenticated(), CanViewStudents()]
+            return [IsAuthenticated(), CanViewStudentsOrTeacher()]
         return [IsAuthenticated(), CanManageStudents()]
 
     def get_serializer_class(self) -> type[Any]:

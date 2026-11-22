@@ -59,15 +59,31 @@ describe("DashboardHomePage", () => {
     expect(screen.getByText("Admin Sign In")).toBeInTheDocument();
   });
 
-  it("renders live backend health KPIs from /api/v1/health/", async () => {
+  it("renders live backend health KPIs from /api/v1/health/ and operational headcount", async () => {
     renderDashboard();
 
-    expect(screen.getByText("Institution Overview")).toBeInTheDocument();
+    expect(screen.getByText("School Overview")).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Operational")).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText("v1.0.0")).toBeInTheDocument();
     });
+    await waitFor(() => {
+      expect(screen.getAllByText("650").length).toBeGreaterThanOrEqual(1);
+    });
+    expect(screen.getAllByText("320").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("330").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("24").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("8").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("ensures institution setup checklist is completely removed from the clean overview", () => {
+    renderDashboard();
+
+    expect(screen.queryByText(/Institution Setup Checklist/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/View Steps/i)).not.toBeInTheDocument();
   });
 
   it("shows an error alert when /api/v1/health/ fails", async () => {
@@ -99,7 +115,7 @@ describe("DashboardHomePage", () => {
     const bnButton = screen.getByRole("button", { name: "Switch language to Bangla" });
     await user.click(bnButton);
 
-    expect(screen.getByText("প্রতিষ্ঠান সারসংক্ষেপ")).toBeInTheDocument();
+    expect(screen.getByText("বিদ্যালয় ওভারভিউ")).toBeInTheDocument();
     expect(screen.getByText("v১.০.০")).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("bn");
     expect(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe("bn");
@@ -107,7 +123,7 @@ describe("DashboardHomePage", () => {
     const enButton = screen.getByRole("button", { name: "ভাষা ইংরেজিতে পরিবর্তন করুন" });
     await user.click(enButton);
 
-    expect(screen.getByText("Institution Overview")).toBeInTheDocument();
+    expect(screen.getByText("School Overview")).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("en");
   });
 });

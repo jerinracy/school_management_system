@@ -138,10 +138,18 @@ describe("StudentIDCardPreview", () => {
     admission_date: "2026-01-05",
     emergency_contact_name: "Rafiqul Islam",
     emergency_contact_phone: "+8801712345678",
+    has_app_account: true,
+    user_id: "usr-1",
+    login_phone: "+8801712345678",
     enrollments: [
       {
         id: "enr-1",
         student: "stu-1",
+        student_name_en: "Rahim Uddin",
+        student_name_bn: "রহিম উদ্দিন",
+        student_id_number: "STU-2026-00001",
+        gender: "male",
+        avatar_url: null,
         session: "sess-1",
         session_name: "2026 Academic Year",
         class_level: "cls-10",

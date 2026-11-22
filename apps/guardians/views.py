@@ -16,6 +16,7 @@ from apps.guardians.permissions import CanManageGuardians, CanViewGuardians, IsG
 from apps.guardians.serializers import (
     AuthorizedPickupSerializer,
     FamilySerializer,
+    GuardianAssignLoginSerializer,
     GuardianDetailSerializer,
     GuardianSerializer,
     LinkSiblingsFamilySerializer,
@@ -82,6 +83,12 @@ class GuardianViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             return MyChildrenSerializer
         return GuardianSerializer
 
+    def perform_destroy(self, instance: Guardian) -> None:
+        if instance.user:
+            instance.user.is_active = False
+            instance.user.save(update_fields=["is_active"])
+        instance.delete()
+
     @extend_schema(request=LinkStudentActionSerializer, responses={200: StudentGuardianSerializer})
     @action(detail=True, methods=["post"], url_path="link-student")
     def link_student(self, request: Request, pk: str | None = None) -> Response:
@@ -136,17 +143,27 @@ class GuardianViewSet(TenantScopedMixin, viewsets.ModelViewSet):
 
         return Response({"detail": "Student unlinked successfully."}, status=status.HTTP_200_OK)
 
-    @extend_schema(responses={200: dict})
+    @extend_schema(
+        summary="Assign or Reset Guardian App Login",
+        request=GuardianAssignLoginSerializer,
+        responses={200: dict},
+    )
     @action(detail=True, methods=["post"], url_path="create-portal-account")
     def create_portal_account(self, request: Request, pk: str | None = None) -> Response:
-        """Generate and deliver login credentials for the Guardian portal."""
+        """Generate, assign, or reset login credentials for the Guardian portal & mobile app."""
         guardian = self.get_object()
-        user, _ = create_portal_user_for_guardian(guardian)
+        serializer = GuardianAssignLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        password = serializer.validated_data.get("password")
+        phone = serializer.validated_data.get("phone")
+
+        user, _ = create_portal_user_for_guardian(guardian, password=password, phone=phone)
         return Response(
             {
                 "detail": "Guardian portal user provisioned and credentials sent via SMS.",
                 "user_id": str(user.id),
-                "phone": guardian.phone,
+                "phone": user.phone,
+                "username": user.username,
             },
             status=status.HTTP_200_OK,
         )

@@ -362,3 +362,170 @@ class TestStudentAPI:
 
         res = client.get(f"/api/v1/students/{other_student.id}/")
         assert res.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_create_student_with_app_login(self, client):
+        payload = {
+            "name_en": "Sadman Sakib",
+            "name_bn": "সাদমান সাকিব",
+            "dob": "2010-05-15",
+            "gender": "male",
+            "religion": "islam",
+            "admission_date": "2026-01-01",
+            "phone": "01711998877",
+            "give_app_access": True,
+            "initial_password": "InitialPass123!",
+        }
+        res = client.post("/api/v1/students/", data=payload)
+        assert res.status_code == status.HTTP_201_CREATED
+        student_id = res.json()["id"]
+
+        student = Student.objects.get(id=student_id)
+        assert student.user is not None
+        assert student.user.phone == "+8801711998877"
+        assert student.user.check_password("InitialPass123!")
+        assert student.user.user_type == UserType.STUDENT
+
+        # List view includes has_app_account
+        list_res = client.get(f"/api/v1/students/{student.id}/")
+        assert list_res.status_code == status.HTTP_200_OK
+        assert list_res.json()["has_app_account"] is True
+        assert list_res.json()["phone"] == "+8801711998877"
+
+    def test_assign_login_to_existing_student(self, client):
+        student = Student.objects.create(
+            institution=Institution.objects.first(),
+            student_id="2026010099",
+            name_en="Nafis Fuad",
+            name_bn="নাফিস ফুয়াদ",
+            dob=date(2011, 3, 20),
+            gender="male",
+            admission_date=date(2026, 1, 1),
+        )
+        assert student.user is None
+
+        # Assign login credentials
+        res = client.post(
+            f"/api/v1/students/{student.id}/assign-login/",
+            data={
+                "phone": "01812345678",
+                "password": "NafisPassword2026",
+            },
+        )
+        assert res.status_code == status.HTTP_200_OK
+        student.refresh_from_db()
+        assert student.user is not None
+        assert student.user.phone == "+8801812345678"
+        assert student.user.check_password("NafisPassword2026")
+
+        # Now test student logging into the mobile app via /api/v1/auth/login/
+        anon_client = APIClient()
+        login_res = anon_client.post(
+            "/api/v1/auth/login/",
+            data={
+                "identifier": "01812345678",
+                "password": "NafisPassword2026",
+            },
+        )
+        assert login_res.status_code == status.HTTP_200_OK
+        token_data = login_res.json()
+        assert "access" in token_data
+        assert token_data["user"]["user_type"] == "student"
+
+        # Student changes password via /api/v1/auth/password/change/
+        auth_client = APIClient()
+        auth_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token_data['access']}")
+        change_res = auth_client.post(
+            "/api/v1/auth/password/change/",
+            data={
+                "old_password": "NafisPassword2026",
+                "new_password": "NewStudentSecret999!",
+            },
+        )
+        assert change_res.status_code == status.HTTP_200_OK
+
+        # Verify old password fails and new password works
+        fail_res = anon_client.post(
+            "/api/v1/auth/login/",
+            data={"identifier": "01812345678", "password": "NafisPassword2026"},
+        )
+        assert fail_res.status_code == status.HTTP_401_UNAUTHORIZED
+
+        success_res = anon_client.post(
+            "/api/v1/auth/login/",
+            data={"identifier": "01812345678", "password": "NewStudentSecret999!"},
+        )
+        assert success_res.status_code == status.HTTP_200_OK
+
+    def test_update_student_details_and_sync_user_phone(self, client) -> None:
+        """Verify PATCH /api/v1/students/{id}/ updates fields and syncs user phone."""
+        # Create student with app login
+        create_res = client.post(
+            "/api/v1/students/",
+            data={
+                "name_en": "Update Test Student",
+                "name_bn": "আপডেট টেস্ট ছাত্র",
+                "dob": "2012-05-10",
+                "admission_date": "2026-01-01",
+                "phone": "01711223344",
+                "gender": "male",
+                "religion": "islam",
+                "give_app_access": True,
+                "initial_password": "InitPass12345",
+            },
+        )
+        assert create_res.status_code == status.HTTP_201_CREATED
+        student_id = create_res.json()["id"]
+
+        student = Student.objects.get(id=student_id)
+        assert student.user is not None
+        assert student.user.phone == "+8801711223344"
+
+        # Update student details with new phone and present address
+        patch_res = client.patch(
+            f"/api/v1/students/{student_id}/",
+            data={
+                "name_en": "Updated Name Student",
+                "phone": "01899887766",
+                "present_address": "Dhaka, Bangladesh",
+            },
+        )
+        assert patch_res.status_code == status.HTTP_200_OK
+        student.refresh_from_db()
+        student.user.refresh_from_db()
+
+        assert student.name_en == "Updated Name Student"
+        assert student.phone == "+8801899887766"
+        assert student.present_address == "Dhaka, Bangladesh"
+        assert student.user.phone == "+8801899887766"
+
+    def test_delete_student_deactivates_user_and_soft_deletes(self, client) -> None:
+        """Verify DELETE /api/v1/students/{id}/ soft-deletes student and deactivates linked user."""
+        create_res = client.post(
+            "/api/v1/students/",
+            data={
+                "name_en": "Delete Test Student",
+                "name_bn": "ডিলিট টেস্ট ছাত্র",
+                "dob": "2013-08-15",
+                "admission_date": "2026-01-01",
+                "phone": "01755667788",
+                "gender": "female",
+                "religion": "islam",
+                "give_app_access": True,
+                "initial_password": "InitPass12345",
+            },
+        )
+        assert create_res.status_code == status.HTTP_201_CREATED
+        student_id = create_res.json()["id"]
+
+        del_res = client.delete(f"/api/v1/students/{student_id}/")
+        assert del_res.status_code == status.HTTP_204_NO_CONTENT
+
+        # Confirm soft deleted
+        assert not Student.objects.filter(id=student_id).exists()
+        student = Student.all_objects.get(id=student_id)
+        assert student.is_deleted is True
+        assert student.deleted_at is not None
+
+        # Confirm linked user deactivated
+        student.user.refresh_from_db()
+        assert student.user.is_active is False

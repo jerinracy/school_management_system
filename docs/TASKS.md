@@ -55,3 +55,8 @@ Legend:
 | **Task F12** | Communications & Notice Board Dashboard (Bulk Bangla Unicode SMS Campaigns, Dynamic Placeholders, SMS Gateway Balance/DLR Logs, Push Notifications, Notice Board & Academic Event Calendar) | DONE | Task F03, Task F04, Backend Task 16, Task 23 | 2026-11-15 |
 | **Task F13** | Institutional Operations & Student Services Dashboard (Homework & Assignment Evaluation, Library Catalog & Circulation, Transport Fleet & Routes, Hostel Dorms & Allocation) | DONE | Task F04, Task F06, Backend Tasks 19, 20, 21, 22 | 2026-11-15 |
 | **Task F14** | Enterprise Audit Logging, Dynamic Reporting Engine & CSV/Excel/PDF Exports | DONE | All Prior Tasks, Backend Tasks 24, 25 | 2026-11-15 |
+| **Task F15** | OpenAPI Schema, Mobile API Contract & Brief Synchronization | DONE | All Prior Tasks | 2026-11-19 |
+| **Task F16** | Mobile App & Portal Login Provisioning (Students, Guardians, Teachers) | DONE | Task 03, Task 06, Task 07, Task 08 | 2026-11-19 |
+| **Task F17** | Edit, Update & Delete Lifecycle Management (Students, Teachers, Guardians, Staff) | DONE | Task F06, Task F07, Task F16 | 2026-11-19 |
+| **Task F18** | Class Teacher Assignment & Supervision Integration in Routine Builder | DONE | Task F04, Task F08, Task F17 | 2026-11-19 |
+| **Task F19** | Professional Operational Overview Dashboard Redesign (Headcount KPIs, Shifts, Faculty, Quick Actions, Compact Setup Banner) | DONE | Task F01, Task F14, Task F18 | 2026-11-22 |

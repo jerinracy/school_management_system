@@ -64,6 +64,24 @@ class TestAuthenticationFlows:
         assert response.status_code == status.HTTP_200_OK
         assert "access" in response.data
 
+    def test_login_with_username_matching_phone_format(self, institution: Institution) -> None:
+        """Verify login succeeds when a user's username is an 11-digit number even if phone differs."""
+        _user = make_user(
+            username="01942635565",
+            phone="+8801700000000",
+            password="TeacherPassword123!",
+            institution=institution,
+            user_type=UserType.TEACHER,
+        )
+        client = APIClient()
+        response = client.post(
+            "/api/v1/auth/login/",
+            {"identifier": "01942635565", "password": "TeacherPassword123!"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["user"]["username"] == "01942635565"
+
     def test_login_with_invalid_password(self, test_user: User) -> None:
         client = APIClient()
         response = client.post(

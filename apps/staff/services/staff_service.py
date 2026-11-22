@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from apps.accounts.models import Role, User, UserRole, UserType
 from apps.accounts.services.sms import get_sms_service
-from apps.core.utils.phone import normalize_bd_phone
+from apps.core.utils.phone import normalize_bd_phone, validate_bd_phone
 from apps.institutions.models import Institution
 from apps.staff.models import Department, Designation, Staff, StaffStatus, StaffType
 
@@ -129,7 +129,14 @@ def create_portal_user_for_staff(
             user = staff.user
             if chosen_username and user.username != chosen_username:
                 user.username = chosen_username
+            if chosen_username and validate_bd_phone(chosen_username):
+                norm_phone = normalize_bd_phone(chosen_username)
+                user.phone = norm_phone
+                if staff.phone != norm_phone:
+                    staff.phone = norm_phone
+                    staff.save(update_fields=["phone"])
             user.set_password(final_password)
+            user.must_change_password = False
             user.institution = staff.institution
             user.save()
         else:
@@ -147,7 +154,14 @@ def create_portal_user_for_staff(
             )
             if user.username != chosen_username and chosen_username:
                 user.username = chosen_username
+            if chosen_username and validate_bd_phone(chosen_username):
+                norm_phone = normalize_bd_phone(chosen_username)
+                user.phone = norm_phone
+                if staff.phone != norm_phone:
+                    staff.phone = norm_phone
+                    staff.save(update_fields=["phone"])
             user.set_password(final_password)
+            user.must_change_password = False
             user.institution = staff.institution
             user.save()
 

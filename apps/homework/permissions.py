@@ -70,11 +70,27 @@ class CanReadLearningContent(BasePermission):
             return True
         if request.method in SAFE_METHODS:
             return bool(
-                getattr(user, "user_type", None) in (UserType.STUDENT, UserType.GUARDIAN)
+                getattr(user, "user_type", None)
+                in (UserType.STUDENT, UserType.GUARDIAN, UserType.TEACHER)
+                or hasattr(user, "staff_profile")
                 or resolve_student_for_user(user) is not None
                 or resolve_guardian_ward_ids(user)
             )
         return False
+
+
+class CanManageHomeworkOrTeacher(BasePermission):
+    """Allow homework management to users with homework.manage or teachers."""
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if CanManageHomework().has_permission(request, view):
+            return True
+        return bool(
+            getattr(user, "user_type", None) == UserType.TEACHER or hasattr(user, "staff_profile")
+        )
 
 
 class CanSubmitHomeworkOrTakeQuiz(BasePermission):

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -11,6 +11,7 @@ import {
   Clock,
   CreditCard,
   Download,
+  Edit2,
   Eye,
   EyeOff,
   GraduationCap,
@@ -20,6 +21,9 @@ import {
   MapPin,
   Phone,
   Shield,
+  Smartphone,
+  Sparkles,
+  Trash2,
   User,
   XCircle,
 } from "lucide-react";
@@ -36,6 +40,8 @@ import { FormField, FormLabel } from "@/components/ui/form";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { staffApi } from "@/features/staff/api/staffApi";
 import { StaffIDCardPreview } from "@/features/staff/components/StaffIDCardPreview";
+import { EditStaffDialog } from "@/features/staff/components/EditStaffDialog";
+import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
 
 type DetailTab = "overview" | "assignments" | "leaves" | "idcard";
 
@@ -43,7 +49,27 @@ export default function StaffDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language === "bn" ? "bn" : "en";
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: () => {
+      if (!id) throw new Error("Staff ID missing");
+      return staffApi.deleteStaff(id);
+    },
+    onSuccess: () => {
+      toast.success(t("staff.deleteSuccess", "Employee record deleted successfully."));
+      void queryClient.invalidateQueries({ queryKey: ["staff"] });
+      void navigate("/staff");
+    },
+    onError: (err: unknown) => {
+      toast.error((err as Error).message || "Failed to delete employee.");
+    },
+  });
 
   const currentUser = useAuthStore((s) => s.user);
   const isSuper =
@@ -165,6 +191,16 @@ export default function StaffDetailPage() {
     }
   };
 
+  const handleGenerateProvisionPassword = () => {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%";
+    let pass = "";
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setPortalPassword(pass);
+    setConfirmPortalPassword(pass);
+  };
+
   const handleProvisionPortal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (portalPassword.length < 6) {
@@ -233,6 +269,34 @@ export default function StaffDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {canManagePassword && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditModalOpen(true)}
+                className="h-9 gap-2 text-xs border-slate-300 dark:border-slate-700"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+                <span>
+                  {staff.staff_type === "teacher"
+                    ? t("staff.editTeacher", "Edit Teacher")
+                    : t("staff.editStaff", "Edit Profile")}
+                </span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteConfirmOpen(true)}
+                className="h-9 gap-2 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:border-rose-900/50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>{t("common.delete", "Delete")}</span>
+              </Button>
+            </>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -883,37 +947,47 @@ export default function StaffDetailPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm font-bold">
-              <KeyRound className="h-4 w-4 text-emerald-800" />
-              <span>{t("staff.provisionPortalTitle", "Create Portal Login Access")}</span>
+              <Smartphone className="h-4 w-4 text-emerald-800" />
+              <span>{t("staff.provisionPortalTitle", "Create Mobile App & Portal Login")}</span>
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={(e) => { void handleProvisionPortal(e); }} className="space-y-4 pt-2">
             <p className="text-xs text-slate-500">
               {t(
                 "staff.provisionPortalHint",
-                "Create a user account so this employee can log into the school management portal."
+                "Create a user account so this employee can log into the mobile app and management portal."
               )}
             </p>
 
             <FormField>
               <FormLabel className="text-xs font-medium">
-                {t("staff.portalUsername", "Portal Username")}
+                {t("staff.portalUsername", "Login Mobile Number / Username")}
               </FormLabel>
               <Input
                 value={portalUsername}
                 onChange={(e) => setPortalUsername(e.target.value)}
-                placeholder={staff.phone || "e.g. username"}
+                placeholder={staff.phone || "e.g. 01XXXXXXXXX"}
                 className="h-9 text-xs rounded-lg font-mono"
               />
               <p className="text-[10px] text-slate-400 mt-1">
-                {t("staff.usernameHint", "Defaults to Employee ID or Phone if blank")}
+                {t("staff.usernameHint", "Defaults to Employee Phone number if blank")}
               </p>
             </FormField>
 
             <FormField>
-              <FormLabel required className="text-xs font-medium">
-                {t("staff.initialPassword", "Initial Password")}
-              </FormLabel>
+              <div className="flex items-center justify-between mb-1">
+                <FormLabel required className="text-xs font-medium">
+                  {t("staff.initialPassword", "Initial Password")}
+                </FormLabel>
+                <button
+                  type="button"
+                  onClick={handleGenerateProvisionPassword}
+                  className="inline-flex items-center gap-1 text-[11px] text-emerald-800 dark:text-emerald-400 hover:underline font-medium"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  <span>{t("common.generate", "Auto Generate")}</span>
+                </button>
+              </div>
               <div className="relative">
                 <Input
                   type={showProvisionPass ? "text" : "password"}
@@ -972,6 +1046,28 @@ export default function StaffDetailPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Staff Dialog */}
+      <EditStaffDialog
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        staff={staff}
+      />
+
+      {/* Delete Staff Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title={t("staff.deleteConfirmTitle", "Delete Employee Record")}
+        description={t(
+          "staff.deleteConfirmDesc",
+          "Are you sure you want to delete this employee? Their profile and portal access will be deactivated. This action can be restored by an administrator."
+        )}
+        destructive
+        loading={deleteMutation.isPending}
+        confirmLabel={t("common.delete", "Delete")}
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </div>
   );
 }

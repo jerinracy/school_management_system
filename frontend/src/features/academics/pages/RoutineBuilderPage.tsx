@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertCircle, CalendarCheck, CheckCircle2, Pencil, Plus, Trash2, UserX } from "lucide-react";
+import { AlertCircle, CalendarCheck, CheckCircle2, Pencil, Plus, Trash2, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/composite/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,12 @@ export function RoutineBuilderPage() {
   const [editSubject, setEditSubject] = useState("");
   const [editValidationResult, setEditValidationResult] = useState<RoutineValidationResult | null>(null);
   const [isEditValidating, setIsEditValidating] = useState(false);
+
+  // Class teacher / Section supervisor modal state
+  const [allSessionSections, setAllSessionSections] = useState<Section[]>([]);
+  const [openClassTeacherModal, setOpenClassTeacherModal] = useState(false);
+  const [assignTeacherStaffId, setAssignTeacherStaffId] = useState<string>("none");
+  const [isSavingTeacher, setIsSavingTeacher] = useState(false);
 
   const loadBase = useCallback(async () => {
     try {
@@ -155,6 +161,57 @@ export function RoutineBuilderPage() {
   useEffect(() => {
     void loadRoutine();
   }, [loadRoutine]);
+
+  const loadSessionSections = useCallback(async () => {
+    if (!selectedSession?.id) return;
+    try {
+      const secs = await academicApi.getSections({ session: selectedSession.id });
+      setAllSessionSections(secs);
+    } catch {
+      // Non-fatal
+    }
+  }, [selectedSession?.id]);
+
+  useEffect(() => {
+    void loadSessionSections();
+  }, [loadSessionSections]);
+
+  const sessionTeacherAssignments = useMemo(() => {
+    const map = new Map<string, { sectionId: string; sectionName: string }>();
+    for (const s of allSessionSections) {
+      if (s.teacher_staff) {
+        map.set(s.teacher_staff, {
+          sectionId: s.id,
+          sectionName: `${s.class_level_name} - ${s.name}`,
+        });
+      }
+    }
+    return map;
+  }, [allSessionSections]);
+
+  const handleSaveClassTeacher = async () => {
+    if (!selectedSection) return;
+    setIsSavingTeacher(true);
+    const teacherId = assignTeacherStaffId === "none" || !assignTeacherStaffId ? null : assignTeacherStaffId;
+    try {
+      const updatedSec = (await academicApi.assignClassTeacher(selectedSection, {
+        teacher_staff_id: teacherId,
+      })) as Section;
+      toast.success(
+        teacherId
+          ? t("academics.classTeacherAssigned", "Class Teacher assigned successfully.")
+          : t("academics.classTeacherCleared", "Class Teacher removed from section.")
+      );
+      setSections((prev) => prev.map((s) => (s.id === selectedSection ? updatedSec : s)));
+      setAllSessionSections((prev) => prev.map((s) => (s.id === selectedSection ? updatedSec : s)));
+      setOpenClassTeacherModal(false);
+    } catch (err: unknown) {
+      const msg = err && typeof err === "object" && "message" in err ? String(err.message) : undefined;
+      toast.error(msg || t("academics.classTeacherAssignError", "Failed to assign Class Teacher."));
+    } finally {
+      setIsSavingTeacher(false);
+    }
+  };
 
   const handleValidateSlot = async () => {
     if (!selectedSection || !slotPeriod || !slotSubject) return;
@@ -282,6 +339,9 @@ export function RoutineBuilderPage() {
     }
   };
 
+  const selectedSectionObj = sections.find((s) => s.id === selectedSection);
+  const selectedClassObj = classes.find((c) => c.id === selectedClass);
+
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
@@ -334,6 +394,67 @@ export function RoutineBuilderPage() {
           {t("academics.assignSlot", "Assign Period Slot")}
         </Button>
       </div>
+
+      {/* Class Teacher / Supervisor Banner */}
+      {selectedSectionObj && (
+        <div className="bg-canvas border border-border rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start sm:items-center gap-3">
+            <div
+              className={`p-2 rounded-md ${
+                selectedSectionObj.teacher_staff || selectedSectionObj.teacher_user
+                  ? "bg-primary/10 text-primary"
+                  : "bg-amber-500/10 text-amber-600"
+              }`}
+            >
+              <UserCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-ink">
+                  {t("academics.classTeacherSupervisor", "Class Teacher (Section Supervisor)")}:
+                </span>
+                {selectedSectionObj.teacher_staff_name || selectedSectionObj.teacher_name ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" />
+                    {selectedSectionObj.teacher_staff_name || selectedSectionObj.teacher_name}
+                    {selectedSectionObj.teacher_employee_id && (
+                      <span className="text-[10px] opacity-75 font-mono">
+                        ({selectedSectionObj.teacher_employee_id})
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                    <AlertCircle className="h-3 w-3" />
+                    {t("academics.unassigned", "Unassigned")}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-ink-muted mt-0.5">
+                {t(
+                  "academics.classTeacherRoleDescription",
+                  "This supervisor teacher takes daily section attendance and reviews student leave requests."
+                )}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs shrink-0"
+            onClick={() => {
+              setAssignTeacherStaffId(selectedSectionObj.teacher_staff || "none");
+              setOpenClassTeacherModal(true);
+            }}
+          >
+            <UserCheck className="h-3.5 w-3.5 mr-1.5" />
+            {selectedSectionObj.teacher_staff || selectedSectionObj.teacher_user
+              ? t("academics.changeClassTeacher", "Change Class Teacher")
+              : t("academics.assignClassTeacher", "Assign Class Teacher")}
+          </Button>
+        </div>
+      )}
 
       {/* Timetable Grid */}
       <Card>
@@ -690,6 +811,102 @@ export function RoutineBuilderPage() {
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Class Teacher Modal */}
+      <Dialog open={openClassTeacherModal} onOpenChange={setOpenClassTeacherModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-primary" />
+              {t("academics.assignSectionClassTeacher", "Assign Section Class Teacher")}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="bg-canvas/50 border border-border rounded-md p-2.5 text-xs text-ink-muted">
+              <p className="font-semibold text-ink">
+                {t("academics.section", "Section")}: {selectedClassObj?.name} - {selectedSectionObj?.name}
+              </p>
+              <p className="mt-0.5 text-[11px]">
+                {t(
+                  "academics.classTeacherRuleNotice",
+                  "A teacher can only be assigned as Class Teacher to ONE section per session. They will be authorized to take student attendance and approve student leave requests for this section."
+                )}
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-ink block">
+                {t("academics.selectTeacher", "Select Teacher")}
+              </label>
+              <Select
+                value={assignTeacherStaffId}
+                onValueChange={setAssignTeacherStaffId}
+              >
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder={t("academics.selectTeacherPlaceholder", "Choose a teacher...")} />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="none">
+                    <span className="text-ink-muted italic">
+                      {t("academics.noneUnassign", "— None (Unassigned) —")}
+                    </span>
+                  </SelectItem>
+                  {teachers.map((teacher) => {
+                    const assignedToSection = sessionTeacherAssignments.get(teacher.id);
+                    const isAssignedToOther =
+                      assignedToSection && assignedToSection.sectionId !== selectedSection;
+                    const isCurrent = selectedSectionObj?.teacher_staff === teacher.id;
+
+                    return (
+                      <SelectItem
+                        key={teacher.id}
+                        value={teacher.id}
+                        disabled={Boolean(isAssignedToOther)}
+                        className="text-xs"
+                      >
+                        <div className="flex items-center justify-between gap-2 w-full">
+                          <span>
+                            {teacher.full_name_en || teacher.full_name_bn || teacher.employee_id}
+                            {teacher.employee_id ? ` (${teacher.employee_id})` : ""}
+                          </span>
+                          {isCurrent && (
+                            <span className="text-[10px] text-emerald-600 font-medium">
+                              ({t("academics.current", "Current")})
+                            </span>
+                          )}
+                          {isAssignedToOther && (
+                            <span className="text-[10px] text-amber-600 font-medium">
+                              [{t("academics.assignedTo", "Assigned")}: {assignedToSection.sectionName}]
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setOpenClassTeacherModal(false)}
+            >
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              size="sm"
+              disabled={isSavingTeacher}
+              onClick={() => void handleSaveClassTeacher()}
+            >
+              {isSavingTeacher ? t("common.saving", "Saving...") : t("common.save", "Save Assignment")}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -3,6 +3,7 @@
 from typing import ClassVar
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -519,3 +520,94 @@ class MobileCheckin(TenantOwnedModel):
 
     def __str__(self) -> str:
         return f"Mobile Checkin: {self.user.username} @ {self.timestamp} (Valid: {self.is_within_geofence})"
+
+
+class StudentLeaveStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
+    CANCELLED = "cancelled", "Cancelled"
+
+
+class StudentLeaveApplicantType(models.TextChoices):
+    GUARDIAN = "guardian", "Guardian"
+    STUDENT = "student", "Student"
+
+
+class StudentLeaveRequest(TenantOwnedModel):
+    """Student leave application submitted by Guardian or Student, reviewed by Class Teacher."""
+
+    student = models.ForeignKey(
+        "students.Student",
+        on_delete=models.CASCADE,
+        related_name="leave_requests",
+    )
+    enrollment = models.ForeignKey(
+        "students.StudentEnrollment",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="leave_requests",
+    )
+    section = models.ForeignKey(
+        "academics.Section",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="student_leave_requests",
+    )
+    session = models.ForeignKey(
+        "institutions.AcademicSession",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="student_leave_requests",
+    )
+    applied_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="submitted_student_leave_requests",
+    )
+    applicant_type = models.CharField(
+        max_length=20,
+        choices=StudentLeaveApplicantType.choices,
+        default=StudentLeaveApplicantType.GUARDIAN,
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    days_count = models.PositiveIntegerField(default=1)
+    reason_category = models.CharField(max_length=50, default="medical")
+    reason = models.TextField()
+    attachment = models.FileField(upload_to="attendance/student_leaves/", null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=StudentLeaveStatus.choices,
+        default=StudentLeaveStatus.PENDING,
+        db_index=True,
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reviewed_student_leave_requests",
+    )
+    reviewer_remarks = models.TextField(blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    guardian_notified = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["institution", "status"]),
+            models.Index(fields=["section", "status"]),
+            models.Index(fields=["student", "start_date"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Leave for {self.student.name_en} ({self.start_date} to {self.end_date}) [{self.status}]"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValidationError({"end_date": "End date cannot be earlier than start date."})

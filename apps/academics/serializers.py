@@ -80,6 +80,15 @@ class SectionSerializer(serializers.ModelSerializer):
     class_level_name = serializers.CharField(source="class_level.name", read_only=True)
     shift_name = serializers.CharField(source="shift.name", read_only=True)
     session_name = serializers.CharField(source="session.name", read_only=True)
+    teacher_staff = serializers.PrimaryKeyRelatedField(
+        queryset=Staff.objects.all(), required=False, allow_null=True
+    )
+    teacher_staff_name = serializers.CharField(
+        source="teacher_staff.full_name_en", read_only=True, default=None
+    )
+    teacher_employee_id = serializers.CharField(
+        source="teacher_staff.employee_id", read_only=True, default=None
+    )
     teacher_name = serializers.CharField(
         source="teacher_user.full_name", read_only=True, default=None
     )
@@ -96,6 +105,9 @@ class SectionSerializer(serializers.ModelSerializer):
             "session_name",
             "name",
             "capacity",
+            "teacher_staff",
+            "teacher_staff_name",
+            "teacher_employee_id",
             "teacher_user",
             "teacher_name",
             "created_at",
@@ -103,13 +115,94 @@ class SectionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    def _sync_teacher_attrs(
+        self, attrs: dict[str, Any], institution_id: Any, instance: Section | None
+    ) -> tuple[Staff | None, Any]:
+        teacher_staff = (
+            attrs.get("teacher_staff")
+            if "teacher_staff" in attrs
+            else (instance.teacher_staff if instance else None)
+        )
+        teacher_user = (
+            attrs.get("teacher_user")
+            if "teacher_user" in attrs
+            else (instance.teacher_user if instance else None)
+        )
+
+        if "teacher_staff" in attrs:
+            if teacher_staff and getattr(teacher_staff, "user", None):
+                attrs["teacher_user"] = teacher_staff.user
+                teacher_user = teacher_staff.user
+            elif teacher_staff is None:
+                attrs["teacher_user"] = None
+                teacher_user = None
+        elif "teacher_user" in attrs:
+            if teacher_user:
+                stf = Staff.objects.filter(
+                    institution_id=institution_id,
+                    user=teacher_user,
+                    is_deleted=False,
+                ).first()
+                if stf:
+                    attrs["teacher_staff"] = stf
+                    teacher_staff = stf
+            elif teacher_user is None:
+                attrs["teacher_staff"] = None
+                teacher_staff = None
+
+        return teacher_staff, teacher_user
+
+    def _validate_conflicts(
+        self,
+        session: Any,
+        instance: Section | None,
+        teacher_staff: Staff | None,
+        teacher_user: Any,
+    ) -> None:
+        if teacher_staff and session:
+            conflict_staff_qs = Section.objects.filter(
+                session=session,
+                teacher_staff=teacher_staff,
+            )
+            if instance:
+                conflict_staff_qs = conflict_staff_qs.exclude(pk=instance.pk)
+            conflict_staff = conflict_staff_qs.select_related("class_level").first()
+            if conflict_staff:
+                raise serializers.ValidationError(
+                    {
+                        "teacher_staff": (
+                            f"This teacher is already assigned as Class Teacher for "
+                            f"{conflict_staff.class_level.name} - {conflict_staff.name} in this session."
+                        )
+                    }
+                )
+
+        if teacher_user and session:
+            conflict_qs = Section.objects.filter(
+                session=session,
+                teacher_user=teacher_user,
+            )
+            if instance:
+                conflict_qs = conflict_qs.exclude(pk=instance.pk)
+            conflict = conflict_qs.select_related("class_level").first()
+            if conflict:
+                raise serializers.ValidationError(
+                    {
+                        "teacher_user": (
+                            f"This teacher is already assigned as Class Teacher for "
+                            f"{conflict.class_level.name} - {conflict.name} in this session."
+                        )
+                    }
+                )
+
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         institution = get_request_institution(self.context["request"])
         instance = self.instance if isinstance(self.instance, Section) else None
         class_level = attrs.get("class_level") or (instance.class_level if instance else None)
         shift = attrs.get("shift") or (instance.shift if instance else None)
         session = attrs.get("session") or (instance.session if instance else None)
-        teacher_user = attrs.get("teacher_user") or (instance.teacher_user if instance else None)
+
+        teacher_staff, teacher_user = self._sync_teacher_attrs(attrs, institution.id, instance)
 
         if class_level and class_level.institution_id != institution.id:
             raise serializers.ValidationError(
@@ -121,12 +214,22 @@ class SectionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"session": "Session must belong to your institution."}
             )
+        if teacher_staff and teacher_staff.institution_id != institution.id:
+            raise serializers.ValidationError(
+                {"teacher_staff": "Teacher must belong to your institution."}
+            )
         if teacher_user and teacher_user.institution_id != institution.id:
             raise serializers.ValidationError(
                 {"teacher_user": "Teacher must belong to your institution."}
             )
 
+        self._validate_conflicts(session, instance, teacher_staff, teacher_user)
         return attrs
+
+
+class AssignClassTeacherSerializer(serializers.Serializer):
+    teacher_staff_id = serializers.UUIDField(required=False, allow_null=True)
+    teacher_user_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class BulkCreateSectionsSerializer(serializers.Serializer):
@@ -419,9 +522,12 @@ class RoutineSlotSerializer(serializers.ModelSerializer):
     period_end = serializers.TimeField(source="period.end_time", read_only=True)
     subject_code = serializers.CharField(source="subject.code", read_only=True)
     subject_name_en = serializers.CharField(source="subject.name_en", read_only=True)
+    subject_name_bn = serializers.CharField(source="subject.name_bn", read_only=True, default="")
+    day_of_week = serializers.SerializerMethodField()
     teacher_name = serializers.SerializerMethodField()
     room_name = serializers.CharField(source="room.name", read_only=True, default=None)
     section_name = serializers.CharField(source="section.name", read_only=True)
+    class_level = serializers.UUIDField(source="section.class_level.id", read_only=True)
     class_level_name = serializers.CharField(source="section.class_level.name", read_only=True)
     teacher_user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), required=False, allow_null=True, default=None
@@ -432,6 +538,12 @@ class RoutineSlotSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.all(), required=False, allow_null=True, default=None
     )
+
+    def get_day_of_week(self, obj: RoutineSlot) -> int:
+        # Django Weekday: 0=Sat, 1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri
+        # Dart / ISO 8601: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
+        mapping = {0: 6, 1: 7, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5}
+        return mapping.get(obj.weekday, 7)
 
     def get_teacher_name(self, obj: RoutineSlot) -> str | None:
         if obj.teacher_staff:
@@ -446,9 +558,11 @@ class RoutineSlotSerializer(serializers.ModelSerializer):
             "id",
             "section",
             "section_name",
+            "class_level",
             "class_level_name",
             "weekday",
             "weekday_display",
+            "day_of_week",
             "period",
             "period_name",
             "period_start",
@@ -456,6 +570,7 @@ class RoutineSlotSerializer(serializers.ModelSerializer):
             "subject",
             "subject_code",
             "subject_name_en",
+            "subject_name_bn",
             "teacher_user",
             "teacher_staff",
             "teacher_name",

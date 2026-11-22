@@ -352,11 +352,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if CanViewFees().has_permission(self.request, self):
             return qs
 
-        # Students can view only their own issued/paid invoices
-        stu_profile = getattr(user, "student_profile", None)
-        if stu_profile:
-            return qs.filter(student_id=stu_profile.id).exclude(status=InvoiceStatus.DRAFT)
-
         # Guardians can view their wards' invoices
         guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
         if guardians:
@@ -615,9 +610,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
             return qs.none()
         if user.is_superuser or CanViewFees().has_permission(self.request, self):
             return qs
-        stu_profile = getattr(user, "student_profile", None)
-        if stu_profile:
-            return qs.filter(student_id=stu_profile.id)
         guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
         if guardians:
             wards = []
@@ -821,9 +813,6 @@ class MoneyReceiptViewSet(viewsets.ReadOnlyModelViewSet):
             return qs.none()
         if user.is_superuser or CanViewFees().has_permission(self.request, self):
             return qs
-        stu_profile = getattr(user, "student_profile", None)
-        if stu_profile:
-            return qs.filter(student_id=stu_profile.id)
         guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
         if guardians:
             wards = []
@@ -866,9 +855,6 @@ class AdvanceBalanceViewSet(viewsets.ReadOnlyModelViewSet):
             return qs.none()
         if user.is_superuser or CanViewFees().has_permission(self.request, self):
             return qs
-        stu_profile = getattr(user, "student_profile", None)
-        if stu_profile:
-            return qs.filter(student_id=stu_profile.id)
         guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
         if guardians:
             wards = []
@@ -926,9 +912,6 @@ class RefundViewSet(viewsets.ModelViewSet):
             return qs.none()
         if user.is_superuser or CanViewFees().has_permission(self.request, self):
             return qs
-        stu_profile = getattr(user, "student_profile", None)
-        if stu_profile:
-            return qs.filter(student_id=stu_profile.id)
         guardians = list(user.guardian_profiles.all()) if hasattr(user, "guardian_profiles") else []
         if guardians:
             wards = []

@@ -264,6 +264,7 @@ Backend sets `user.must_change_password = False`.
   3. `GET /api/v1/exams/admit-cards/?student=<student_id>` → `GET /api/v1/exams/admit-cards/{id}/download_pdf/`
   4. `GET /api/v1/results/exam-results/?student=<student_id>&exam=<exam_id>`
   5. `GET /api/v1/results/report-cards/?exam_result=<exam_result_id>` → `GET /api/v1/results/report-cards/{id}/download/` (PDF)
+  6. `GET /api/v1/results/student-results/?exam=<exam_id>&class_level=<class_id>&section=<section_id>` — batch/summary student exam results with position rankings (`class_position`, `section_position`), GPA, total marks, percentage, and pass/fail status.
 - **Teacher Marks Entry:**
   1. `GET /api/v1/exams/exams/` → `GET /api/v1/exams/subjects/?exam=<exam_id>`
   2. `GET /api/v1/exams/mark-entries/?exam_subject=<exam_subject_id>`
@@ -272,12 +273,13 @@ Backend sets `user.must_change_password = False`.
 ### 4.6 Fees & Online Payment Flow (bKash / Nagad / SSLCommerz / aamarPay)
 1. `GET /api/v1/fees/invoices/?student=<student_id>` — list invoices and `balance_due`
 2. `GET /api/v1/fees/invoices/{id}/` — invoice line items
-3. `POST /api/v1/fees/payments/initiate-online/`
+3. `GET /api/v1/fees/student-waivers/?student=<student_id>` — list applied fee waivers and scholarships
+4. `POST /api/v1/fees/payments/initiate-online/`
    - Body: `{ "invoice_id": "<uuid>", "payment_method": "bkash" | "nagad" | "sslcommerz" | "aamarpay", "success_url": "...", "fail_url": "...", "cancel_url": "..." }`
    - Response (`200 OK`): `{ "payment_id": "<uuid>", "gateway_url": "https://...", "transaction_id": "..." }`
-4. Open `gateway_url` in Flutter WebView / in-app browser; intercept redirect to `success_url` / `fail_url` / `cancel_url`.
-5. `POST /api/v1/fees/payments/verify/` — verify transaction with `{ "payment_id": "<uuid>", ...gateway_params }`.
-6. `GET /api/v1/fees/receipts/?payment=<payment_id>` — fetch/download money receipt.
+5. Open `gateway_url` in Flutter WebView / in-app browser; intercept redirect to `success_url` / `fail_url` / `cancel_url`.
+6. `POST /api/v1/fees/payments/verify/` — verify transaction with `{ "payment_id": "<uuid>", ...gateway_params }`.
+7. `GET /api/v1/fees/receipts/?payment=<payment_id>` — fetch/download money receipt.
 
 ### 4.7 Notices & Events
 1. `GET /api/v1/communications/notices/` (supports filtering/ordering, pinned notices first)
@@ -323,6 +325,15 @@ Backend sets `user.must_change_password = False`.
 ### 4.12 Security / Gate Pickup Verification
 1. `GET /api/v1/guardians/pickups/?student=<student_id>` — verify authorized pickup person
 2. `POST /api/v1/guardians/pickups/{id}/send-otp/` → `POST /api/v1/guardians/pickups/{id}/verify-otp/`
+
+### 4.13 Staff Self-Service & Payroll
+- **Staff Payslips:**
+  1. `GET /api/v1/payroll/payslips/?staff=<staff_id>` — list payslips for authenticated teacher or staff member (includes gross pay, deductions, net salary, payment status, and disbursement method)
+  2. `GET /api/v1/payroll/payslips/{id}/download_pdf/` — download official PDF salary payslip
+- **Staff Salary Structure & Profiles (Management / HR):**
+  1. `GET /api/v1/payroll/structures/` — list configured institution salary allowance/deduction structures
+  2. `GET /api/v1/payroll/profiles/` — list staff salary profiles
+  3. `POST /api/v1/payroll/profiles/sync-roster/` — bulk initialize baseline salary profiles for newly appointed or unconfigured staff members without profiles
 
 ---
 
@@ -492,3 +503,37 @@ python manage.py seed_demo_institution
 6. **No Seeded Demo Users:** `seed_demo_institution` only seeds institution/academic/holiday records. Mobile QA requires creating test users manually (via Django admin, `createsuperuser`, or `/api/v1/auth/users/`) or adding a `seed_demo_users` management command.
 7. **Driver User Linkage & Security Gate Endpoints:** `Driver` and `security` `user_type`s exist, and `BoardingEventViewSet.scan` resolves `driver` via `resolve_driver_for_user(user)`, but there is no dedicated `/api/v1/driver/me/` or dedicated `/api/v1/security/gate-logs/` endpoint—security uses `guardians/pickups/` and `hostel/gate-passes/`.
 8. **Offline Check-in Idempotency:** `POST /api/v1/attendance/mobile-checkin/checkin/` does not accept an `idempotency_key`, making offline-queued staff check-ins unsafe to replay without server-side deduplication.
+
+---
+
+## 12. Flutter Client Synchronization & Contract Guidelines
+
+### 12.1 Schema as Single Source of Truth
+The canonical OpenAPI 3.0 specification file is located at:
+```
+schema/schema.yml
+```
+Whenever backend models, serializers, or query parameters change, the backend team regenerates and validates this file with:
+```bash
+venv/bin/python manage.py spectacular --file schema/schema.yml --validate
+```
+
+### 12.2 Syncing the Flutter Codebase
+In the separate Flutter repository:
+1. Pull or copy the updated `schema/schema.yml` into your mobile project's schema directory (or reference the backend repository submodule/path).
+2. Run Flutter build runner to update freezed DTOs and API clients:
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+3. Verify that all network request bodies, query filters, and response models conform strictly to the generated types without manual overrides.
+4. Run Flutter test suite:
+   ```bash
+   flutter test
+   ```
+
+### 12.3 Cross-Repository Parity Checklist
+- [ ] No hardcoded endpoints or request/response structures in mobile code.
+- [ ] Dates parsed using standard ISO 8601 parsers and formatted for `Asia/Dhaka` (`UTC+6`).
+- [ ] All money fields handled via `Decimal` (or integer paisa) to maintain financial integrity.
+- [ ] All API error responses mapped to strongly typed `Failure` classes using the `{ code, message, details }` envelope.
+- [ ] Offline actions check for `idempotency_key` support before enqueueing retries.

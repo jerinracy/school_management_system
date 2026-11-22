@@ -341,3 +341,118 @@ class TestStaffAPI:
         staff.refresh_from_db()
         assert staff.user is not None
         assert staff.user.check_password("ResetPassword456#")
+
+    def test_update_staff_and_sync_user(self, client_for, admin_user, institution):
+        client = client_for(admin_user)
+        # Create staff with portal access
+        payload = {
+            "full_name_en": "Teacher To Update",
+            "phone": "+8801755112233",
+            "gender": "female",
+            "dob": "1990-05-10",
+            "joining_date": "2026-01-01",
+            "staff_type": "teacher",
+            "give_portal_access": True,
+            "portal_username": "teacher_update",
+            "portal_password": "InitialPass123!",
+        }
+        create_res = client.post("/api/v1/staff/staff/", payload)
+        assert create_res.status_code == status.HTTP_201_CREATED
+        staff_id = create_res.json()["id"]
+
+        staff = Staff.objects.get(id=staff_id)
+        assert staff.user.phone == "+8801755112233"
+
+        # Update staff details
+        patch_res = client.patch(
+            f"/api/v1/staff/staff/{staff_id}/",
+            {
+                "full_name_en": "Senior Teacher Updated",
+                "phone": "+8801899112233",
+                "email": "teacher_updated@example.com",
+            },
+        )
+        assert patch_res.status_code == status.HTTP_200_OK
+        staff.refresh_from_db()
+        staff.user.refresh_from_db()
+
+        assert staff.full_name_en == "Senior Teacher Updated"
+        assert staff.phone == "+8801899112233"
+        assert staff.email == "teacher_updated@example.com"
+        assert staff.user.phone == "+8801899112233"
+        assert staff.user.email == "teacher_updated@example.com"
+
+    def test_delete_staff_deactivates_user_and_soft_deletes(
+        self, client_for, admin_user, institution
+    ):
+        client = client_for(admin_user)
+        payload = {
+            "full_name_en": "Staff To Delete",
+            "phone": "+8801766112233",
+            "gender": "male",
+            "dob": "1992-06-15",
+            "joining_date": "2026-01-01",
+            "staff_type": "support",
+            "give_portal_access": True,
+            "portal_username": "staff_del",
+            "portal_password": "InitialPass123!",
+        }
+        create_res = client.post("/api/v1/staff/staff/", payload)
+        assert create_res.status_code == status.HTTP_201_CREATED
+        staff_id = create_res.json()["id"]
+
+        del_res = client.delete(f"/api/v1/staff/staff/{staff_id}/")
+        assert del_res.status_code == status.HTTP_204_NO_CONTENT
+
+        # Confirm soft deleted
+        assert not Staff.objects.filter(id=staff_id).exists()
+        staff = Staff.all_objects.get(id=staff_id)
+        assert staff.is_deleted is True
+        assert staff.deleted_at is not None
+
+        # Confirm user deactivated
+        staff.user.refresh_from_db()
+        assert staff.user.is_active is False
+
+    def test_patch_staff_me_photo_upload(self, client_for, institution):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from apps.accounts.models import User
+        from apps.staff.models import Staff
+
+        user = User.objects.create_user(
+            username="me_teacher",
+            phone="+8801799887766",
+            password="TeacherPass123!",
+            institution=institution,
+            user_type="teacher",
+        )
+        staff = Staff.objects.create(
+            institution=institution,
+            user=user,
+            full_name_en="Teacher For Photo",
+            phone="+8801799887766",
+            gender="female",
+            dob="1990-05-10",
+            joining_date="2026-01-01",
+            staff_type="teaching",
+        )
+
+        client = client_for(user)
+        photo_content = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
+        uploaded_photo = SimpleUploadedFile("avatar.png", photo_content, content_type="image/png")
+
+        res = client.patch(
+            "/api/v1/staff/staff/me/",
+            {"photo": uploaded_photo},
+            format="multipart",
+        )
+        assert res.status_code == status.HTTP_200_OK
+        data = res.json()
+        assert data["photo"] is not None
+        assert "avatar" in data["photo"] or "staff" in data["photo"]
+
+        staff.refresh_from_db()
+        assert bool(staff.photo) is True
+        user.refresh_from_db()
+        assert bool(user.avatar) is True

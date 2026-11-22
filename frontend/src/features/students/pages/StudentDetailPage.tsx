@@ -7,17 +7,24 @@ import {
   Briefcase,
   CheckCircle2,
   CreditCard,
+  Edit2,
+  Eye,
+  EyeOff,
   History,
+  KeyRound,
   Mail,
   MapPin,
   Phone,
   Plus,
   Search,
   ShieldCheck,
+  Smartphone,
+  Sparkles,
   Trash2,
   User,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,7 +49,10 @@ import { studentsApi } from "@/features/students/api/studentsApi";
 import { academicApi } from "@/features/academics/api/academicApi";
 import { institutionApi } from "@/features/institutions/api/institutionApi";
 import { StudentIDCardPreview } from "@/features/students/components/StudentIDCardPreview";
+import { EditStudentDialog } from "@/features/students/components/EditStudentDialog";
+import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
 import { Can } from "@/features/auth/permissions";
+import { cn } from "@/lib/utils";
 import type { components } from "@/types/api";
 
 export function StudentDetailPage() {
@@ -61,6 +71,63 @@ export function StudentDetailPage() {
   const [enrollSectionId, setEnrollSectionId] = useState("");
   const [enrollRollNo, setEnrollRollNo] = useState<number>(1);
   const [enrollError, setEnrollError] = useState<string | null>(null);
+
+  // Mobile App Login Modal State
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [loginPhone, setLoginPhone] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginModalError, setLoginModalError] = useState<string | null>(null);
+
+  const assignLoginMutation = useMutation({
+    mutationFn: () => {
+      if (!id) throw new Error("Student ID missing");
+      if (!loginPassword || loginPassword.length < 6) {
+        throw new Error("Password must be at least 6 characters.");
+      }
+      return studentsApi.assignStudentLogin(id, {
+        phone: loginPhone || undefined,
+        password: loginPassword,
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["student", id] });
+      setIsLoginModalOpen(false);
+      setLoginPassword("");
+      setLoginModalError(null);
+    },
+    onError: (err: unknown) => {
+      setLoginModalError((err as Error).message || "Failed to set login credentials.");
+    },
+  });
+
+  // Edit & Delete modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: () => {
+      if (!id) throw new Error("Student ID missing");
+      return studentsApi.deleteStudent(id);
+    },
+    onSuccess: () => {
+      toast.success(t("students.deleteSuccess", "Student profile deleted successfully."));
+      void queryClient.invalidateQueries({ queryKey: ["students"] });
+      void navigate("/students");
+    },
+    onError: (err: unknown) => {
+      toast.error((err as Error).message || "Failed to delete student.");
+    },
+  });
+
+  const handleGenerateStudentPassword = () => {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%";
+    let pass = "";
+    for (let i = 0; i < 8; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setLoginPassword(pass);
+  };
 
   // Student Query
   const {
@@ -283,7 +350,31 @@ export function StudentDetailPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Can perm="students.manage">
+              <Button
+                variant={student.has_app_account ? "outline" : "default"}
+                size="sm"
+                onClick={() => {
+                  setLoginPhone(student.login_phone || student.phone || student.emergency_contact_phone || "");
+                  setLoginPassword("");
+                  setLoginModalError(null);
+                  setIsLoginModalOpen(true);
+                }}
+                className={cn(
+                  "gap-1.5 text-xs rounded-lg font-semibold",
+                  !student.has_app_account && "bg-amber-800 hover:bg-amber-900 text-white"
+                )}
+              >
+                <Smartphone className="h-3.5 w-3.5" />
+                <span>
+                  {student.has_app_account
+                    ? t("students.resetAppPassword", "Reset Password")
+                    : t("students.setupAppLogin", "Setup App Login")}
+                </span>
+              </Button>
+            </Can>
+
             <Button
               variant="outline"
               size="sm"
@@ -293,6 +384,30 @@ export function StudentDetailPage() {
               <CreditCard className="h-3.5 w-3.5" />
               <span>{t("students.viewIdCard", "View ID Card")}</span>
             </Button>
+
+            <Can perm="students.manage">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditModalOpen(true)}
+                className="gap-1.5 text-xs rounded-lg"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+                <span>{t("common.edit", "Edit")}</span>
+              </Button>
+            </Can>
+
+            <Can perm="students.manage">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="gap-1.5 text-xs rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:border-rose-900/50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>{t("common.delete", "Delete")}</span>
+              </Button>
+            </Can>
 
             <Can perm="students.manage">
               <Button
@@ -403,6 +518,85 @@ export function StudentDetailPage() {
                 <div>
                   <span className="text-slate-400 block">{t("students.presentAddress", "Present Address")}</span>
                   <span className="text-slate-700 dark:text-slate-300">{student.present_address}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile App Login Credentials */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xs space-y-4 md:col-span-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-800 dark:text-emerald-300">
+                    <Smartphone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                      {t("students.appLoginTitle", "Mobile App & Portal Login Account")}
+                    </h3>
+                    <p className="text-[11px] text-slate-500">
+                      {t(
+                        "students.appLoginExplainer",
+                        "The student logs into the mobile app using their phone number and password."
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold border",
+                      student.has_app_account
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
+                        : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800"
+                    )}
+                  >
+                    {student.has_app_account
+                      ? t("students.appLoginActive", "Active Login")
+                      : t("students.appLoginNotConfigured", "No Login Account")}
+                  </span>
+
+                  <Can perm="students.manage">
+                    <Button
+                      size="sm"
+                      variant={student.has_app_account ? "outline" : "default"}
+                      onClick={() => {
+                        setLoginPhone(student.login_phone || student.phone || student.emergency_contact_phone || "");
+                        setLoginPassword("");
+                        setLoginModalError(null);
+                        setIsLoginModalOpen(true);
+                      }}
+                      className={cn(
+                        "text-xs font-semibold gap-1.5 rounded-lg",
+                        !student.has_app_account && "bg-emerald-800 hover:bg-emerald-900 text-white"
+                      )}
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      <span>
+                        {student.has_app_account
+                          ? t("students.resetPasswordBtn", "Reset Password")
+                          : t("students.setupLoginBtn", "Create Login Details")}
+                      </span>
+                    </Button>
+                  </Can>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-400 block">{t("students.loginPhone", "Login Mobile Number")}</span>
+                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm">
+                    {student.login_phone || student.phone || t("common.notConfigured", "No phone assigned")}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block">{t("students.passwordPolicy", "Password Policy")}</span>
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {t(
+                      "students.passwordPolicyInfo",
+                      "Students can keep the initial password or change it in the mobile app settings."
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -966,6 +1160,142 @@ export function StudentDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Mobile App Login Credentials Dialog */}
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Smartphone className="h-5 w-5 text-emerald-800 dark:text-emerald-400" />
+              <span>
+                {student.has_app_account
+                  ? t("students.resetAppPasswordTitle", "Reset Student App Password")
+                  : t("students.setupAppLoginTitle", "Setup Student Mobile App Login")}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {t(
+                "students.setupAppLoginDesc",
+                "Assign or update login credentials for this student to access the mobile app."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {loginModalError && (
+            <div className="rounded-lg border border-danger/20 bg-danger/10 p-2.5 text-xs text-danger font-medium">
+              {loginModalError}
+            </div>
+          )}
+
+          <div className="space-y-4 py-2">
+            <FormField>
+              <div className="flex items-center justify-between">
+                <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  {t("students.loginPhone", "Student Mobile Number (Login ID)")}
+                </FormLabel>
+                {student.emergency_contact_phone && (
+                  <button
+                    type="button"
+                    onClick={() => setLoginPhone(student.emergency_contact_phone || "")}
+                    className="text-[11px] text-emerald-800 dark:text-emerald-400 hover:underline font-medium"
+                  >
+                    {t("students.copyEmergencyPhone", "Use emergency phone")}
+                  </button>
+                )}
+              </div>
+              <Input
+                placeholder="+8801XXXXXXXXX"
+                value={loginPhone}
+                onChange={(e) => setLoginPhone(e.target.value)}
+                className="h-9 text-xs font-mono rounded-lg"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                {t("students.phoneLoginHint", "Student will use this phone number to log into the mobile app.")}
+              </p>
+            </FormField>
+
+            <FormField>
+              <div className="flex items-center justify-between">
+                <FormLabel required className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  {t("students.initialPassword", "Initial Password")}
+                </FormLabel>
+                <button
+                  type="button"
+                  onClick={handleGenerateStudentPassword}
+                  className="inline-flex items-center gap-1 text-[11px] text-emerald-800 dark:text-emerald-400 hover:underline font-medium"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  <span>{t("common.generate", "Auto Generate")}</span>
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showLoginPassword ? "text" : "password"}
+                  placeholder="Min. 6 characters"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="h-9 text-xs rounded-lg pr-9 font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                >
+                  {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                {t("students.passwordPolicyHint", "Student can use this initial password or change it later in their app.")}
+              </p>
+            </FormField>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLoginModalOpen(false)}
+              className="text-xs rounded-lg"
+            >
+              {t("common.cancel", "Cancel")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => assignLoginMutation.mutate()}
+              disabled={assignLoginMutation.isPending || !loginPassword || loginPassword.length < 6}
+              className="text-xs bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg"
+            >
+              {assignLoginMutation.isPending
+                ? t("common.saving", "Saving...")
+                : student.has_app_account
+                ? t("students.savePassword", "Update Password")
+                : t("students.createLoginBtn", "Create App Login")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Student Dialog */}
+      <EditStudentDialog
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        student={student}
+      />
+
+      {/* Delete Student Confirmation Dialog */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title={t("students.deleteConfirmTitle", "Delete Student Profile")}
+        description={t(
+          "students.deleteConfirmDesc",
+          "Are you sure you want to delete this student? Their profile and mobile app access will be deactivated. This action can be restored by an administrator."
+        )}
+        destructive
+        loading={deleteMutation.isPending}
+        confirmLabel={t("common.delete", "Delete")}
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </div>
   );
 }

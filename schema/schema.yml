@@ -1601,6 +1601,74 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/academics/sections/{id}/assign-class-teacher/:
+    post:
+      operationId: academics_sections_assign_class_teacher_create
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: Assign or change Class Teacher for a section
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Section.
+        required: true
+      tags:
+      - Academics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignClassTeacherRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssignClassTeacherRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssignClassTeacherRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Section'
+          description: ''
+  /api/v1/academics/sections/{id}/teachers/:
+    get:
+      operationId: academics_sections_teachers_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List teachers assigned to routine slots for this section
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Section.
+        required: true
+      tags:
+      - Academics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/academics/sections/{id}/timetable/:
     get:
       operationId: academics_sections_timetable_retrieve
@@ -1691,6 +1759,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedSectionList'
+          description: ''
+  /api/v1/academics/sections/my-teachers/:
+    get:
+      operationId: academics_sections_my_teachers_retrieve
+      description: |-
+        Mixin for DRF ViewSets ensuring strict tenant data isolation.
+
+        1. Filters get_queryset() to only return objects belonging to the current user's institution.
+        2. Automatically assigns request.user.institution on perform_create().
+      summary: List teachers assigned to routine slots for current student's section
+      tags:
+      - Academics
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/academics/subjects/:
     get:
@@ -5800,6 +5889,11 @@ paths:
         schema:
           type: string
       - in: query
+        name: staff
+        schema:
+          type: string
+          format: uuid
+      - in: query
         name: status
         schema:
           type: string
@@ -5819,6 +5913,11 @@ paths:
           * `leave` - On Leave (ছুটি)
           * `holiday` - Holiday (ছুটির দিন)
           * `weekend` - Weekend (সাপ্তাহিক ছুটি)
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
       - in: query
         name: user_type
         schema:
@@ -6555,6 +6654,302 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttendancePolicy'
+          description: ''
+  /api/v1/attendance/student-leaves/:
+    get:
+      operationId: attendance_student_leaves_list
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: query
+        name: applicant_type
+        schema:
+          type: string
+          enum:
+          - guardian
+          - student
+        description: |-
+          * `guardian` - Guardian
+          * `student` - Student
+      - in: query
+        name: end_date
+        schema:
+          type: string
+          format: date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: start_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - approved
+          - cancelled
+          - pending
+          - rejected
+        description: |-
+          * `pending` - Pending
+          * `approved` - Approved
+          * `rejected` - Rejected
+          * `cancelled` - Cancelled
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentLeaveRequestList'
+          description: ''
+    post:
+      operationId: attendance_student_leaves_create
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLeaveRequest'
+          description: ''
+  /api/v1/attendance/student-leaves/{id}/:
+    get:
+      operationId: attendance_student_leaves_retrieve
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student leave request.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLeaveRequest'
+          description: ''
+    put:
+      operationId: attendance_student_leaves_update
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student leave request.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLeaveRequest'
+          description: ''
+    patch:
+      operationId: attendance_student_leaves_partial_update
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student leave request.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentLeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentLeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentLeaveRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLeaveRequest'
+          description: ''
+    delete:
+      operationId: attendance_student_leaves_destroy
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student leave request.
+        required: true
+      tags:
+      - attendance
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/attendance/student-leaves/{id}/approve/:
+    post:
+      operationId: attendance_student_leaves_approve_create
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student leave request.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLeaveRequest'
+          description: ''
+  /api/v1/attendance/student-leaves/{id}/reject/:
+    post:
+      operationId: attendance_student_leaves_reject_create
+      description: Student leave application management submitted by Guardian or Student,
+        reviewed by Class Teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student leave request.
+        required: true
+      tags:
+      - attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentLeaveRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLeaveRequest'
           description: ''
   /api/v1/audit/activities/:
     get:
@@ -7490,7 +7885,8 @@ paths:
   /api/v1/communications/chat/threads/:
     get:
       operationId: communications_chat_threads_list
-      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      description: Manage 1-on-1 dialogue threads between teachers, guardians, and
+        students.
       summary: List Teacher-Guardian Chat Threads
       parameters:
       - name: ordering
@@ -7530,7 +7926,8 @@ paths:
           description: ''
     post:
       operationId: communications_chat_threads_create
-      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      description: Manage 1-on-1 dialogue threads between teachers, guardians, and
+        students.
       summary: Initiate Chat Thread
       tags:
       - communications
@@ -7558,7 +7955,8 @@ paths:
   /api/v1/communications/chat/threads/{id}/:
     get:
       operationId: communications_chat_threads_retrieve
-      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      description: Manage 1-on-1 dialogue threads between teachers, guardians, and
+        students.
       summary: Retrieve Chat Thread Details
       parameters:
       - in: path
@@ -7582,7 +7980,8 @@ paths:
   /api/v1/communications/chat/threads/{id}/mark-read/:
     post:
       operationId: communications_chat_threads_mark_read_create
-      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      description: Manage 1-on-1 dialogue threads between teachers, guardians, and
+        students.
       summary: Mark Thread Messages as Read
       parameters:
       - in: path
@@ -7618,7 +8017,8 @@ paths:
   /api/v1/communications/chat/threads/{id}/messages/:
     get:
       operationId: communications_chat_threads_messages_list
-      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      description: Manage 1-on-1 dialogue threads between teachers, guardians, and
+        students.
       summary: List or Send Messages in Thread
       parameters:
       - in: path
@@ -7671,7 +8071,8 @@ paths:
           description: ''
     post:
       operationId: communications_chat_threads_messages_create
-      description: Manage 1-on-1 dialogue threads between teachers and guardians.
+      description: Manage 1-on-1 dialogue threads between teachers, guardians, and
+        students.
       summary: List or Send Messages in Thread
       parameters:
       - in: path
@@ -17544,7 +17945,9 @@ paths:
   /api/v1/guardians/guardians/{id}/create-portal-account/:
     post:
       operationId: guardians_guardians_create_portal_account_create
-      description: Generate and deliver login credentials for the Guardian portal.
+      description: Generate, assign, or reset login credentials for the Guardian portal
+        & mobile app.
+      summary: Assign or Reset Guardian App Login
       parameters:
       - in: path
         name: id
@@ -17559,14 +17962,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GuardianRequest'
+              $ref: '#/components/schemas/GuardianAssignLoginRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/GuardianRequest'
+              $ref: '#/components/schemas/GuardianAssignLoginRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/GuardianRequest'
-        required: true
+              $ref: '#/components/schemas/GuardianAssignLoginRequest'
       security:
       - jwtAuth: []
       responses:
@@ -26071,6 +26473,36 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/payroll/profiles/sync-roster/:
+    post:
+      operationId: payroll_profiles_sync_roster_create
+      description: Creates baseline salary profiles for active school staff members
+        who do not yet have one.
+      summary: Synchronize staff roster to salary profiles
+      tags:
+      - Payroll - Profiles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffSalaryProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/payroll/runs/:
     get:
       operationId: payroll_runs_list
@@ -27498,6 +27930,12 @@ paths:
         endpoint.
       parameters:
       - in: query
+        name: class_level
+        schema:
+          type: string
+          format: uuid
+        description: Filter student results by class level UUID
+      - in: query
         name: exam
         schema:
           type: string
@@ -27534,6 +27972,12 @@ paths:
         description: A search term.
         schema:
           type: string
+      - in: query
+        name: section
+        schema:
+          type: string
+          format: uuid
+        description: Filter student results by section UUID
       - in: query
         name: status
         schema:
@@ -30403,9 +30847,39 @@ paths:
   /api/v1/staff/staff/me/:
     get:
       operationId: staff_staff_me_retrieve
-      description: Retrieve profile of the currently authenticated staff member.
+      description: Retrieve or update profile of the currently authenticated staff
+        member.
+      summary: Retrieve profile of the currently authenticated staff member
       tags:
       - staff
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffDetail'
+          description: ''
+    patch:
+      operationId: staff_staff_me_partial_update
+      description: Retrieve or update profile of the currently authenticated staff
+        member.
+      summary: Update profile or upload photo of the currently authenticated staff
+        member
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffPhotoUploadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffPhotoUploadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffPhotoUploadRequest'
       security:
       - jwtAuth: []
       responses:
@@ -30873,6 +31347,43 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/students/{id}/assign-login/:
+    post:
+      operationId: students_assign_login_create
+      description: Endpoints for student lifecycle management.
+      summary: Assign or Reset Student App Login
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this student.
+        required: true
+      tags:
+      - Students
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentAssignLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentAssignLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentAssignLoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/students/{id}/id-card/:
     get:
       operationId: students_id_card_retrieve
@@ -31229,6 +31740,22 @@ paths:
       operationId: students_export_retrieve
       description: Endpoints for student lifecycle management.
       summary: Export students to Excel
+      tags:
+      - Students
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+  /api/v1/students/me/:
+    get:
+      operationId: students_me_retrieve
+      description: Endpoints for student lifecycle management.
+      summary: Retrieve logged-in student profile
       tags:
       - Students
       security:
@@ -34821,6 +35348,14 @@ components:
       required:
       - album_date
       - title_en
+    ApplicantTypeEnum:
+      enum:
+      - guardian
+      - student
+      type: string
+      description: |-
+        * `guardian` - Guardian
+        * `student` - Student
     Application:
       type: object
       properties:
@@ -35339,6 +35874,17 @@ components:
         * `pending` - Pending Approval
         * `approved` - Approved
         * `rejected` - Rejected
+    AssignClassTeacherRequest:
+      type: object
+      properties:
+        teacher_staff_id:
+          type: string
+          format: uuid
+          nullable: true
+        teacher_user_id:
+          type: string
+          format: uuid
+          nullable: true
     AssigneeTypeEnum:
       enum:
       - student
@@ -37356,21 +37902,30 @@ components:
       - thread
     ChatThread:
       type: object
-      description: Serializer for Teacher ↔ Guardian chat threads.
+      description: Serializer for Teacher ↔ Guardian and Teacher ↔ Student chat threads.
       properties:
         id:
           type: string
           format: uuid
           readOnly: true
+        thread_type:
+          $ref: '#/components/schemas/ThreadTypeEnum'
         teacher:
           type: string
           format: uuid
         teacher_name:
           type: string
           readOnly: true
+        teacher_name_bn:
+          type: string
+          readOnly: true
+        teacher_designation:
+          type: string
+          readOnly: true
         guardian:
           type: string
           format: uuid
+          nullable: true
         guardian_name:
           type: string
           readOnly: true
@@ -37379,6 +37934,15 @@ components:
           format: uuid
           nullable: true
         student_name:
+          type: string
+          readOnly: true
+        student_roll:
+          type: string
+          readOnly: true
+        class_name:
+          type: string
+          readOnly: true
+        section_name:
           type: string
           readOnly: true
         subject:
@@ -37390,6 +37954,9 @@ components:
           type: string
           format: date-time
           readOnly: true
+        last_message:
+          type: string
+          readOnly: true
         unread_count:
           type: integer
           readOnly: true
@@ -37398,25 +37965,33 @@ components:
           format: date-time
           readOnly: true
       required:
+      - class_name
       - created_at
-      - guardian
       - guardian_name
       - id
+      - last_message
       - last_message_at
+      - section_name
       - student_name
+      - student_roll
       - teacher
+      - teacher_designation
       - teacher_name
+      - teacher_name_bn
       - unread_count
     ChatThreadRequest:
       type: object
-      description: Serializer for Teacher ↔ Guardian chat threads.
+      description: Serializer for Teacher ↔ Guardian and Teacher ↔ Student chat threads.
       properties:
+        thread_type:
+          $ref: '#/components/schemas/ThreadTypeEnum'
         teacher:
           type: string
           format: uuid
         guardian:
           type: string
           format: uuid
+          nullable: true
         student:
           type: string
           format: uuid
@@ -37427,7 +38002,6 @@ components:
         is_closed:
           type: boolean
       required:
-      - guardian
       - teacher
     ClassLevel:
       type: object
@@ -39648,10 +40222,18 @@ components:
         roll_no:
           type: integer
           readOnly: true
-        section_name:
+        class_level:
           type: string
+          format: uuid
           readOnly: true
         class_level_name:
+          type: string
+          readOnly: true
+        section:
+          type: string
+          format: uuid
+          readOnly: true
+        section_name:
           type: string
           readOnly: true
         total_marks:
@@ -39722,6 +40304,7 @@ components:
           readOnly: true
       required:
       - calculated_at
+      - class_level
       - class_level_name
       - class_position
       - exam
@@ -39735,6 +40318,7 @@ components:
       - is_passed
       - percentage
       - roll_no
+      - section
       - section_name
       - section_position
       - status
@@ -41394,6 +41978,14 @@ components:
       - student_relations
       - updated_at
       - user
+    GuardianAssignLoginRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          minLength: 6
     GuardianDetail:
       type: object
       description: Detailed guardian serializer embedding linked students.
@@ -41533,6 +42125,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentLinkInputRequest'
+          writeOnly: true
+        give_portal_access:
+          type: boolean
+          writeOnly: true
+          default: false
+        initial_password:
+          type: string
           writeOnly: true
       required:
       - name_en
@@ -49052,6 +49651,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StudentFeeAssignment'
+    PaginatedStudentLeaveRequestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentLeaveRequest'
     PaginatedStudentListList:
       type: object
       required:
@@ -51104,6 +51726,13 @@ components:
           items:
             $ref: '#/components/schemas/StudentLinkInputRequest'
           writeOnly: true
+        give_portal_access:
+          type: boolean
+          writeOnly: true
+          default: false
+        initial_password:
+          type: string
+          writeOnly: true
     PatchedHolidayRequest:
       type: object
       description: Serializer for Holiday.
@@ -52469,6 +53098,10 @@ components:
           maximum: 2147483647
           minimum: 0
           description: Maximum student capacity
+        teacher_staff:
+          type: string
+          format: uuid
+          nullable: true
         teacher_user:
           type: string
           format: uuid
@@ -52618,6 +53251,13 @@ components:
           type: string
           format: uuid
           nullable: true
+    PatchedStaffPhotoUploadRequest:
+      type: object
+      description: Serializer for updating staff profile photo.
+      properties:
+        photo:
+          type: string
+          format: binary
     PatchedStaffSalaryOverrideRequest:
       type: object
       description: Serializer for per-employee salary component overrides.
@@ -52723,6 +53363,8 @@ components:
           minLength: 1
           description: Full name in Bangla script.
           maxLength: 255
+        phone:
+          type: string
         dob:
           type: string
           format: date
@@ -52771,6 +53413,13 @@ components:
         emergency_contact_phone:
           type: string
           maxLength: 20
+        give_app_access:
+          type: boolean
+          writeOnly: true
+          default: false
+        initial_password:
+          type: string
+          writeOnly: true
     PatchedStudentEnrollmentCreateUpdateRequest:
       type: object
       properties:
@@ -52829,6 +53478,43 @@ components:
         notes:
           type: string
           maxLength: 255
+    PatchedStudentLeaveRequestRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        reason_category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        reason:
+          type: string
+          minLength: 1
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+        reviewer_remarks:
+          type: string
     PatchedStudentOptionalSubjectRequest:
       type: object
       properties:
@@ -56393,6 +57079,10 @@ components:
         section_name:
           type: string
           readOnly: true
+        class_level:
+          type: string
+          format: uuid
+          readOnly: true
         class_level_name:
           type: string
           readOnly: true
@@ -56413,6 +57103,9 @@ components:
           maximum: 2147483647
         weekday_display:
           type: string
+          readOnly: true
+        day_of_week:
+          type: integer
           readOnly: true
         period:
           type: string
@@ -56437,6 +57130,10 @@ components:
         subject_name_en:
           type: string
           readOnly: true
+        subject_name_bn:
+          type: string
+          readOnly: true
+          default: ''
         teacher_user:
           type: string
           format: uuid
@@ -56465,8 +57162,10 @@ components:
           format: date-time
           readOnly: true
       required:
+      - class_level
       - class_level_name
       - created_at
+      - day_of_week
       - id
       - period
       - period_end
@@ -56477,6 +57176,7 @@ components:
       - section_name
       - subject
       - subject_code
+      - subject_name_bn
       - subject_name_en
       - teacher_name
       - updated_at
@@ -57031,6 +57731,16 @@ components:
           maximum: 2147483647
           minimum: 0
           description: Maximum student capacity
+        teacher_staff:
+          type: string
+          format: uuid
+          nullable: true
+        teacher_staff_name:
+          type: string
+          readOnly: true
+        teacher_employee_id:
+          type: string
+          readOnly: true
         teacher_user:
           type: string
           format: uuid
@@ -57057,7 +57767,10 @@ components:
       - session_name
       - shift
       - shift_name
+      - teacher_employee_id
       - teacher_name
+      - teacher_staff_name
+      - teacher_user
       - updated_at
     SectionRequest:
       type: object
@@ -57081,6 +57794,10 @@ components:
           maximum: 2147483647
           minimum: 0
           description: Maximum student capacity
+        teacher_staff:
+          type: string
+          format: uuid
+          nullable: true
         teacher_user:
           type: string
           format: uuid
@@ -57091,6 +57808,7 @@ components:
       - name
       - session
       - shift
+      - teacher_user
     SendDirectSMSRequest:
       type: object
       description: Serializer for ad-hoc manual SMS testing.
@@ -57533,6 +58251,10 @@ components:
         has_portal_access:
           type: boolean
           readOnly: true
+        shift_name:
+          type: string
+          nullable: true
+          readOnly: true
         educations:
           type: array
           items:
@@ -57562,6 +58284,7 @@ components:
       - id_cards
       - joining_date
       - phone
+      - shift_name
       - user_id
       - user_type
       - username
@@ -57724,6 +58447,9 @@ components:
         username:
           type: string
           readOnly: true
+        has_portal_access:
+          type: boolean
+          readOnly: true
         phone:
           type: string
           description: Primary mobile number in normalized format (+8801XXXXXXXXX)
@@ -57752,6 +58478,7 @@ components:
       - designation_title
       - employee_id
       - full_name_en
+      - has_portal_access
       - id
       - joining_date
       - phone
@@ -58310,6 +59037,16 @@ components:
         * `waitlisted` - Waitlisted
         * `rejected` - Rejected
         * `withdrawn` - Withdrawn
+    StudentAssignLoginRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          minLength: 6
+      required:
+      - password
     StudentCreateUpdate:
       type: object
       properties:
@@ -58328,6 +59065,8 @@ components:
           type: string
           description: Full name in Bangla script.
           maxLength: 255
+        phone:
+          type: string
         dob:
           type: string
           format: date
@@ -58399,6 +59138,8 @@ components:
           minLength: 1
           description: Full name in Bangla script.
           maxLength: 255
+        phone:
+          type: string
         dob:
           type: string
           format: date
@@ -58447,6 +59188,13 @@ components:
         emergency_contact_phone:
           type: string
           maxLength: 20
+        give_app_access:
+          type: boolean
+          writeOnly: true
+          default: false
+        initial_password:
+          type: string
+          writeOnly: true
       required:
       - admission_date
       - dob
@@ -58473,6 +59221,21 @@ components:
           type: string
           description: Full name in Bangla script.
           maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          description: Student's mobile number for app login (+8801XXXXXXXXX).
+          maxLength: 20
+        has_app_account:
+          type: boolean
+          readOnly: true
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        login_phone:
+          type: string
+          readOnly: true
         dob:
           type: string
           format: date
@@ -58560,13 +59323,16 @@ components:
       - enrollments
       - gender
       - guardians
+      - has_app_account
       - id
       - id_cards
+      - login_phone
       - name_bn
       - name_en
       - previous_school
       - student_id
       - updated_at
+      - user_id
     StudentDetailRequest:
       type: object
       properties:
@@ -58586,6 +59352,11 @@ components:
           minLength: 1
           description: Full name in Bangla script.
           maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          description: Student's mobile number for app login (+8801XXXXXXXXX).
+          maxLength: 20
         dob:
           type: string
           format: date
@@ -58724,6 +59495,26 @@ components:
         student:
           type: string
           format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+          default: ''
+        student_name_bn:
+          type: string
+          readOnly: true
+          default: ''
+        student_id_number:
+          type: string
+          readOnly: true
+          default: ''
+        gender:
+          type: string
+          readOnly: true
+          default: M
+        avatar_url:
+          type: string
+          nullable: true
+          readOnly: true
         session:
           type: string
           format: uuid
@@ -58767,9 +59558,11 @@ components:
         status:
           $ref: '#/components/schemas/StatusCb2Enum'
       required:
+      - avatar_url
       - class_level
       - class_name
       - enrollment_date
+      - gender
       - group_name
       - id
       - roll_no
@@ -58779,6 +59572,9 @@ components:
       - session_name
       - shift_name
       - student
+      - student_id_number
+      - student_name_bn
+      - student_name_en
     StudentEnrollmentBriefRequest:
       type: object
       properties:
@@ -59178,6 +59974,181 @@ components:
       - card_no
       - expiry_date
       - issue_date
+    StudentLeaveRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          type: string
+          format: uuid
+        student_name_en:
+          type: string
+          readOnly: true
+        student_name_bn:
+          type: string
+          readOnly: true
+        student_roll:
+          type: string
+          readOnly: true
+          default: ''
+        class_name:
+          type: string
+          readOnly: true
+          default: ''
+        section_name:
+          type: string
+          readOnly: true
+          default: ''
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        applied_by:
+          type: string
+          format: uuid
+          readOnly: true
+        applicant_name:
+          type: string
+          readOnly: true
+        applicant_type:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantTypeEnum'
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        days_count:
+          type: integer
+          readOnly: true
+        reason_category:
+          type: string
+          maxLength: 50
+        reason:
+          type: string
+        attachment:
+          type: string
+          format: uri
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StudentLeaveStatusEnum'
+          readOnly: true
+        reviewed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reviewed_by_name:
+          type: string
+          readOnly: true
+        reviewer_remarks:
+          type: string
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        guardian_notified:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - applicant_name
+      - applicant_type
+      - applied_by
+      - class_name
+      - created_at
+      - days_count
+      - end_date
+      - guardian_notified
+      - id
+      - reason
+      - reviewed_at
+      - reviewed_by
+      - reviewed_by_name
+      - section_name
+      - start_date
+      - status
+      - student
+      - student_name_bn
+      - student_name_en
+      - student_roll
+      - updated_at
+    StudentLeaveRequestRequest:
+      type: object
+      properties:
+        student:
+          type: string
+          format: uuid
+        enrollment:
+          type: string
+          format: uuid
+          nullable: true
+        section:
+          type: string
+          format: uuid
+          nullable: true
+        session:
+          type: string
+          format: uuid
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        reason_category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        reason:
+          type: string
+          minLength: 1
+        attachment:
+          type: string
+          format: binary
+          nullable: true
+        reviewer_remarks:
+          type: string
+      required:
+      - end_date
+      - reason
+      - start_date
+      - student
+    StudentLeaveStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `rejected` - Rejected
+        * `cancelled` - Cancelled
     StudentLinkInput:
       type: object
       description: Input payload for linking a student during guardian creation/update.
@@ -59248,9 +60219,7 @@ components:
           type: string
           readOnly: true
         relation:
-          allOf:
-          - $ref: '#/components/schemas/RelationEnum'
-          readOnly: true
+          $ref: '#/components/schemas/RelationEnum'
         phone:
           type: string
           readOnly: true
@@ -59276,20 +60245,16 @@ components:
           readOnly: true
         is_primary:
           type: boolean
-          readOnly: true
           description: Indicates primary contact receiving report cards and primary
             calls
         can_pickup:
           type: boolean
-          readOnly: true
           description: Authorized to collect the student from school premises
         receives_sms:
           type: boolean
-          readOnly: true
           description: Receives automated attendance and notification SMS
         financial_responsible:
           type: boolean
-          readOnly: true
           description: Responsible for paying academic fees and dues
         created_at:
           type: string
@@ -59297,13 +60262,10 @@ components:
           readOnly: true
       required:
       - alt_phone
-      - can_pickup
       - created_at
       - email
-      - financial_responsible
       - guardian_id
       - id
-      - is_primary
       - name_bn
       - name_en
       - nid
@@ -59311,8 +60273,26 @@ components:
       - phone
       - photo
       - present_address
-      - receives_sms
-      - relation
+    StudentLinkedGuardianRequest:
+      type: object
+      description: Serializer for a guardian linked to a student with demographic
+        details.
+      properties:
+        relation:
+          $ref: '#/components/schemas/RelationEnum'
+        is_primary:
+          type: boolean
+          description: Indicates primary contact receiving report cards and primary
+            calls
+        can_pickup:
+          type: boolean
+          description: Authorized to collect the student from school premises
+        receives_sms:
+          type: boolean
+          description: Receives automated attendance and notification SMS
+        financial_responsible:
+          type: boolean
+          description: Responsible for paying academic fees and dues
     StudentList:
       type: object
       properties:
@@ -59333,6 +60313,15 @@ components:
           type: string
           description: Full name in Bangla script.
           maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          description: Student's mobile number for app login (+8801XXXXXXXXX).
+          maxLength: 20
+        photo:
+          type: string
+          format: uri
+          nullable: true
         gender:
           $ref: '#/components/schemas/GenderEnum'
         blood_group:
@@ -59349,14 +60338,29 @@ components:
           additionalProperties: {}
           nullable: true
           readOnly: true
+        has_app_account:
+          type: boolean
+          readOnly: true
+        user_id:
+          type: string
+          format: uuid
+          readOnly: true
+        guardians:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentLinkedGuardian'
+          readOnly: true
       required:
       - active_enrollment
       - admission_date
       - gender
+      - guardians
+      - has_app_account
       - id
       - name_bn
       - name_en
       - student_id
+      - user_id
     StudentOptionalSubject:
       type: object
       properties:
@@ -60740,6 +61744,14 @@ components:
       - issue_date
       - passing_year
       - student
+    ThreadTypeEnum:
+      enum:
+      - teacher_guardian
+      - teacher_student
+      type: string
+      description: |-
+        * `teacher_guardian` - Teacher-Guardian
+        * `teacher_student` - Teacher-Student
     TokenRefresh:
       type: object
       properties:

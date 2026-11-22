@@ -14,6 +14,7 @@ from apps.attendance.models import (
     PeriodAttendance,
     PeriodAttendanceStatus,
     PolicyAssignment,
+    StudentLeaveRequest,
 )
 
 
@@ -344,3 +345,77 @@ class RecomputeAttendanceRequestSerializer(serializers.Serializer):
                 {"end_date": "end_date cannot be earlier than start_date."}
             )
         return attrs
+
+
+class StudentLeaveRequestSerializer(serializers.ModelSerializer):
+    student_name_en = serializers.CharField(source="student.name_en", read_only=True)
+    student_name_bn = serializers.CharField(source="student.name_bn", read_only=True)
+    student_roll = serializers.CharField(
+        source="enrollment.roll_number", read_only=True, default=""
+    )
+    class_name = serializers.CharField(
+        source="section.class_level.name", read_only=True, default=""
+    )
+    section_name = serializers.CharField(source="section.name", read_only=True, default="")
+    applicant_name = serializers.CharField(source="applied_by.full_name", read_only=True)
+    reviewed_by_name = serializers.CharField(
+        source="reviewed_by.full_name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = StudentLeaveRequest
+        fields = [
+            "id",
+            "student",
+            "student_name_en",
+            "student_name_bn",
+            "student_roll",
+            "class_name",
+            "section_name",
+            "enrollment",
+            "section",
+            "session",
+            "applied_by",
+            "applicant_name",
+            "applicant_type",
+            "start_date",
+            "end_date",
+            "days_count",
+            "reason_category",
+            "reason",
+            "attachment",
+            "status",
+            "reviewed_by",
+            "reviewed_by_name",
+            "reviewer_remarks",
+            "reviewed_at",
+            "guardian_notified",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "institution",
+            "applied_by",
+            "applicant_type",
+            "days_count",
+            "status",
+            "reviewed_by",
+            "reviewed_at",
+            "guardian_notified",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        start = attrs.get("start_date")
+        end = attrs.get("end_date")
+        if start and end and end < start:
+            raise serializers.ValidationError(
+                {"end_date": "End date cannot be earlier than start date."}
+            )
+        return attrs
+
+
+class StudentLeaveDecisionSerializer(serializers.Serializer):
+    remarks = serializers.CharField(required=False, allow_blank=True, default="")
