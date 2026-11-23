@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, CheckCircle2, Lock, Plus, Trash2 } from "lucide-react";
+import { Calendar, CheckCircle2, Lock, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/composite/PageHeader";
 import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
@@ -10,25 +10,48 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { institutionApi, type AcademicSession, type Term } from "@/features/institutions/api/institutionApi";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 
 export function SessionsTermsPage() {
   const { t } = useTranslation();
+  const { fetchContext } = useAcademicContextStore();
   const [sessions, setSessions] = useState<AcademicSession[]>([]);
   const [terms, setTerms] = useState<Term[]>([]);
   const [selectedSession, setSelectedSession] = useState<string>("");
 
+  // Modals
   const [openSessionModal, setOpenSessionModal] = useState(false);
+  const [openEditSessionModal, setOpenEditSessionModal] = useState(false);
   const [openTermModal, setOpenTermModal] = useState(false);
+  const [openEditTermModal, setOpenEditTermModal] = useState(false);
+
+  // Actions state
   const [sessionToActivate, setSessionToActivate] = useState<string | null>(null);
   const [sessionToClose, setSessionToClose] = useState<string | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<AcademicSession | null>(null);
+  const [termToDelete, setTermToDelete] = useState<Term | null>(null);
 
+  // Form states - Create Session
   const [yearName, setYearName] = useState("");
   const [startDate, setStartDate] = useState("2026-01-01");
   const [endDate, setEndDate] = useState("2026-12-31");
 
+  // Form states - Edit Session
+  const [editingSession, setEditingSession] = useState<AcademicSession | null>(null);
+  const [editYearName, setEditYearName] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+
+  // Form states - Term
   const [termName, setTermName] = useState("");
   const [termStart, setTermStart] = useState("");
   const [termEnd, setTermEnd] = useState("");
+
+  // Form states - Edit Term
+  const [editingTerm, setEditingTerm] = useState<Term | null>(null);
+  const [editTermName, setEditTermName] = useState("");
+  const [editTermStart, setEditTermStart] = useState("");
+  const [editTermEnd, setEditTermEnd] = useState("");
 
   const loadData = useCallback(async () => {
     try {
@@ -67,8 +90,62 @@ export function SessionsTermsPage() {
       setOpenSessionModal(false);
       setYearName("");
       void loadData();
-    } catch {
-      toast.error(t("institution.sessionCreateError", "Failed to create session."));
+      void fetchContext(true);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.sessionCreateError", "Failed to create session.");
+      toast.error(msg);
+    }
+  };
+
+  const handleOpenEditSession = (s: AcademicSession) => {
+    setEditingSession(s);
+    setEditYearName(s.name);
+    setEditStartDate(s.start_date);
+    setEditEndDate(s.end_date);
+    setOpenEditSessionModal(true);
+  };
+
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSession) return;
+    try {
+      await institutionApi.updateSession(editingSession.id, {
+        name: editYearName,
+        start_date: editStartDate,
+        end_date: editEndDate,
+      });
+      toast.success(t("institution.sessionUpdated", "Academic session updated."));
+      setOpenEditSessionModal(false);
+      setEditingSession(null);
+      void loadData();
+      void fetchContext(true);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.sessionUpdateError", "Failed to update session.");
+      toast.error(msg);
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    if (sessionToDelete.is_current) {
+      toast.error(t("institution.cannotDeleteActiveSession", "Cannot delete the active academic session. Activate another session first."));
+      setSessionToDelete(null);
+      return;
+    }
+    try {
+      await institutionApi.deleteSession(sessionToDelete.id);
+      toast.success(t("institution.sessionDeleted", "Academic session removed (soft deleted)."));
+      setSessions((prev) => prev.filter((s) => s.id !== sessionToDelete.id));
+      if (selectedSession === sessionToDelete.id) {
+        setSelectedSession("");
+      }
+      void loadData();
+      void fetchContext(true);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.sessionDeleteError", "Failed to delete session.");
+      toast.error(msg);
+    } finally {
+      setSessionToDelete(null);
     }
   };
 
@@ -76,10 +153,12 @@ export function SessionsTermsPage() {
     if (!sessionToActivate) return;
     try {
       await institutionApi.activateSession(sessionToActivate);
-      toast.success(t("institution.sessionActivated", "Academic session is now active."));
+      toast.success(t("institution.sessionActivated", "Academic session is now active across the system."));
       void loadData();
-    } catch {
-      toast.error(t("institution.sessionActivateError", "Failed to activate session."));
+      void fetchContext(true);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.sessionActivateError", "Failed to activate session.");
+      toast.error(msg);
     } finally {
       setSessionToActivate(null);
     }
@@ -91,8 +170,10 @@ export function SessionsTermsPage() {
       await institutionApi.closeSession(sessionToClose);
       toast.success(t("institution.sessionClosed", "Academic session closed."));
       void loadData();
-    } catch {
-      toast.error(t("institution.sessionCloseError", "Failed to close session."));
+      void fetchContext(true);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.sessionCloseError", "Failed to close session.");
+      toast.error(msg);
     } finally {
       setSessionToClose(null);
     }
@@ -111,18 +192,50 @@ export function SessionsTermsPage() {
       setOpenTermModal(false);
       setTermName("");
       void institutionApi.getTerms(selectedSession).then(setTerms);
-    } catch {
-      toast.error(t("institution.termCreateError", "Failed to create term."));
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.termCreateError", "Failed to create term.");
+      toast.error(msg);
     }
   };
 
-  const handleDeleteTerm = async (id: string) => {
+  const handleOpenEditTerm = (term: Term) => {
+    setEditingTerm(term);
+    setEditTermName(term.name);
+    setEditTermStart(term.start_date);
+    setEditTermEnd(term.end_date);
+    setOpenEditTermModal(true);
+  };
+
+  const handleUpdateTerm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTerm) return;
     try {
-      await institutionApi.deleteTerm(id);
+      await institutionApi.updateTerm(editingTerm.id, {
+        name: editTermName,
+        start_date: editTermStart,
+        end_date: editTermEnd,
+      });
+      toast.success(t("institution.termUpdated", "Academic term updated."));
+      setOpenEditTermModal(false);
+      setEditingTerm(null);
+      void institutionApi.getTerms(selectedSession).then(setTerms);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.termUpdateError", "Failed to update term.");
+      toast.error(msg);
+    }
+  };
+
+  const handleDeleteTerm = async () => {
+    if (!termToDelete) return;
+    try {
+      await institutionApi.deleteTerm(termToDelete.id);
       toast.success(t("institution.termDeleted", "Term removed."));
-      setTerms((prev) => prev.filter((t) => t.id !== id));
-    } catch {
-      toast.error(t("institution.termDeleteError", "Failed to delete term."));
+      setTerms((prev) => prev.filter((t) => t.id !== termToDelete.id));
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message || t("institution.termDeleteError", "Failed to delete term.");
+      toast.error(msg);
+    } finally {
+      setTermToDelete(null);
     }
   };
 
@@ -130,7 +243,7 @@ export function SessionsTermsPage() {
     <div className="space-y-6 pb-12">
       <PageHeader
         title={t("institution.sessionsTermsTitle", "Academic Sessions & Evaluation Terms")}
-        subtitle={t("institution.sessionsTermsSubtitle", "Control annual calendar sessions, active term boundaries, and evaluation periods.")}
+        subtitle={t("institution.sessionsTermsSubtitle", "Control annual calendar sessions, set active operational year, and manage evaluation terms.")}
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -143,7 +256,7 @@ export function SessionsTermsPage() {
             </CardTitle>
             <Button size="sm" onClick={() => setOpenSessionModal(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" />
-              {t("institution.addSession", "New")}
+              {t("institution.addSession", "New Session")}
             </Button>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -163,43 +276,82 @@ export function SessionsTermsPage() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-xs text-ink">{s.name}</p>
-                  {s.is_current ? (
-                    <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
-                      <CheckCircle2 className="h-3 w-3" />
-                      {t("institution.currentSession", "Active")}
-                    </span>
-                  ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-xs text-ink">{s.name}</p>
+                    {s.is_current && (
+                      <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+                        <CheckCircle2 className="h-3 w-3" />
+                        {t("institution.currentSession", "Active")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-ink-muted hover:text-primary"
+                      title={t("common.edit", "Edit Session")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditSession(s);
+                      }}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-ink-muted hover:text-danger"
+                      title={t("common.delete", "Delete Session")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSessionToDelete(s);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+
+                <p className="mt-1 text-[11px] text-ink-muted font-mono">
+                  {s.start_date} – {s.end_date}
+                </p>
+
+                <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border/50 pt-2">
+                  {!s.is_current ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 text-[10px] px-1.5"
+                      className="h-6 text-[10px] px-2 font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSessionToActivate(s.id);
                       }}
                     >
-                      {t("institution.activate", "Activate")}
+                      <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-600" />
+                      {t("institution.activate", "Set Active")}
+                    </Button>
+                  ) : (
+                    <span className="text-[10px] text-emerald-600 font-medium">
+                      {t("institution.activeSystemWide", "Current Operational Session")}
+                    </span>
+                  )}
+
+                  {s.is_current && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-[10px] text-ink-muted hover:text-danger px-1.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSessionToClose(s.id);
+                      }}
+                    >
+                      <Lock className="h-3 w-3 mr-1" />
+                      {t("institution.closeSession", "Close Session")}
                     </Button>
                   )}
                 </div>
-                <p className="mt-1 text-[11px] text-ink-muted font-mono">
-                  {s.start_date} – {s.end_date}
-                </p>
-                {s.is_current && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2 h-6 text-[10px] text-ink-muted hover:text-danger w-full justify-start"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSessionToClose(s.id);
-                    }}
-                  >
-                    <Lock className="h-3 w-3 mr-1" />
-                    {t("institution.closeSession", "Close Session")}
-                  </Button>
-                )}
               </div>
             ))}
           </CardContent>
@@ -213,7 +365,7 @@ export function SessionsTermsPage() {
                 {t("institution.termsList", "Evaluation Terms in Session")}
               </CardTitle>
               <p className="text-xs text-ink-muted">
-                {sessions.find((s) => s.id === selectedSession)?.name || "Select a session"}
+                {sessions.find((s) => s.id === selectedSession)?.name || t("institution.selectSessionPlaceholder", "Select a session")}
               </p>
             </div>
             <Button size="sm" onClick={() => setOpenTermModal(true)} disabled={!selectedSession}>
@@ -234,14 +386,26 @@ export function SessionsTermsPage() {
                         {term.start_date} – {term.end_date}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => void handleDeleteTerm(term.id)}
-                      className="text-danger hover:text-danger"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-ink-muted hover:text-primary"
+                        title={t("common.edit", "Edit Term")}
+                        onClick={() => handleOpenEditTerm(term)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-danger hover:text-danger"
+                        title={t("common.delete", "Delete Term")}
+                        onClick={() => setTermToDelete(term)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -259,7 +423,7 @@ export function SessionsTermsPage() {
           <form onSubmit={(e) => void handleCreateSession(e)} className="space-y-3 pt-2">
             <FormField>
               <FormLabel required>{t("institution.sessionName", "Session Name")}</FormLabel>
-              <Input value={yearName} onChange={(e) => setYearName(e.target.value)} required placeholder="e.g. 2026" />
+              <Input value={yearName} onChange={(e) => setYearName(e.target.value)} required placeholder="e.g. 2026 or 2026-2027" />
             </FormField>
             <div className="grid grid-cols-2 gap-3">
               <FormField>
@@ -272,6 +436,32 @@ export function SessionsTermsPage() {
               </FormField>
             </div>
             <Button type="submit" className="w-full">{t("common.create", "Create Session")}</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Session Dialog */}
+      <Dialog open={openEditSessionModal} onOpenChange={setOpenEditSessionModal}>
+        <DialogContent closeLabel={t("common.close", "Close")}>
+          <DialogHeader>
+            <DialogTitle>{t("institution.editSessionTitle", "Edit Academic Session")}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => void handleUpdateSession(e)} className="space-y-3 pt-2">
+            <FormField>
+              <FormLabel required>{t("institution.sessionName", "Session Name")}</FormLabel>
+              <Input value={editYearName} onChange={(e) => setEditYearName(e.target.value)} required />
+            </FormField>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField>
+                <FormLabel required>{t("institution.startDate", "Start Date")}</FormLabel>
+                <Input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} required />
+              </FormField>
+              <FormField>
+                <FormLabel required>{t("institution.endDate", "End Date")}</FormLabel>
+                <Input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} required />
+              </FormField>
+            </div>
+            <Button type="submit" className="w-full">{t("common.saveChanges", "Save Changes")}</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -302,13 +492,69 @@ export function SessionsTermsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Term Dialog */}
+      <Dialog open={openEditTermModal} onOpenChange={setOpenEditTermModal}>
+        <DialogContent closeLabel={t("common.close", "Close")}>
+          <DialogHeader>
+            <DialogTitle>{t("institution.editTermTitle", "Edit Academic Term")}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => void handleUpdateTerm(e)} className="space-y-3 pt-2">
+            <FormField>
+              <FormLabel required>{t("institution.termName", "Term Name")}</FormLabel>
+              <Input value={editTermName} onChange={(e) => setEditTermName(e.target.value)} required />
+            </FormField>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField>
+                <FormLabel required>{t("institution.startDate", "Start Date")}</FormLabel>
+                <Input type="date" value={editTermStart} onChange={(e) => setEditTermStart(e.target.value)} required />
+              </FormField>
+              <FormField>
+                <FormLabel required>{t("institution.endDate", "End Date")}</FormLabel>
+                <Input type="date" value={editTermEnd} onChange={(e) => setEditTermEnd(e.target.value)} required />
+              </FormField>
+            </div>
+            <Button type="submit" className="w-full">{t("common.saveChanges", "Save Changes")}</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Session Confirm Dialog */}
+      <ConfirmDialog
+        open={Boolean(sessionToDelete)}
+        onOpenChange={(open) => { if (!open) setSessionToDelete(null); }}
+        title={t("institution.deleteSessionTitle", "Delete Academic Session?")}
+        description={t(
+          "institution.deleteSessionDesc",
+          `Are you sure you want to remove the "${sessionToDelete?.name}" session? It will be soft-deleted and preserved in archive records.`
+        )}
+        impactSummary={
+          sessionToDelete?.is_current
+            ? t("institution.deleteActiveSessionWarning", "Warning: Active sessions cannot be deleted. You must activate another session first.")
+            : t("institution.deleteSessionImpact", "Any sections or schedules associated with this session will remain archived.")
+        }
+        confirmLabel={t("common.delete", "Delete Session")}
+        destructive
+        onConfirm={() => void handleDeleteSession()}
+      />
+
+      {/* Delete Term Confirm Dialog */}
+      <ConfirmDialog
+        open={Boolean(termToDelete)}
+        onOpenChange={(open) => { if (!open) setTermToDelete(null); }}
+        title={t("institution.deleteTermTitle", "Delete Academic Term?")}
+        description={t("institution.deleteTermDesc", `Are you sure you want to remove the term "${termToDelete?.name}"?`)}
+        confirmLabel={t("common.delete", "Delete Term")}
+        destructive
+        onConfirm={() => void handleDeleteTerm()}
+      />
+
       {/* Activation Confirm Dialog */}
       <ConfirmDialog
         open={Boolean(sessionToActivate)}
         onOpenChange={(open) => { if (!open) setSessionToActivate(null); }}
         title={t("institution.activateSessionTitle", "Activate Academic Session?")}
-        description={t("institution.activateSessionDesc", "Activating this session will make it the default academic session for student rosters, attendance, and routines.")}
-        impactSummary={t("institution.activateSessionImpact", "Any previously active session will be marked inactive.")}
+        description={t("institution.activateSessionDesc", "Activating this session will make it the default active academic session for all class rosters, chat history, attendance, exams, and routines system-wide.")}
+        impactSummary={t("institution.activateSessionImpact", "Exactly 1 session can be active at a time. Any previously active session will be marked inactive.")}
         confirmLabel={t("institution.activateConfirmBtn", "Activate Session")}
         onConfirm={() => void handleActivateSession()}
       />

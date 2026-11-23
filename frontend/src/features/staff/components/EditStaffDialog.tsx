@@ -102,7 +102,7 @@ export function EditStaffDialog({
     if (staff && open) {
       setFullNameEn(staff.full_name_en || "");
       setFullNameBn(staff.full_name_bn || "");
-      setGender(((staff as StaffDetail).gender as string) || "male");
+      setGender((staff as StaffDetail).gender || "male");
       setDob((staff as StaffDetail).dob || "");
       setBloodGroup(((staff as StaffDetail).blood_group as string) || "");
 

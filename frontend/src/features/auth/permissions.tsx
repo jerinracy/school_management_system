@@ -21,6 +21,14 @@ export function usePermission(perm?: string): boolean {
     return true;
   }
 
+  // Teachers are authorized to access exam views and mark entries
+  if (
+    user.user_type === "teacher" &&
+    (perm === "exams.view" || perm === "exams.enter_marks" || perm === "academics.view" || perm === "attendance.view")
+  ) {
+    return true;
+  }
+
   const permissions = user.permissions ?? [];
   return permissions.includes(perm);
 }

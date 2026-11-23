@@ -58,7 +58,8 @@ def validate_component_marks(
 def check_teacher_mark_entry_permission(user: User, exam_subject: ExamSubject) -> bool:
     """Verify if user is authorized to enter marks for this exam subject.
 
-    Superusers, institutional admins, and the assigned teacher are authorized.
+    Superusers, institutional admins, assigned teachers via exam_subject,
+    teachers assigned to this subject/class in routine slots, or teachers of the institution are authorized.
     """
     if user.is_superuser:
         return True
@@ -69,10 +70,37 @@ def check_teacher_mark_entry_permission(user: User, exam_subject: ExamSubject) -
     ).exists():
         return True
 
-    # Check assigned teacher link
-    if exam_subject.assigned_teacher:
-        staff_profile = getattr(user, "staff_profile", None)
-        if staff_profile and staff_profile == exam_subject.assigned_teacher:
+    # Check assigned teacher link on ExamSubject
+    staff_profile = getattr(user, "staff_profile", None)
+    if not staff_profile:
+        from apps.staff.models import Staff
+
+        staff_profile = Staff.objects.filter(user=user).first()
+
+    if staff_profile and exam_subject.assigned_teacher_id:
+        return exam_subject.assigned_teacher_id == staff_profile.id
+
+    if exam_subject.assigned_teacher_id:
+        return False
+
+    # Check if teacher is assigned to this subject for this class level in RoutineSlot
+    from apps.academics.models import RoutineSlot
+
+    routine_q = RoutineSlot.objects.filter(
+        section__class_level=exam_subject.class_level,
+        subject=exam_subject.subject,
+    )
+    if staff_profile and routine_q.filter(teacher_staff=staff_profile).exists():
+        return True
+    if routine_q.filter(teacher_user=user).exists():
+        return True
+
+    # If teacher belongs to the same institution and user_type is teacher, allow entry
+    if (
+        getattr(user, "user_type", None) == "teacher"
+        or user.user_roles.filter(role__name__icontains="Teacher").exists()
+    ):
+        if user.institution_id == exam_subject.institution_id:
             return True
 
     return False

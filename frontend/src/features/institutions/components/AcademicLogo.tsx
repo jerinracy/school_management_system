@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface AcademicLogoProps {
@@ -22,6 +22,10 @@ export function AcademicLogo({
   size = "md",
 }: AcademicLogoProps) {
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [logoUrl]);
 
   // If a valid custom logo is uploaded from the Admin panel and hasn't errored
   if (logoUrl && !imageError) {
@@ -49,7 +53,7 @@ export function AcademicLogo({
       role="img"
       aria-label={name}
       className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden border border-primary/20 bg-gradient-to-br from-emerald-50 to-teal-50/60 dark:from-emerald-950/30 dark:to-teal-900/20 text-primary shadow-2xs transition-all",
+        "relative flex shrink-0 items-center justify-center overflow-hidden border border-border/80 bg-canvas text-primary transition-colors",
         sizeClasses[size],
         className,
       )}

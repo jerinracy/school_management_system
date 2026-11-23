@@ -2,6 +2,7 @@ import createClient from "openapi-fetch";
 import i18n from "@/i18n";
 import { parseApiError, ApiError } from "@/lib/errors";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 import type { paths } from "@/types/api";
 
 const baseUrl =
@@ -74,6 +75,11 @@ apiClient.use({
     const token = useAuthStore.getState().accessToken;
     if (token && !request.headers.has("Authorization")) {
       request.headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    const sessionId = useAcademicContextStore.getState().selectedSessionId;
+    if (sessionId && !request.headers.has("X-Academic-Session")) {
+      request.headers.set("X-Academic-Session", sessionId);
     }
 
     // Save an unconsumed clone before fetch consumes the request body

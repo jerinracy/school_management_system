@@ -450,6 +450,15 @@ class ChatThread(TenantOwnedModel, SoftDeleteMixin):
         on_delete=models.SET_NULL,
         related_name="chat_threads",
     )
+    session = models.ForeignKey(
+        "institutions.AcademicSession",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="chat_threads",
+        db_index=True,
+        help_text="Academic session in which this chat conversation takes place",
+    )
     subject = models.CharField(max_length=200, blank=True)
     is_closed = models.BooleanField(default=False)
     last_message_at = models.DateTimeField(auto_now_add=True, db_index=True)

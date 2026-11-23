@@ -51,4 +51,31 @@ class IsThreadParticipant(BasePermission):
             getattr(getattr(target, "guardian", None), "user_id", None),
             getattr(getattr(target, "student", None), "user_id", None),
         }
-        return user.id in participant_ids
+        if user.id in participant_ids:
+            return True
+
+        # Fallback check for student user by phone or profile linkage
+        if target.student and (
+            target.student.user_id == user.id
+            or (target.student.phone and target.student.phone == getattr(user, "phone", None))
+        ):
+            if target.student.user_id is None:
+                target.student.user = user
+                target.student.save(update_fields=["user"])
+            return True
+
+        # Fallback check for guardian user by phone or guardian_profiles
+        if target.guardian and (
+            target.guardian.user_id == user.id
+            or (target.guardian.phone and target.guardian.phone == getattr(user, "phone", None))
+            or (
+                hasattr(user, "guardian_profiles")
+                and user.guardian_profiles.filter(id=target.guardian_id).exists()
+            )
+        ):
+            if target.guardian.user_id is None:
+                target.guardian.user = user
+                target.guardian.save(update_fields=["user"])
+            return True
+
+        return False

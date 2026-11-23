@@ -141,6 +141,9 @@ describe("StudentIDCardPreview", () => {
     has_app_account: true,
     user_id: "usr-1",
     login_phone: "+8801712345678",
+    active_enrollment: null,
+    is_enrolled_in_active_session: true,
+    active_session_name: "2026 Academic Year",
     enrollments: [
       {
         id: "enr-1",

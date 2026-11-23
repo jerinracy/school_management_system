@@ -23,7 +23,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDashboardKpis } from "@/features/dashboard/api/useDashboardKpis";
 import { useHealth } from "@/features/dashboard/api/useHealth";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 import { formatTimeShort, toLocaleDigits } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,6 @@ interface CompactStatCardProps {
   value: string;
   badge?: string;
   icon: React.ReactNode;
-  iconBg?: string;
   loading?: boolean;
 }
 
@@ -41,7 +40,6 @@ function CompactStatCard({
   value,
   badge,
   icon,
-  iconBg = "bg-slate-100 text-slate-700",
   loading = false,
 }: CompactStatCardProps) {
   if (loading) {
@@ -62,14 +60,14 @@ function CompactStatCard({
         <span className="text-xs font-medium text-ink-muted leading-snug line-clamp-2 min-h-[2.5rem]">
           {label}
         </span>
-        <div className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-md", iconBg)}>
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-canvas text-ink-muted">
           {icon}
         </div>
       </div>
       <div className="mt-2 flex items-baseline justify-between gap-1">
         <span className="text-xl font-bold tracking-tight text-ink tabular-nums">{value}</span>
         {badge ? (
-          <span className="text-[11px] font-medium text-ink-subtle">{badge}</span>
+          <span className="text-[11px] font-medium text-ink-subtle tabular-nums">{badge}</span>
         ) : null}
       </div>
     </div>
@@ -79,7 +77,7 @@ function CompactStatCard({
 export function DashboardHomePage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
-  const currentUser = useAuthStore((s) => s.user);
+  const { selectedBranch, selectedSession } = useAcademicContextStore();
 
   const {
     data: kpis,
@@ -103,23 +101,16 @@ export function DashboardHomePage() {
 
   const isRefreshing = isKpisFetching;
 
-  // Time-based greeting and formatted date
-  const { greeting, formattedDate } = useMemo(() => {
+  // Formatted date in Asia/Dhaka context
+  const formattedDate = useMemo(() => {
     const now = new Date();
-    const hour = now.getHours();
-    let greet = t("dashboard.greetingMorning", "Good morning");
-    if (hour >= 12 && hour < 17) greet = t("dashboard.greetingAfternoon", "Good afternoon");
-    else if (hour >= 17 || hour < 5) greet = t("dashboard.greetingEvening", "Good evening");
-
-    const dateStr = now.toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", {
+    return now.toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", {
       weekday: "long",
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-
-    return { greeting: greet, formattedDate: dateStr };
-  }, [t, lang]);
+  }, [lang]);
 
   // Headcount metrics
   const totalStudents = kpis?.headcount?.total_students ?? 0;
@@ -168,7 +159,7 @@ export function DashboardHomePage() {
     {
       to: "/attendance",
       titleKey: "dashboard.quickActions.takeAttendance",
-      icon: <CalendarCheck className="h-4 w-4 text-emerald-600" />,
+      icon: <CalendarCheck className="h-4 w-4 text-primary" />,
     },
     {
       to: "/students",
@@ -178,37 +169,40 @@ export function DashboardHomePage() {
     {
       to: "/academics/routine",
       titleKey: "dashboard.quickActions.weeklyRoutine",
-      icon: <Calendar className="h-4 w-4 text-amber-600" />,
+      icon: <Calendar className="h-4 w-4 text-primary" />,
     },
     {
       to: "/fees",
       titleKey: "dashboard.quickActions.collectFees",
-      icon: <Banknote className="h-4 w-4 text-indigo-600" />,
+      icon: <Banknote className="h-4 w-4 text-primary" />,
     },
     {
       to: "/staff",
       titleKey: "dashboard.quickActions.staffDirectory",
-      icon: <Users className="h-4 w-4 text-slate-700" />,
+      icon: <Users className="h-4 w-4 text-primary" />,
     },
   ];
 
   return (
     <div className="space-y-4">
-      {/* 1. Clean Page Header */}
+      {/* 1. Clean Operational Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div>
           <h1 className="text-lg font-bold tracking-tight text-ink">
             {t("dashboard.title")}
           </h1>
           <p className="text-xs text-ink-muted">
-            {greeting}
-            {currentUser?.full_name ? `, ${currentUser.full_name}` : ""} • {formattedDate}
+            <span>{selectedBranch?.name || t("topbar.branchMain", "Main Campus")}</span>
+            <span className="mx-1.5 text-border">•</span>
+            <span>{selectedSession?.name || t("topbar.sessionLabel", "Academic Session")}</span>
+            <span className="mx-1.5 text-border">•</span>
+            <span className="tabular-nums">{formattedDate}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {checkedAt ? (
-            <span className="hidden sm:inline-block text-[11px] text-ink-subtle">
+            <span className="hidden sm:inline-block text-[11px] text-ink-subtle tabular-nums">
               {checkedAt}
             </span>
           ) : null}
@@ -216,7 +210,7 @@ export function DashboardHomePage() {
             type="button"
             onClick={handleRefreshAll}
             disabled={isRefreshing}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink shadow-2xs transition-colors hover:bg-slate-50 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink shadow-2xs transition-colors hover:bg-canvas disabled:opacity-60"
             aria-label={t("dashboard.refresh")}
           >
             <RefreshCw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
@@ -257,8 +251,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.totalStudents")}
           value={toLocaleDigits(totalStudents, lang)}
           badge={t("dashboard.kpis.activeEnrolled", "Active")}
-          icon={<GraduationCap className="h-3.5 w-3.5 text-primary" />}
-          iconBg="bg-primary/10"
+          icon={<GraduationCap className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
 
@@ -266,8 +259,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.morningShiftStudents")}
           value={toLocaleDigits(morningStudents, lang)}
           badge={`${toLocaleDigits(morningPct, lang)}%`}
-          icon={<Sun className="h-3.5 w-3.5 text-amber-600" />}
-          iconBg="bg-amber-50"
+          icon={<Sun className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
 
@@ -275,8 +267,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.dayShiftStudents")}
           value={toLocaleDigits(dayStudents, lang)}
           badge={`${toLocaleDigits(dayPct, lang)}%`}
-          icon={<Sunset className="h-3.5 w-3.5 text-sky-600" />}
-          iconBg="bg-sky-50"
+          icon={<Sunset className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
 
@@ -284,8 +275,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.totalTeachers")}
           value={toLocaleDigits(totalTeachers, lang)}
           badge={t("dashboard.kpis.facultyBadge", "Teachers")}
-          icon={<UserCheck className="h-3.5 w-3.5 text-emerald-600" />}
-          iconBg="bg-emerald-50"
+          icon={<UserCheck className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
 
@@ -293,8 +283,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.totalOfficeStaff")}
           value={toLocaleDigits(totalOfficeStaff, lang)}
           badge={t("dashboard.kpis.staffBadge", "Staff")}
-          icon={<Users className="h-3.5 w-3.5 text-indigo-600" />}
-          iconBg="bg-indigo-50"
+          icon={<Users className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
 
@@ -302,8 +291,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.studentAttendanceRate")}
           value={`${toLocaleDigits(studentRate, lang)}%`}
           badge={`${toLocaleDigits(studentPresentTotal, lang)} ${t("dashboard.attendance.present")}`}
-          icon={<CalendarCheck className="h-3.5 w-3.5 text-teal-600" />}
-          iconBg="bg-teal-50"
+          icon={<CalendarCheck className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
 
@@ -311,8 +299,7 @@ export function DashboardHomePage() {
           label={t("dashboard.kpis.staffAttendanceRate")}
           value={`${toLocaleDigits(staffRate, lang)}%`}
           badge={`${toLocaleDigits(staffPresentTotal, lang)} ${t("dashboard.attendance.present")}`}
-          icon={<Clock className="h-3.5 w-3.5 text-blue-600" />}
-          iconBg="bg-blue-50"
+          icon={<Clock className="h-3.5 w-3.5" />}
           loading={isKpisLoading}
         />
       </section>
@@ -327,9 +314,9 @@ export function DashboardHomePage() {
               <Link
                 key={action.to}
                 to={action.to}
-                className="group flex flex-1 min-w-[120px] items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-semibold text-ink shadow-2xs transition-all hover:border-primary/50 hover:bg-slate-50"
+                className="group flex flex-1 min-w-[120px] items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium text-ink shadow-2xs transition-colors hover:border-primary/40 hover:bg-canvas"
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-100 transition-colors group-hover:bg-primary/10">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border/60 bg-canvas transition-colors group-hover:border-primary/30 group-hover:bg-primary-soft">
                   {action.icon}
                 </div>
                 <span className="truncate">{t(action.titleKey)}</span>
@@ -593,12 +580,11 @@ export function DashboardHomePage() {
             <CardContent className="pt-0 px-4 pb-3">
               <div className="flex items-center justify-between rounded-lg border border-border/80 bg-slate-50/60 p-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-emerald-100 text-emerald-700">
+                  <div className="relative flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-canvas text-emerald-700">
                     <Wifi className="h-3.5 w-3.5" />
                     {onlineDevices > 0 && (
                       <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-surface" />
                       </span>
                     )}
                   </div>

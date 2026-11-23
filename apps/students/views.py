@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from apps.core.mixins import TenantScopedMixin
 from apps.core.pagination import StandardResultsSetPagination
-from apps.institutions.models import Institution
+from apps.institutions.models import AcademicSession, Institution
 from apps.students.models import (
     PromotionBatch,
     Student,
@@ -102,11 +102,40 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         section_id = self.request.query_params.get("section") or self.request.query_params.get(
             "section_id"
         )
+        session_id = self.request.query_params.get("session") or self.request.headers.get(
+            "X-Academic-Session"
+        )
+        class_id = self.request.query_params.get("class_level") or self.request.query_params.get(
+            "class_id"
+        )
+
+        if not session_id:
+            inst = _get_request_institution(self.request)
+            active_session = AcademicSession.objects.filter(
+                institution=inst, is_current=True, is_deleted=False
+            ).first()
+            if active_session:
+                session_id = str(active_session.id)
+
         if section_id:
             qs = qs.filter(
-                enrollments__section_id=section_id, enrollments__status="active"
-            ).distinct()
-        return qs
+                enrollments__section_id=section_id,
+                enrollments__status="active",
+                enrollments__is_deleted=False,
+            )
+        if session_id and session_id != "all":
+            qs = qs.filter(
+                enrollments__session_id=session_id,
+                enrollments__status="active",
+                enrollments__is_deleted=False,
+            )
+        if class_id:
+            qs = qs.filter(
+                enrollments__class_level_id=class_id,
+                enrollments__status="active",
+                enrollments__is_deleted=False,
+            )
+        return qs.distinct()
 
     @extend_schema(
         summary="Retrieve logged-in student profile",
@@ -116,15 +145,17 @@ class StudentViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="me")
     def me(self, request: Request) -> Response:
         user = request.user
+        student = None
         if hasattr(user, "student_profile") and user.student_profile:
-            serializer = StudentDetailSerializer(user.student_profile, context={"request": request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        if hasattr(user, "phone") and user.phone:
+            student = user.student_profile
+        elif hasattr(user, "phone") and user.phone:
             inst = _get_request_institution(request)
-            stu = Student.objects.filter(institution=inst, phone=user.phone).first()
-            if stu:
-                serializer = StudentDetailSerializer(stu, context={"request": request})
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            student = Student.objects.filter(institution=inst, phone=user.phone).first()
+
+        if student:
+            serializer = StudentDetailSerializer(student, context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         return Response(
             {"detail": "No student profile linked to this user."}, status=status.HTTP_404_NOT_FOUND
         )

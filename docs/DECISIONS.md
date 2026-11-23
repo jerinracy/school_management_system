@@ -1,5 +1,25 @@
 # Architecture Decision Records (ADRs)
 
+## ADR-031: Dynamic Session-Scoped Query Filtering, Rollover Wizard & Mobile Option A Authentication
+- **Date**: 2026-11-23
+- **Status**: Accepted
+- **Context**:
+  - Activating a new academic session showed historical student and guardian records from prior sessions because querysets were filtering on general tenant ownership rather than session-specific active enrollments.
+  - The Session Rollover & Structure Replication Wizard (`CopySessionWizardPage.tsx`) was displaying `0` for copied items due to mismatched dictionary keys between backend service result (`sections_count`) and frontend expectations (`sections_created`).
+  - Mobile authentication strategy needed to handle cross-session student accounts when a new session starts without immediately breaking student login credentials.
+- **Decision**:
+  - **Resolution Hierarchy**: Querysets resolve target session via (1) explicit query param `?session=`, (2) request header `X-Academic-Session`, (3) institution's active session (`is_current=True`).
+  - **Strict Session Scoping**: `StudentViewSet` and `GuardianViewSet` querysets require active enrollments (`enrollments__session_id=session_id, enrollments__status="active", enrollments__is_deleted=False`). If no enrollments exist in the selected session, an empty list is returned.
+  - **Admin Cross-Session Bypass**: Administrative users can pass `?session=all` to inspect lifetime cumulative rosters.
+  - **Mobile Option A Authentication**: Student and guardian accounts remain active across sessions. User profile endpoints (`/me` and student detail) return `is_enrolled_in_active_session: bool`, `active_session_name: str | None`, and `active_enrollment`. The mobile client displays a notice if the user is not yet enrolled in the new session, rather than locking them out.
+  - **Rollover Wizard Metric Parity**: `CopySessionResult.to_dict()` provides both primary and legacy alias keys (`sections_created`, `class_subjects_created`, `sections_skipped`, etc.), and frontend implements resilient fallback reading.
+  - **Global Context Invalidation**: When an administrator selects a session in the top bar, `useAcademicContextStore` automatically issues `queryClient.invalidateQueries()`, refreshing all active queries across the dashboard.
+- **Consequences**:
+  - Pros: Clean session isolation; empty states guide administrators to copy academic structures or enroll students; students retain login access; instant dashboard reactive updates on session switch.
+  - Cons: Requires mobile app to inspect `is_enrolled_in_active_session` on launch to display appropriate messaging.
+
+---
+
 ## ADR-001: Technology Stack Selection
 - **Date**: 2026-11-11
 - **Status**: Accepted
@@ -533,3 +553,32 @@
     - Provided `EditStudentDialog`, `EditStaffDialog`, and `EditGuardianDialog` components with full tabbed editing support, and `ConfirmDialog` confirmation prompts with `destructive=True` to prevent accidental deletions.
 - **Consequences**:
   - Complete control over person records, zero credential synchronization drift, safe soft-deletions, and full reversibility for institutional administrators.
+
+
+---
+
+## ADR-030: Academic Session Lifecycle, Scoping & Universal Soft-Deletion
+- **Date**: 2026-11-23
+- **Status**: Accepted
+- **Context**:
+  - The application lacked full self-service lifecycle management for Academic Sessions: administrators could not create, activate, or archive sessions dynamically from the dashboard.
+  - Previous querysets across academic endpoints did not consistently default to the institution's active session, creating risks of cross-session data confusion.
+  - Teacher-guardian communication threads were un-scoped, causing previous session chat history to pollute current active sessions.
+  - Deletion was not standardized across academic and institution models: several models lacked soft deletion mixins and unique constraints lacked soft-delete conditions.
+- **Decision**:
+  - **Single Active Session Rule**:
+    - Exactly one session per institution can have `is_current=True`.
+    - Activating a session executes atomically inside `transaction.atomic`: sets the target session to `is_current=True` and all other sessions for the institution to `is_current=False`.
+    - Protected active sessions: the currently active session cannot be deleted while active; administrators must activate another session first.
+  - **Academic Session Scoping**:
+    - Created `AcademicSessionScopedMixin` in `apps/core/mixins.py`.
+    - Academics, homework, and study material endpoints default to the active session (`is_current=True`) when no explicit `?session=` parameter is supplied, while preserving access to historical data with `?session=<uuid>` or `?session=all`.
+    - Chat threads (`apps/communications/models.py`) include a foreign key `session`. New chat threads are automatically associated with the active session, isolating chat messages per session while preserving historical communications in system records.
+    - HR and Staffing modules remain explicitly cross-session with zero session dependencies.
+  - **Universal Soft-Deletion**:
+    - Inherited `SoftDeleteMixin` across all academic models (`ClassLevel`, `Group`, `Section`, `Subject`, `ClassSubject`, `Room`, `Period`, `RoutineSlot`, `SubstituteAssignment`) and institution models (`AcademicSession`, `Term`, `Branch`, `Shift`, `Holiday`).
+    - Replaced hard database unique constraints with partial unique indexes conditioning on `is_deleted=False`.
+  - **Admin Dashboard UI**:
+    - Added comprehensive interactive modals and confirmation dialogs across Sessions, Classes, Sections, Subjects, Offerings, Periods, and Rooms.
+- **Consequences**:
+  - Predictable single-active-session behavior, clean cross-year rollover, complete historical data preservation without database pollution, and consistent soft-deletion across all operational screens.

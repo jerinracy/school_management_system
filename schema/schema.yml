@@ -8135,6 +8135,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChatMessage'
           description: ''
+  /api/v1/communications/chat/threads/webhook/:
+    get:
+      operationId: communications_chat_threads_webhook_retrieve
+      description: Webhook endpoint for real-time external chat integration / sync
+        callbacks.
+      summary: Real-time Chat Webhook Intake and Dispatch Status
+      tags:
+      - communications
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: communications_chat_threads_webhook_create
+      description: Webhook endpoint for real-time external chat integration / sync
+        callbacks.
+      summary: Real-time Chat Webhook Intake and Dispatch Status
+      tags:
+      - communications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatThreadRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/v1/communications/deliveries/:
     get:
       operationId: communications_deliveries_list
@@ -13824,6 +13873,22 @@ paths:
             schema:
               $ref: '#/components/schemas/MarkEntryRequest'
         required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkEntry'
+          description: ''
+  /api/v1/exams/mark-entries/section_sheet/:
+    get:
+      operationId: exams_mark_entries_section_sheet_retrieve
+      description: Fetch exam subject config and student mark rows for a specific
+        section.
+      tags:
+      - exams
       security:
       - jwtAuth: []
       responses:
@@ -37945,9 +38010,17 @@ components:
         section_name:
           type: string
           readOnly: true
+        section_id:
+          type: string
+          readOnly: true
         subject:
           type: string
           maxLength: 200
+        session:
+          type: string
+          format: uuid
+          nullable: true
+          description: Academic session in which this chat conversation takes place
         is_closed:
           type: boolean
         last_message_at:
@@ -37971,6 +38044,7 @@ components:
       - id
       - last_message
       - last_message_at
+      - section_id
       - section_name
       - student_name
       - student_roll
@@ -37999,6 +38073,11 @@ components:
         subject:
           type: string
           maxLength: 200
+        session:
+          type: string
+          format: uuid
+          nullable: true
+          description: Academic session in which this chat conversation takes place
         is_closed:
           type: boolean
       required:
@@ -43090,6 +43169,10 @@ components:
           type: string
           format: uri
           nullable: true
+        logo_url:
+          type: string
+          nullable: true
+          readOnly: true
         seal:
           type: string
           format: uri
@@ -43105,6 +43188,10 @@ components:
           title: Login Page Background Image
           description: School building or campus photograph displayed on the login
             page.
+        login_background_url:
+          type: string
+          nullable: true
+          readOnly: true
         timezone:
           type: string
           maxLength: 50
@@ -43128,6 +43215,8 @@ components:
       - district
       - division
       - id
+      - login_background_url
+      - logo_url
       - name_bn
       - name_en
       - phone
@@ -57110,6 +57199,9 @@ components:
         period:
           type: string
           format: uuid
+        period_number:
+          type: integer
+          readOnly: true
         period_name:
           type: string
           readOnly: true
@@ -57170,6 +57262,7 @@ components:
       - period
       - period_end
       - period_name
+      - period_number
       - period_start
       - room_name
       - section
@@ -59288,6 +59381,18 @@ components:
           items:
             $ref: '#/components/schemas/StudentEnrollmentBrief'
           readOnly: true
+        active_enrollment:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        is_enrolled_in_active_session:
+          type: boolean
+          readOnly: true
+        active_session_name:
+          type: string
+          nullable: true
+          readOnly: true
         previous_school:
           allOf:
           - $ref: '#/components/schemas/PreviousSchool'
@@ -59316,6 +59421,8 @@ components:
           format: date-time
           readOnly: true
       required:
+      - active_enrollment
+      - active_session_name
       - admission_date
       - created_at
       - dob
@@ -59326,6 +59433,7 @@ components:
       - has_app_account
       - id
       - id_cards
+      - is_enrolled_in_active_session
       - login_phone
       - name_bn
       - name_en
@@ -60338,6 +60446,13 @@ components:
           additionalProperties: {}
           nullable: true
           readOnly: true
+        is_enrolled_in_active_session:
+          type: boolean
+          readOnly: true
+        active_session_name:
+          type: string
+          nullable: true
+          readOnly: true
         has_app_account:
           type: boolean
           readOnly: true
@@ -60352,11 +60467,13 @@ components:
           readOnly: true
       required:
       - active_enrollment
+      - active_session_name
       - admission_date
       - gender
       - guardians
       - has_app_account
       - id
+      - is_enrolled_in_active_session
       - name_bn
       - name_en
       - student_id

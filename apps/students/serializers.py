@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 from apps.core.utils.phone import normalize_bd_phone
 from apps.guardians.models import StudentGuardian
+from apps.institutions.models import AcademicSession
 from apps.students.models import (
     EnrollmentStatus,
     PreviousSchool,
@@ -152,6 +153,8 @@ class StudentLinkedGuardianSerializer(serializers.ModelSerializer):
 
 class StudentListSerializer(serializers.ModelSerializer):
     active_enrollment = serializers.SerializerMethodField()
+    is_enrolled_in_active_session = serializers.SerializerMethodField()
+    active_session_name = serializers.SerializerMethodField()
     has_app_account = serializers.SerializerMethodField()
     user_id = serializers.UUIDField(source="user.id", read_only=True, default=None)
     guardians = StudentLinkedGuardianSerializer(
@@ -173,23 +176,66 @@ class StudentListSerializer(serializers.ModelSerializer):
             "status",
             "admission_date",
             "active_enrollment",
+            "is_enrolled_in_active_session",
+            "active_session_name",
             "has_app_account",
             "user_id",
             "guardians",
         ]
 
+    def _resolve_scoped_enrollment(self, obj: Student) -> tuple[Any, bool, str | None]:
+        request = self.context.get("request")
+        session_id = None
+        if request:
+            session_id = request.query_params.get("session") or request.headers.get(
+                "X-Academic-Session"
+            )
+            if session_id == "all":
+                session_id = None
+
+        active_session = None
+        if not session_id and obj.institution_id:
+            active_session = AcademicSession.objects.filter(
+                institution_id=obj.institution_id, is_current=True, is_deleted=False
+            ).first()
+            if active_session:
+                session_id = str(active_session.id)
+        elif session_id:
+            active_session = AcademicSession.objects.filter(id=session_id, is_deleted=False).first()
+
+        qs = obj.enrollments.filter(
+            status=EnrollmentStatus.ACTIVE, is_deleted=False
+        ).select_related("class_level", "section", "session")
+        if session_id:
+            enrollment = qs.filter(session_id=session_id).first()
+            is_enrolled = enrollment is not None
+        else:
+            enrollment = qs.first()
+            is_enrolled = enrollment is not None
+
+        session_name = (
+            active_session.name
+            if active_session
+            else (enrollment.session.name if enrollment and enrollment.session else None)
+        )
+        return enrollment, is_enrolled, session_name
+
     def get_has_app_account(self, obj: Student) -> bool:
         return obj.user_id is not None
 
     def get_active_enrollment(self, obj: Student) -> dict[str, Any] | None:
-        enrollment = (
-            obj.enrollments.filter(status=EnrollmentStatus.ACTIVE, is_deleted=False)
-            .select_related("class_level", "section", "session")
-            .first()
-        )
+        enrollment, _, _ = self._resolve_scoped_enrollment(obj)
         if not enrollment:
             return None
-        return StudentEnrollmentBriefSerializer(enrollment).data
+        return StudentEnrollmentBriefSerializer(enrollment, context=self.context).data
+
+    def get_is_enrolled_in_active_session(self, obj: Student) -> bool:
+        _, is_enrolled, _ = self._resolve_scoped_enrollment(obj)
+        return is_enrolled
+
+    def get_active_session_name(self, obj: Student) -> str | None:
+        _, _, session_name = self._resolve_scoped_enrollment(obj)
+        return session_name
 
 
 class PreviousSchoolSerializer(serializers.ModelSerializer):
@@ -239,6 +285,9 @@ class StudentIDCardSerializer(serializers.ModelSerializer):
 
 class StudentDetailSerializer(serializers.ModelSerializer):
     enrollments = StudentEnrollmentBriefSerializer(many=True, read_only=True)
+    active_enrollment = serializers.SerializerMethodField()
+    is_enrolled_in_active_session = serializers.SerializerMethodField()
+    active_session_name = serializers.SerializerMethodField()
     previous_school = PreviousSchoolSerializer(read_only=True)
     documents = StudentDocumentSerializer(many=True, read_only=True)
     id_cards = StudentIDCardSerializer(many=True, read_only=True)
@@ -278,6 +327,9 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             "emergency_contact_name",
             "emergency_contact_phone",
             "enrollments",
+            "active_enrollment",
+            "is_enrolled_in_active_session",
+            "active_session_name",
             "previous_school",
             "documents",
             "id_cards",
@@ -286,8 +338,59 @@ class StudentDetailSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    def _resolve_scoped_enrollment(self, obj: Student) -> tuple[Any, bool, str | None]:
+        request = self.context.get("request")
+        session_id = None
+        if request:
+            session_id = request.query_params.get("session") or request.headers.get(
+                "X-Academic-Session"
+            )
+            if session_id == "all":
+                session_id = None
+
+        active_session = None
+        if not session_id and obj.institution_id:
+            active_session = AcademicSession.objects.filter(
+                institution_id=obj.institution_id, is_current=True, is_deleted=False
+            ).first()
+            if active_session:
+                session_id = str(active_session.id)
+        elif session_id:
+            active_session = AcademicSession.objects.filter(id=session_id, is_deleted=False).first()
+
+        qs = obj.enrollments.filter(
+            status=EnrollmentStatus.ACTIVE, is_deleted=False
+        ).select_related("class_level", "section", "session")
+        if session_id:
+            enrollment = qs.filter(session_id=session_id).first()
+            is_enrolled = enrollment is not None
+        else:
+            enrollment = qs.first()
+            is_enrolled = enrollment is not None
+
+        session_name = (
+            active_session.name
+            if active_session
+            else (enrollment.session.name if enrollment and enrollment.session else None)
+        )
+        return enrollment, is_enrolled, session_name
+
     def get_has_app_account(self, obj: Student) -> bool:
         return obj.user_id is not None
+
+    def get_active_enrollment(self, obj: Student) -> dict[str, Any] | None:
+        enrollment, _, _ = self._resolve_scoped_enrollment(obj)
+        if not enrollment:
+            return None
+        return StudentEnrollmentBriefSerializer(enrollment, context=self.context).data
+
+    def get_is_enrolled_in_active_session(self, obj: Student) -> bool:
+        _, is_enrolled, _ = self._resolve_scoped_enrollment(obj)
+        return is_enrolled
+
+    def get_active_session_name(self, obj: Student) -> str | None:
+        _, _, session_name = self._resolve_scoped_enrollment(obj)
+        return session_name
 
     def to_representation(self, instance: Student) -> dict[str, Any]:
         data = super().to_representation(instance)

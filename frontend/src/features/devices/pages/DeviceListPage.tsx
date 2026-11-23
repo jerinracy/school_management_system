@@ -461,7 +461,7 @@ export default function DeviceListPage() {
                         >
                           <span
                             className={`h-1.5 w-1.5 rounded-full ${
-                              d.status === "online" ? "bg-emerald-600 animate-pulse" : "bg-slate-400"
+                              d.status === "online" ? "bg-emerald-600" : "bg-slate-400"
                             }`}
                           />
                           {d.status === "online" ? "Online" : "Offline"}

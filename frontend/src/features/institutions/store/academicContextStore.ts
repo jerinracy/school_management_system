@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { queryClient } from "@/lib/query-client";
 import {
   institutionApi,
   type AcademicSession,
@@ -115,6 +116,7 @@ export const useAcademicContextStore = create<AcademicContextState>()(
       setSelectedSessionId: (id: string) => {
         const session = get().sessions.find((s) => s.id === id) || null;
         set({ selectedSessionId: id, selectedSession: session });
+        void queryClient.invalidateQueries();
       },
 
       setSelectedShiftId: (id: string) => {

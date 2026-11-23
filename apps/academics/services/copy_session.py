@@ -32,6 +32,13 @@ class CopySessionResult:
             "routine_slots_count": self.routine_slots_count,
             "skipped_sections_count": self.skipped_sections_count,
             "skipped_subjects_count": self.skipped_subjects_count,
+            # Aliases for frontend compatibility
+            "sections_created": self.sections_count,
+            "sections_skipped": self.skipped_sections_count,
+            "class_subjects_created": self.class_subjects_count,
+            "class_subjects_skipped": self.skipped_subjects_count,
+            "routine_slots_created": self.routine_slots_count,
+            "success": True,
             "preview": self.preview,
         }
 
@@ -72,6 +79,7 @@ def _copy_sections(
                 class_level=sec.class_level,
                 shift=sec.shift,
                 session=target_session,
+                branch=sec.branch,
                 name=sec.name,
                 capacity=sec.capacity,
                 teacher_user=sec.teacher_user if preserve_teachers else None,

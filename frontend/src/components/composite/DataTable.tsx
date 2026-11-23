@@ -165,7 +165,7 @@ export function DataTable<T>({
                     <button
                       type="button"
                       onClick={() => onSortChange(col.id)}
-                      className="inline-flex items-center gap-1 font-semibold uppercase tracking-wider hover:text-ink"
+                      className="inline-flex items-center gap-1 font-medium text-ink-muted hover:text-ink"
                     >
                       <span>{col.header}</span>
                       <ArrowUpDown

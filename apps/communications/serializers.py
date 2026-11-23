@@ -275,6 +275,7 @@ class ChatThreadSerializer(serializers.ModelSerializer):
     student_roll = serializers.SerializerMethodField()
     class_name = serializers.SerializerMethodField()
     section_name = serializers.SerializerMethodField()
+    section_id = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
 
@@ -294,7 +295,9 @@ class ChatThreadSerializer(serializers.ModelSerializer):
             "student_roll",
             "class_name",
             "section_name",
+            "section_id",
             "subject",
+            "session",
             "is_closed",
             "last_message_at",
             "last_message",
@@ -305,6 +308,7 @@ class ChatThreadSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "guardian": {"required": False, "allow_null": True},
             "student": {"required": False, "allow_null": True},
+            "session": {"required": False, "allow_null": True},
         }
 
     def get_teacher_name(self, obj: ChatThread) -> str:
@@ -352,6 +356,15 @@ class ChatThreadSerializer(serializers.ModelSerializer):
             obj.student.enrollments.filter(status="active").select_related("section").first()
         )
         return enrollment.section.name if enrollment and enrollment.section else ""
+
+    def get_section_id(self, obj: ChatThread) -> str:
+        if not obj.student:
+            return ""
+        enrollment = (
+            obj.student.enrollments.filter(status="active").first()
+            or obj.student.enrollments.first()
+        )
+        return str(enrollment.section_id) if enrollment and enrollment.section_id else ""
 
     def get_last_message(self, obj: ChatThread) -> str:
         last = obj.messages.order_by("-created_at").first()

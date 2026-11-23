@@ -194,9 +194,9 @@ export function RoutineBuilderPage() {
     setIsSavingTeacher(true);
     const teacherId = assignTeacherStaffId === "none" || !assignTeacherStaffId ? null : assignTeacherStaffId;
     try {
-      const updatedSec = (await academicApi.assignClassTeacher(selectedSection, {
+      const updatedSec = await academicApi.assignClassTeacher(selectedSection, {
         teacher_staff_id: teacherId,
-      })) as Section;
+      });
       toast.success(
         teacherId
           ? t("academics.classTeacherAssigned", "Class Teacher assigned successfully.")

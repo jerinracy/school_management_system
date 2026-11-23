@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Unenrolled Session Access Lock & Full Routine/Teacher/Chat Isolation (Task 30)**:
+  - **Unenrolled Session Mobile Screen & App Lock (`school_app`)**:
+    - Created `UnenrolledSessionScreen`: When a student or active ward is not enrolled in the active session (e.g. 2027), a dedicated full-screen blocking view is presented with bilingual warning: *"আপনি সেশন ২০২৭-এ নথিভুক্ত নন / You are not enrolled in session 2027"*.
+    - Prominently instructs the user to contact the school office administration to enroll or promote their profile.
+    - Completely hides/locks the `bottomNavigationBar` in `GuardianShell` to prevent accessing routine, attendance, fees, exams, or chat until enrolled.
+    - Includes multi-child student switcher (allowing guardians to switch to an enrolled child) and clean Logout button.
+  - **Strict Session Isolation for Routine, Teachers, and Chat (Backend)**:
+    - `RoutineSlotViewSet.get_queryset()`: Resolves student enrollment strictly within the target/active session (`session_id=target_session_id`). If student is not enrolled in the active session, returns `RoutineSlot.objects.none()`.
+    - `SectionViewSet.my_teachers()`: Resolves section enrollment strictly within the active session. If unenrolled, returns empty list `[]`. Completely removed legacy fallback that picked arbitrary sections with routine slots.
+    - `ChatThreadViewSet.get_queryset()`: Enforced strict active session filtering (`session_id=current_session.id`) without null leakage.
+    - `issue_tokens_for_user` & `MeView`: Enriched authentication user payload with `is_enrolled_in_active_session: bool` and `active_session_name: str`.
+- **Active Session Scoping for MyChildren & Mobile Un-enrolled Banner (Task 29)**:
+  - **Active Session Scoping in `MyChildrenSerializer`**:
+    - `apps/guardians/serializers.py`: Scoped `MyChildrenSerializer.get_enrollment()` to the resolved active session (`is_current=True` or `X-Academic-Session`), returning `None` when the student is not enrolled in the active session.
+    - Added `is_enrolled_in_active_session: bool`, `active_session_name: str`, and `previous_session_name: str` fields to the serialized child ward response.
+  - **Mobile App Not-Enrolled Alert Banner & Overview Chip (`School_Management_System_App`)**:
+    - `school_app/lib/features/guardian/domain/student_ward.dart`: Added `isEnrolledInActiveSession`, `activeSessionName`, and `previousSessionName` fields with JSON factory and serialization support.
+    - `school_app/lib/features/guardian/presentation/screens/guardian_home_screen.dart`: Added prominent bilingual notification banner informing guardians/students when the student is not yet enrolled in the active session, while displaying historical records below.
+    - `school_app/lib/features/guardian/presentation/widgets/academic_overview_tiles.dart`: Rendered `"অনথিভুক্ত" / "Not Enrolled"` chip alongside the session year tag.
+  - **Admin Dashboard Navigation De-duplication**:
+    - `frontend/src/config/navigation.ts`: Removed duplicate `"Sessions & Terms"` item from the Institution Setup menu; preserved cleanly exclusively under the **Academics** menu.
+- **Dynamic Academic Session Scoping, Session Rollover Wizard & Mobile Option A Authentication (Task 28 / Task F22)**:
+  - **Dynamic Session-Scoped Filtering for Students and Guardians**:
+    - `StudentViewSet.get_queryset()` strictly filters students by session matching `enrollments__session_id=session_id, enrollments__status="active", enrollments__is_deleted=False`. Session resolution hierarchy: explicit query param `?session=<uuid>` -> request header `X-Academic-Session` -> institution's active session (`is_current=True`).
+    - When a new academic session is created and activated with no enrolled students, `get_queryset()` yields an empty list rather than leaking students from previous sessions.
+    - Preserved `?session=all` for cross-session administrative registries.
+    - `GuardianViewSet.get_queryset()` strictly scopes guardians to students enrolled in the resolved academic session via `student_relations__student__enrollments`.
+  - **Mobile Option A Authentication & Active Session Status**:
+    - Students and guardians from previous sessions can log in seamlessly across sessions without account invalidation.
+    - `StudentDetailSerializer` and `StudentListSerializer` dynamically evaluate `_resolve_scoped_enrollment` to expose `is_enrolled_in_active_session: bool`, `active_session_name: str | None`, and `active_enrollment`. Mobile client uses this flag to show enrollment status notices or prompt for re-enrollment while keeping accounts functional.
+  - **Academic Structure Rollover & Copy Wizard (Backend & Frontend)**:
+    - Updated `apps/academics/services/copy_session.py`: `CopySessionResult.to_dict()` provides both primary and alias metrics (`sections_created`, `class_subjects_created`, `sections_skipped`, `class_subjects_skipped`, `routine_slots_created`, and `success: True`), preserving `branch=sec.branch` when cloning sections.
+    - Completely redesigned `CopySessionWizardPage.tsx`: Fallback-safe counter display, rich preview breakdowns with badges, responsive table previews of sections and class subjects to be replicated, and automatic default pairing of the most recent inactive session as source and the active session as target.
+  - **Admin Dashboard Real-time Academic Context Reaction & Empty States**:
+    - Modified `useAcademicContextStore.ts`: Changing `selectedSessionId` in the top bar automatically calls `queryClient.invalidateQueries()`, triggering immediate refresh of all query subscribers across the app.
+    - Injected `X-Academic-Session` header automatically into `apiClient` requests from `useAcademicContextStore`.
+    - Added dedicated session empty states on `StudentsListPage.tsx` and `GuardiansListPage.tsx` featuring "Copy Academic Structure" and "Enroll New Student" action buttons when no records exist in the selected session.
+    - 100% bilingual translation key parity across English (`en.json`) and Bengali (`bn.json`).
+- **Academic Session Lifecycle, Scoping & Universal Soft-Delete CRUD (Task 27 / Task F21)**:
+  - **Academic Session Lifecycle & Single-Active-Session Enforcement**:
+    - Full academic session management: Create, list, edit, soft-delete, and activate sessions.
+    - Added atomic single-active session switch in `AcademicSessionViewSet.activate()`: activating one session sets `is_current=True` for that session and marks all other sessions of the institution `is_current=False`.
+    - Added deletion safety rule: the currently active session cannot be deleted; administrators must activate another session first.
+    - Updated `AcademicSession` and `Term` unique constraints to condition on `is_deleted=False` to support safe re-creation with identical names/years.
+  - **Academic Session Scoping Across Modules**:
+    - Implemented `AcademicSessionScopedMixin` in `apps/core/mixins.py`.
+    - Automatically defaults querysets to the institution's currently active academic session (`is_current=True`) for Sections, Class Subjects, Homework, and Study Materials unless explicitly queried (`?session=<id>` or `?session=all`).
+    - Added `session` foreign key to `ChatThread` in `apps/communications/models.py`. Teacher-guardian and student-teacher chat threads are strictly session-isolated; previous session conversations remain in system archives without cluttering the new session.
+    - Maintained HR section (Staff, Teachers, Designations, Payroll) as global and session-independent.
+  - **Universal Soft-Delete Mixin Adoption**:
+    - Added `SoftDeleteMixin` (`is_deleted`, `deleted_at`) to `AcademicSession`, `Term`, `Branch`, `Shift`, `Holiday`, `ClassLevel`, `Group`, `Section`, `Subject`, `ClassSubject`, `Room`, `Period`, `RoutineSlot`, and `SubstituteAssignment`.
+    - Updated unique constraints across all academic models to partial indices (`condition=models.Q(is_deleted=False)`).
+  - **Admin Dashboard Interactive Management & Action Dialogs**:
+    - Redesigned `SessionsTermsPage.tsx`: New Session modal, Edit Session modal, Soft-Delete confirmation dialog, and 1-Click Activate confirmation dialog with Active status badge.
+    - Redesigned `ClassesSectionsPage.tsx`: Edit Class modal, Soft-Delete Class dialog, Edit Section modal, Soft-Delete Section dialog.
+    - Redesigned `SubjectsPage.tsx`: Dual-tab interface (Class Mapped Curriculum + Master Subject Catalog), Edit Subject modal, Soft-Delete Subject dialog, Edit Class Offering modal, and Remove Offering dialog.
+    - Redesigned `PeriodsRoomsPage.tsx`: Edit Period modal, Delete Period dialog, Edit Room modal, Delete Room dialog.
+    - Enhanced `navigation.ts` to surface Sessions & Terms in Academics alongside Institution.
+    - Added 100% bilingual translation key parity across English (`en.json`) and Bengali (`bn.json`).
+- **Full Admin Dashboard Unslopping (Task F20)**:
+  - **Surfaces & Color Craft**:
+    - Eliminated surface gradients from `SetupProgressCard` and `AcademicLogo`.
+    - Removed arbitrary pastel icon backgrounds (`bg-amber-50`, `bg-sky-50`, `bg-emerald-50`, etc.) across dashboard cards and quick action buttons; replaced with a calm, neutral canvas background (`bg-canvas border border-border/60 text-ink-muted`) and single emerald accent on hover/active states.
+  - **Typography & Letter-Spacing**:
+    - Converted harsh uppercase tracked labels (`uppercase tracking-wider`) to clean sentence case in `table.tsx` (`TableHead`), `DataTable.tsx`, `KpiCard.tsx`, and dashboard elements.
+    - Enforced `tabular-nums` on all statistical counts, shift percentages, and dates.
+  - **Icon & Decoration Hygiene**:
+    - Removed all raw emojis (`⚠️`, `✓`) from select options and warning banners in `SalaryProfilesPage.tsx` and `EmergencyAlertsPage.tsx`, replacing with typed Lucide line icons.
+    - Replaced decorative `Sparkles` in `SetupProgressCard` with functional `CheckCircle2`.
+  - **Copy & Operational Context**:
+    - Replaced generic time-of-day greetings (`Good morning, [User]!`) on `DashboardHomePage` with clear authoritative administrative context: Campus Branch, Academic Session, and localized Date with tabular numerals.
+  - **Motion & Reduced Loops**:
+    - Removed non-functional looping animations (`animate-ping` on device online dot, `animate-pulse` on emergency broadcast badges, device list status, and hostel allocation curfew tags).
+    - Replaced costly `transition-all` declarations with targeted `transition-colors`.
 - **Professional Operational Overview Dashboard Redesign (Task F19)**:
   - **School Operational Headcount & Shift KPI Cards**:
     - Replaced generic infrastructure status cards with operational school management KPI cards: Total Students, Morning Shift Students, Day Shift Students, Teaching Faculty, Office & Support Staff, Student Attendance Rate Today, and Staff Attendance Rate Today.

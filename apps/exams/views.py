@@ -274,6 +274,133 @@ class MarkEntryViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     ordering = ["student__student_id"]
     permission_classes = [permissions.IsAuthenticated, CanEnterMarks | CanManageExams]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        exam_id = self.request.query_params.get("exam") or self.request.query_params.get("term_id")
+        if exam_id:
+            qs = qs.filter(exam_subject__exam_id=exam_id)
+        class_id = self.request.query_params.get("class_level") or self.request.query_params.get(
+            "class_id"
+        )
+        if class_id:
+            qs = qs.filter(exam_subject__class_level_id=class_id)
+        section_id = self.request.query_params.get("section") or self.request.query_params.get(
+            "section_id"
+        )
+        if section_id:
+            qs = qs.filter(student__enrollments__section_id=section_id)
+        subject_id = self.request.query_params.get("subject") or self.request.query_params.get(
+            "subject_id"
+        )
+        if subject_id:
+            qs = qs.filter(exam_subject__subject_id=subject_id)
+        return qs
+
+    @action(detail=False, methods=["get"], url_path="section_sheet")
+    def section_sheet(self, request: Request) -> Response:
+        """Fetch exam subject config and student mark rows for a specific section."""
+        from apps.students.models import EnrollmentStatus, StudentEnrollment
+
+        exam_subject_id = request.query_params.get("exam_subject")
+        exam_id = request.query_params.get("exam") or request.query_params.get("term_id")
+        class_id = request.query_params.get("class_level") or request.query_params.get("class_id")
+        section_id = request.query_params.get("section") or request.query_params.get("section_id")
+        subject_id = request.query_params.get("subject") or request.query_params.get("subject_id")
+
+        exam_subject = None
+        if exam_subject_id:
+            exam_subject = (
+                ExamSubject.objects.filter(id=exam_subject_id)
+                .select_related("exam", "class_level", "subject")
+                .first()
+            )
+        elif exam_id and subject_id:
+            qs = ExamSubject.objects.filter(exam_id=exam_id, subject_id=subject_id).select_related(
+                "exam", "class_level", "subject"
+            )
+            if class_id:
+                qs = qs.filter(class_level_id=class_id)
+            exam_subject = qs.first()
+
+        if not exam_subject:
+            return Response(
+                {"error": "Exam subject configuration not found for the specified criteria."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Query active enrolled students in this section
+        enr_qs = StudentEnrollment.objects.filter(
+            institution=exam_subject.institution,
+            class_level=exam_subject.class_level,
+            status=EnrollmentStatus.ACTIVE,
+            is_deleted=False,
+        ).select_related("student")
+
+        if section_id:
+            enr_qs = enr_qs.filter(section_id=section_id)
+
+        enrollments = list(enr_qs.order_by("roll_no"))
+
+        # Existing marks map
+        existing_marks = {
+            m.student_id: m for m in MarkEntry.objects.filter(exam_subject=exam_subject)
+        }
+
+        entries = []
+        for enr in enrollments:
+            student = enr.student
+            mark = existing_marks.get(student.id)
+            entries.append(
+                {
+                    "student_id": str(student.id),
+                    "student_code": student.student_id,
+                    "roll_no": enr.roll_no or 0,
+                    "student_name_en": student.name_en,
+                    "student_name_bn": student.name_bn or student.name_en,
+                    "creative_marks": (
+                        float(mark.creative_marks)
+                        if mark and mark.creative_marks is not None
+                        else None
+                    ),
+                    "mcq_marks": (
+                        float(mark.mcq_marks) if mark and mark.mcq_marks is not None else None
+                    ),
+                    "practical_marks": (
+                        float(mark.practical_marks)
+                        if mark and mark.practical_marks is not None
+                        else None
+                    ),
+                    "total_marks": (
+                        float(mark.total_marks) if mark and mark.total_marks is not None else None
+                    ),
+                    "is_absent": bool(mark and mark.is_absent),
+                    "is_locked": bool(mark and mark.is_locked),
+                }
+            )
+
+        return Response(
+            {
+                "exam_subject": {
+                    "id": str(exam_subject.id),
+                    "exam_id": str(exam_subject.exam_id),
+                    "exam_name": exam_subject.exam.name,
+                    "class_id": str(exam_subject.class_level_id),
+                    "class_name": exam_subject.class_level.name,
+                    "subject_id": str(exam_subject.subject_id),
+                    "subject_name_en": exam_subject.subject.name_en,
+                    "subject_name_bn": exam_subject.subject.name_bn or exam_subject.subject.name_en,
+                    "full_marks": float(exam_subject.full_marks),
+                    "creative_full_marks": float(exam_subject.creative_full_marks),
+                    "mcq_full_marks": float(exam_subject.mcq_full_marks),
+                    "practical_full_marks": float(exam_subject.practical_full_marks),
+                    "pass_marks": float(exam_subject.pass_marks),
+                    "is_marks_locked": exam_subject.is_marks_locked,
+                },
+                "entries": entries,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     @action(detail=False, methods=["post"], url_path="bulk_save")
     def bulk_save(self, request: Request) -> Response:
         """Batch intake of student marks from UI table."""

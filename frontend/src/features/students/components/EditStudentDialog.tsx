@@ -73,7 +73,7 @@ export function EditStudentDialog({
       setNameEn(student.name_en || "");
       setNameBn(student.name_bn || "");
       setDob((student as StudentDetail).dob || "");
-      setGender((student.gender as string) || "male");
+      setGender(student.gender || "male");
       setBloodGroup((student.blood_group as string) || "");
       setReligion((student.religion as string) || "islam");
       setStatus((student.status as string) || "active");

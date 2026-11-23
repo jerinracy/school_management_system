@@ -116,7 +116,9 @@ class HomeworkSerializer(serializers.ModelSerializer):
         ]
 
     def to_internal_value(self, data: Any) -> dict[str, Any]:
-        if isinstance(data, dict):
+        if hasattr(data, "dict"):
+            data = data.dict()
+        elif isinstance(data, dict):
             data = dict(data)
             if "due_date" in data and not data.get("due_at"):
                 due_val = str(data["due_date"])
@@ -364,6 +366,36 @@ class StudyMaterialSerializer(serializers.ModelSerializer):
             str(obj.institution_id),
             request=self.context.get("request"),
         )
+
+    def to_internal_value(self, data: Any) -> dict[str, Any]:
+        if hasattr(data, "dict"):
+            data = data.dict()
+        elif isinstance(data, dict):
+            data = dict(data)
+            if "class_id" in data and not data.get("class_level"):
+                data["class_level"] = data["class_id"]
+            if "section_id" in data and not data.get("section"):
+                data["section"] = data["section_id"]
+            if "subject_id" in data and not data.get("subject"):
+                data["subject"] = data["subject_id"]
+            if "category" in data and not data.get("material_type"):
+                data["material_type"] = "file"
+            elif data.get("material_type") not in ("file", "video_link", "external_link"):
+                data["material_type"] = "file"
+            if not data.get("session"):
+                request = self.context.get("request")
+                if request:
+                    from apps.core.mixins import get_request_institution
+                    from apps.institutions.models import AcademicSession
+
+                    inst = get_request_institution(request)
+                    sess = (
+                        AcademicSession.objects.filter(institution=inst, is_current=True).first()
+                        or AcademicSession.objects.filter(institution=inst).first()
+                    )
+                    if sess:
+                        data["session"] = str(sess.id)
+        return super().to_internal_value(data)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         for field_name in ("session", "class_level", "section", "subject"):

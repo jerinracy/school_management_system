@@ -21,10 +21,10 @@ class IsInstitutionAdminOrReadOnly(BasePermission):
         if user.is_superuser:
             return True
 
-        # Check if user is staff or has head_teacher/admin user_type or permission
+        # Check if user is staff or has head_teacher/admin/superadmin user_type or permission
         is_staff = getattr(user, "is_staff", False)
         user_type = getattr(user, "user_type", None)
-        return is_staff or user_type in ["admin", "head_teacher"]
+        return is_staff or user_type in ["admin", "head_teacher", "superadmin", "super_admin"]
 
     def has_object_permission(self, request: Request, view: APIView, obj: object) -> bool:
         user = request.user

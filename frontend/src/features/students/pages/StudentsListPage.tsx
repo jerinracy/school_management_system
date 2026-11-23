@@ -12,6 +12,7 @@ import {
   Smartphone,
   Trash2,
   Users,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,11 +27,13 @@ import { studentsApi, type StudentListItem } from "@/features/students/api/stude
 import { Can } from "@/features/auth/permissions";
 import { EditStudentDialog } from "@/features/students/components/EditStudentDialog";
 import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 
 export function StudentsListPage() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language === "bn" ? "bn" : "en";
   const navigate = useNavigate();
+  const { selectedSession } = useAcademicContextStore();
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -56,13 +59,23 @@ export function StudentsListPage() {
 
   // TanStack Query for student list
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["students", { search: debouncedSearch, gender: genderFilter, status: statusFilter, page }],
+    queryKey: [
+      "students",
+      {
+        search: debouncedSearch,
+        gender: genderFilter,
+        status: statusFilter,
+        page,
+        session: selectedSession?.id,
+      },
+    ],
     queryFn: () =>
       studentsApi.getStudents({
         search: debouncedSearch || undefined,
         gender: genderFilter !== "ALL" ? genderFilter : undefined,
         status: statusFilter !== "ALL" ? statusFilter : undefined,
         page,
+        session: selectedSession?.id,
       }),
   });
 
@@ -272,13 +285,39 @@ export function StudentsListPage() {
                       <Users className="h-6 w-6" />
                     </div>
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      {t("students.noStudentsFound", "No students found")}
+                      {selectedSession
+                        ? t("students.noStudentsInSession", `No students enrolled in ${selectedSession.name}`)
+                        : t("students.noStudentsFound", "No students found")}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto">
                       {debouncedSearch || genderFilter !== "ALL" || statusFilter !== "ALL"
                         ? t("students.adjustFilters", "Try adjusting your search criteria or filters.")
-                        : t("students.getStarted", "Begin by admitting or enrolling new students.")}
+                        : t(
+                            "students.noStudentsInSessionDesc",
+                            "This session has no active student enrollments. You can copy the academic structure from the previous year, promote existing students, or enroll new admissions."
+                          )}
                     </p>
+                    {!debouncedSearch && genderFilter === "ALL" && statusFilter === "ALL" && (
+                      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate("/academics/copy-session")}
+                          className="h-8 gap-1.5 text-xs"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          {t("academics.copySessionAction", "Copy Academic Structure")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => navigate("/students/new")}
+                          className="h-8 gap-1.5 text-xs bg-emerald-700 hover:bg-emerald-800"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          {t("students.enrollStudent", "Enroll New Student")}
+                        </Button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ) : (

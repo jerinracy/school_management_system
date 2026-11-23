@@ -103,7 +103,7 @@ export const EmergencyAlertsPage: React.FC = () => {
     switch (severity) {
       case "disaster":
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-600 text-white animate-pulse">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-600 text-white">
             <Flame className="w-3.5 h-3.5 mr-1" />
             DISASTER / চরম জরুরি
           </span>
@@ -150,7 +150,7 @@ export const EmergencyAlertsPage: React.FC = () => {
           }}
           className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition"
         >
-          <Radio className="w-4 h-4 mr-2 animate-pulse" />
+          <Radio className="w-4 h-4 mr-2" />
           {t("communications.broadcastNow", "Broadcast Emergency Alert")}
         </button>
       </div>
@@ -287,14 +287,14 @@ export const EmergencyAlertsPage: React.FC = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-2 border-rose-500 p-6">
           <DialogHeader className="border-b border-gray-200 pb-3">
             <DialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <AlertOctagon className="w-6 h-6 text-rose-600 animate-pulse" />
+              <AlertOctagon className="w-6 h-6 text-rose-600" />
               {t("communications.emergencyModalTitle", "Initiate Campus Emergency Broadcast")}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={(e) => { void handleSubmit(onSubmit)(e); }} className="space-y-4 pt-1">
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-900 leading-relaxed font-medium">
-              ⚠️ Warning: This broadcast triggers instant SMS dispatch across all student guardians and staff phones,
+              Warning: This broadcast triggers instant SMS dispatch across all student guardians and staff phones,
               overriding any active DND / quiet hour policies.
             </div>
 

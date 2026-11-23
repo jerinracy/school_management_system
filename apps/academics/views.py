@@ -167,11 +167,22 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
             qs = qs.filter(
                 Q(shift_id=shift_id) | Q(shift__isnull=True, class_level__shift_id=shift_id)
             )
-        if session_id:
+        if session_id and session_id != "all":
             qs = qs.filter(
                 Q(session_id=session_id)
                 | Q(session__isnull=True, class_level__session_id=session_id)
             )
+        elif not session_id:
+            institution = getattr(self.request.user, "institution", None)
+            if institution:
+                from apps.institutions.selectors import get_current_academic_session
+
+                curr = get_current_academic_session(institution.id)
+                if curr:
+                    qs = qs.filter(
+                        Q(session_id=curr.id)
+                        | Q(session__isnull=True, class_level__session_id=curr.id)
+                    )
         if params.get("managed_by_me") in ["true", "1", True] or params.get("class_teacher") in [
             "me",
             "true",
@@ -366,21 +377,37 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
         if std_id and not _is_valid_uuid(std_id):
             std_id = None
 
+        sess_param = request.query_params.get("session") or request.headers.get(
+            "X-Academic-Session"
+        )
+        from apps.institutions.selectors import get_current_academic_session
+
+        current_session = get_current_academic_session(institution.id)
+        target_session_id = None
+        if sess_param and sess_param != "all":
+            target_session_id = sess_param
+        elif not sess_param and current_session:
+            target_session_id = current_session.id
+
+        enr_filter: dict[str, Any] = {"institution": institution, "status": "active"}
+        if target_session_id:
+            enr_filter["session_id"] = target_session_id
+
         if not sec_id and std_id:
             from apps.students.models import StudentEnrollment
 
             enr = (
                 StudentEnrollment.objects.filter(
                     student_id=std_id,
-                    institution=institution,
-                    status="active",
+                    **enr_filter,
                 )
                 .select_related("section")
-                .order_by("-session__start_date")
                 .first()
             )
             if enr:
                 sec_id = enr.section_id
+            else:
+                return Response([])
 
         if not sec_id and user and user.is_authenticated:
             from apps.guardians.models import StudentGuardian
@@ -390,11 +417,9 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
             enr = (
                 StudentEnrollment.objects.filter(
                     student__user_id=user.id,
-                    institution=institution,
-                    status="active",
+                    **enr_filter,
                 )
                 .select_related("section")
-                .order_by("-session__start_date")
                 .first()
             )
             if enr:
@@ -405,11 +430,9 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
                 enr = (
                     StudentEnrollment.objects.filter(
                         student__phone=user.phone,
-                        institution=institution,
-                        status="active",
+                        **enr_filter,
                     )
                     .select_related("section")
-                    .order_by("-session__start_date")
                     .first()
                 )
                 if enr:
@@ -438,37 +461,19 @@ class SectionViewSet(TenantScopedMixin, ModelViewSet):
                     enr = (
                         StudentEnrollment.objects.filter(
                             student_id=sg.student_id,
-                            institution=institution,
-                            status="active",
+                            **enr_filter,
                         )
                         .select_related("section")
-                        .order_by("-session__start_date")
                         .first()
                     )
                     if enr:
                         sec_id = enr.section_id
 
         if not sec_id:
-            # Fall back to section with active routine slots, then any section
-            target_sec = (
-                Section.objects.filter(institution=institution, routine_slots__isnull=False)
-                .distinct()
-                .first()
-                or Section.objects.filter(institution=institution).first()
-            )
-            if not target_sec:
-                return Response([])
-            return Response(self._build_section_teachers_response(target_sec))
+            return Response([])
 
         section = Section.objects.filter(id=sec_id, institution=institution).first()
         if not section:
-            target_sec = (
-                Section.objects.filter(institution=institution, routine_slots__isnull=False)
-                .distinct()
-                .first()
-            )
-            if target_sec:
-                return Response(self._build_section_teachers_response(target_sec))
             return Response([])
         return Response(self._build_section_teachers_response(section))
 
@@ -602,6 +607,22 @@ class ClassSubjectViewSet(TenantScopedMixin, ModelViewSet):
             return [IsAuthenticated()]
         return [IsAuthenticated(), HasModulePermission("academics.view_classsubject")()]
 
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        params = getattr(self.request, "query_params", getattr(self.request, "GET", {}))
+        session_id = params.get("session") or self.request.headers.get("X-Academic-Session")
+        if session_id and session_id != "all":
+            qs = qs.filter(session_id=session_id)
+        elif not session_id:
+            institution = getattr(self.request.user, "institution", None)
+            if institution:
+                from apps.institutions.selectors import get_current_academic_session
+
+                curr = get_current_academic_session(institution.id)
+                if curr:
+                    qs = qs.filter(session_id=curr.id)
+        return qs
+
     def perform_create(self, serializer: Any) -> None:
         serializer.save(institution=get_request_institution(self.request))
 
@@ -717,17 +738,41 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
         std_id = self.request.query_params.get("student_id") or self.request.query_params.get(
             "student"
         )
+
+        sess_param = self.request.query_params.get("session") or self.request.headers.get(
+            "X-Academic-Session"
+        )
+        from apps.institutions.selectors import get_current_academic_session
+
+        current_session = get_current_academic_session(institution.id)
+        target_session_id = None
+        if sess_param and sess_param != "all":
+            target_session_id = sess_param
+        elif not sess_param and current_session:
+            target_session_id = current_session.id
+
+        is_student_query = bool(std_id) or (
+            user
+            and user.is_authenticated
+            and (
+                getattr(user, "user_type", None) == UserType.STUDENT
+                or hasattr(user, "student_profile")
+            )
+        )
+
+        enr_filter: dict[str, Any] = {"institution": institution, "status": "active"}
+        if target_session_id:
+            enr_filter["session_id"] = target_session_id
+
         if not sec_id and std_id:
             from apps.students.models import StudentEnrollment
 
             enr = (
                 StudentEnrollment.objects.filter(
                     student_id=std_id,
-                    institution=institution,
-                    status="active",
+                    **enr_filter,
                 )
                 .select_related("section")
-                .order_by("-session__start_date")
                 .first()
             )
             if enr:
@@ -742,30 +787,30 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
                 enr = (
                     StudentEnrollment.objects.filter(
                         student__user_id=user.id,
-                        institution=institution,
-                        status="active",
+                        **enr_filter,
                     )
                     .select_related("section")
-                    .order_by("-session__start_date")
                     .first()
                 )
                 if enr:
                     sec_id = enr.section_id
 
+        if is_student_query and not sec_id:
+            return RoutineSlot.objects.none()
+
         if sec_id:
-            return get_routine_for_section(
+            qs = get_routine_for_section(
                 institution_id=institution.id, section_id=sec_id, weekday=weekday_int
             )
-        if t_id:
-            return get_routine_for_teacher(
+        elif t_id:
+            qs = get_routine_for_teacher(
                 institution_id=institution.id, teacher_user_id=t_id, weekday=weekday_int
             )
-        if r_id:
-            return get_routine_for_room(
+        elif r_id:
+            qs = get_routine_for_room(
                 institution_id=institution.id, room_id=r_id, weekday=weekday_int
             )
-
-        if (
+        elif (
             user
             and user.is_authenticated
             and (
@@ -773,11 +818,16 @@ class RoutineSlotViewSet(TenantScopedMixin, ModelViewSet):
                 or hasattr(user, "staff_profile")
             )
         ):
-            return get_routine_for_teacher(
+            qs = get_routine_for_teacher(
                 institution_id=institution.id, teacher_user_id=user.id, weekday=weekday_int
             )
+        else:
+            qs = super().get_queryset()
 
-        return super().get_queryset()
+        if target_session_id:
+            qs = qs.filter(section__class_level__session_id=target_session_id)
+
+        return qs
 
     def perform_create(self, serializer: Any) -> None:
         serializer.save(institution=get_request_institution(self.request))

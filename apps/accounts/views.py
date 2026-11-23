@@ -284,6 +284,36 @@ class MeView(APIView):
                 .distinct()
             )
             data["permissions"] = [p for p in perms if p]
+
+        # Active session enrollment info
+        data["is_enrolled_in_active_session"] = True
+        data["active_session_name"] = ""
+        if user.institution_id:
+            try:
+                from apps.institutions.selectors import get_current_academic_session
+
+                curr = get_current_academic_session(user.institution_id)
+                if curr:
+                    data["active_session_name"] = curr.name
+                    if user.user_type == "student":
+                        from apps.students.models import StudentEnrollment
+
+                        data["is_enrolled_in_active_session"] = StudentEnrollment.objects.filter(
+                            student__user_id=user.id,
+                            session_id=curr.id,
+                            status="active",
+                        ).exists()
+                    elif user.user_type == "guardian":
+                        from apps.students.models import StudentEnrollment
+
+                        data["is_enrolled_in_active_session"] = StudentEnrollment.objects.filter(
+                            student__guardians__guardian__user_id=user.id,
+                            session_id=curr.id,
+                            status="active",
+                        ).exists()
+            except Exception:
+                pass
+
         return Response(data, status=status.HTTP_200_OK)
 
     @extend_schema(

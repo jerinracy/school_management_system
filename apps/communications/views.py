@@ -4,11 +4,12 @@ from typing import Any
 
 from django.db.models import Q, QuerySet
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -300,37 +301,58 @@ def _resolve_thread_participants(
     teacher_id = data.get("teacher")
     thread_type = data.get("thread_type")
 
-    if hasattr(user, "student_profile") and user.student_profile:
-        return teacher_id, user.student_profile, None, ChatThread.ThreadType.TEACHER_STUDENT
+    # 1. If initiating user is a student
+    student = getattr(user, "student_profile", None)
+    if not student and (
+        getattr(user, "user_type", None) == "student"
+        or "student" in (getattr(user, "user_types", []) or [])
+    ):
+        from apps.students.models import Student
 
+        student = Student.objects.filter(institution=institution, phone=user.phone).first()
+        if student and not student.user:
+            student.user = user
+            student.save(update_fields=["user"])
+
+    if student:
+        return teacher_id, student, None, ChatThread.ThreadType.TEACHER_STUDENT
+
+    # 2. If initiating user is a guardian
     if hasattr(user, "guardian_profiles") and user.guardian_profiles.exists():
         guardian = user.guardian_profiles.first()
         student_id = data.get("student")
-        student = None
+        student_obj = None
         if student_id:
             from apps.students.models import Student
 
-            student = Student.objects.filter(id=student_id, institution=institution).first()
-        return teacher_id, student, guardian, ChatThread.ThreadType.TEACHER_GUARDIAN
+            student_obj = Student.objects.filter(id=student_id, institution=institution).first()
+        return teacher_id, student_obj, guardian, ChatThread.ThreadType.TEACHER_GUARDIAN
 
+    # 3. If initiating user is staff/teacher or admin
     if hasattr(user, "staff_profile") and user.staff_profile:
         teacher_id = teacher_id or str(user.staff_profile.id)
 
     student_id = data.get("student")
-    student = None
+    student_obj = None
     if student_id:
         from apps.students.models import Student
 
-        student = Student.objects.filter(id=student_id, institution=institution).first()
+        student_obj = Student.objects.filter(id=student_id, institution=institution).first()
 
     guardian_id = data.get("guardian")
-    guardian = None
+    guardian_obj = None
     if guardian_id:
         from apps.guardians.models import Guardian
 
-        guardian = Guardian.objects.filter(id=guardian_id, institution=institution).first()
+        guardian_obj = Guardian.objects.filter(id=guardian_id, institution=institution).first()
 
-    return teacher_id, student, guardian, thread_type or ChatThread.ThreadType.TEACHER_GUARDIAN
+    if thread_type == ChatThread.ThreadType.TEACHER_STUDENT or (student_obj and not guardian_obj):
+        resolved_type = ChatThread.ThreadType.TEACHER_STUDENT
+        guardian_obj = None  # Ensure guardian is strictly None for student thread
+    else:
+        resolved_type = ChatThread.ThreadType.TEACHER_GUARDIAN
+
+    return teacher_id, student_obj, guardian_obj, resolved_type
 
 
 @extend_schema_view(
@@ -363,15 +385,59 @@ class ChatThreadViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         if getattr(user, "is_superuser", False) or "institution_admin" in (
             getattr(user, "user_types", []) or []
         ):
-            return qs
+            base_qs = qs
+        else:
+            # If user is teacher, guardian, or student
+            q = Q(teacher__user=user)
+            if hasattr(user, "guardian_profiles") and user.guardian_profiles.exists():
+                q |= Q(guardian__user=user)
+                if user.phone:
+                    q |= Q(guardian__phone=user.phone)
 
-        # If user is teacher, guardian, or student
-        q = Q(teacher__user=user)
-        if hasattr(user, "guardian_profiles") and user.guardian_profiles.exists():
-            q |= Q(guardian__user=user)
-        if hasattr(user, "student_profile") and user.student_profile:
-            q |= Q(student=user.student_profile, thread_type=ChatThread.ThreadType.TEACHER_STUDENT)
-        return qs.filter(q).distinct()
+            # Student resolution with phone fallback
+            student = getattr(user, "student_profile", None)
+            if not student and (
+                getattr(user, "user_type", None) == "student"
+                or "student" in (getattr(user, "user_types", []) or [])
+            ):
+                from apps.students.models import Student
+
+                student = Student.objects.filter(institution=institution, phone=user.phone).first()
+                if student and not student.user:
+                    student.user = user
+                    student.save(update_fields=["user"])
+
+            if student:
+                q |= Q(student=student, thread_type=ChatThread.ThreadType.TEACHER_STUDENT)
+                q |= Q(student__user=user, thread_type=ChatThread.ThreadType.TEACHER_STUDENT)
+
+            base_qs = qs.filter(q).distinct()
+
+        # Session filtering: default to active session if not explicitly provided
+        session_id = self.request.query_params.get("session") or self.request.headers.get(
+            "X-Academic-Session"
+        )
+        if session_id and session_id != "all":
+            base_qs = base_qs.filter(session_id=session_id)
+        elif not session_id:
+            from apps.institutions.selectors import get_current_academic_session
+
+            current_session = get_current_academic_session(institution.id)
+            if current_session:
+                base_qs = base_qs.filter(session_id=current_session.id)
+
+        return base_qs
+
+    def perform_create(self, serializer: Any) -> None:
+        from apps.core.mixins import get_request_institution
+        from apps.institutions.selectors import get_current_academic_session
+
+        institution = get_request_institution(self.request)
+        session_id = self.request.data.get("session")
+        if not session_id:
+            curr = get_current_academic_session(institution.id)
+            session_id = curr.id if curr else None
+        serializer.save(institution=institution, session_id=session_id)
 
     def create(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         user = request.user
@@ -388,6 +454,7 @@ class ChatThreadViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             teacher_id=teacher_id,
             student=student,
             guardian=guardian,
+            thread_type=thread_type,
         ).first()
 
         if existing:
@@ -435,6 +502,30 @@ class ChatThreadViewSet(TenantScopedMixin, viewsets.ModelViewSet):
             .update(is_read=True, read_at=timezone.now())
         )
         return Response({"marked_read": updated})
+
+    @extend_schema(
+        summary="Real-time Chat Webhook Intake and Dispatch Status",
+        responses={200: OpenApiTypes.OBJECT},
+    )
+    @action(
+        detail=False,
+        methods=["get", "post"],
+        url_path="webhook",
+        permission_classes=[AllowAny],
+    )
+    def webhook(self, request: Any) -> Response:
+        """Webhook endpoint for real-time external chat integration / sync callbacks."""
+        if request.method == "POST":
+            payload = request.data
+            event_type = payload.get("event", "chat_sync")
+            return Response(
+                {
+                    "status": "received",
+                    "event": event_type,
+                    "timestamp": timezone.now().isoformat(),
+                }
+            )
+        return Response({"status": "ok", "service": "chat_webhook", "active": True})
 
 
 @extend_schema_view(

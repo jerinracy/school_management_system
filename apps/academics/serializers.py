@@ -517,6 +517,7 @@ class PeriodSerializer(serializers.ModelSerializer):
 
 class RoutineSlotSerializer(serializers.ModelSerializer):
     weekday_display = serializers.CharField(source="get_weekday_display", read_only=True)
+    period_number = serializers.IntegerField(source="period.order", read_only=True)
     period_name = serializers.CharField(source="period.name", read_only=True)
     period_start = serializers.TimeField(source="period.start_time", read_only=True)
     period_end = serializers.TimeField(source="period.end_time", read_only=True)
@@ -564,6 +565,7 @@ class RoutineSlotSerializer(serializers.ModelSerializer):
             "weekday_display",
             "day_of_week",
             "period",
+            "period_number",
             "period_name",
             "period_start",
             "period_end",

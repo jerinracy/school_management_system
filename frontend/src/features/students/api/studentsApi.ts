@@ -35,6 +35,7 @@ export const studentsApi = {
     status?: string;
     page?: number;
     ordering?: string;
+    session?: string;
   }) {
     const res = await apiClient.GET("/api/v1/students/", {
       params: {
@@ -46,6 +47,7 @@ export const studentsApi = {
           status: params?.status as never,
           page: params?.page,
           ordering: params?.ordering,
+          session: params?.session,
         },
       },
     });
@@ -124,12 +126,13 @@ export const studentsApi = {
     return checkResponse(res);
   },
 
-  async getGuardians(params?: { search?: string; page?: number }) {
+  async getGuardians(params?: { search?: string; page?: number; session?: string }) {
     const res = await apiClient.GET("/api/v1/guardians/guardians/", {
       params: {
         query: {
           search: params?.search,
           page: params?.page,
+          session: params?.session,
         },
       },
     });

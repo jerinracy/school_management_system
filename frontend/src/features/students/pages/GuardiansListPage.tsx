@@ -39,6 +39,7 @@ import { Can } from "@/features/auth/permissions";
 import { cn } from "@/lib/utils";
 import { EditGuardianDialog } from "@/features/students/components/EditGuardianDialog";
 import { ConfirmDialog } from "@/components/composite/ConfirmDialog";
+import { useAcademicContextStore } from "@/features/institutions/store/academicContextStore";
 import type { components } from "@/types/api";
 
 type RelationType = components["schemas"]["RelationEnum"];
@@ -58,6 +59,7 @@ export function GuardiansListPage() {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language === "bn" ? "bn" : "en";
   const queryClient = useQueryClient();
+  const { selectedSession } = useAcademicContextStore();
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -104,8 +106,8 @@ export function GuardiansListPage() {
   const [selectedStudents, setSelectedStudents] = useState<LinkedStudentDraft[]>([]);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["guardians", { search, page }],
-    queryFn: () => studentsApi.getGuardians({ search: search || undefined, page }),
+    queryKey: ["guardians", { search, page, session: selectedSession?.id }],
+    queryFn: () => studentsApi.getGuardians({ search: search || undefined, page, session: selectedSession?.id }),
   });
 
   const guardians: GuardianItem[] = data?.results ?? [];
@@ -350,7 +352,17 @@ export function GuardiansListPage() {
               <tr>
                 <td colSpan={6} className="py-16 text-center text-slate-400">
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    {t("students.noGuardians", "No guardians registered yet.")}
+                    {selectedSession
+                      ? t("students.noGuardiansInSession", `No guardians found for students in ${selectedSession.name}`)
+                      : t("students.noGuardians", "No guardians registered yet.")}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+                    {search
+                      ? t("students.adjustFilters", "Try adjusting your search criteria or filters.")
+                      : t(
+                          "students.noGuardiansInSessionDesc",
+                          "Guardians are linked to students enrolled in this session. Once students are enrolled, their guardians will appear here."
+                        )}
                   </p>
                 </td>
               </tr>

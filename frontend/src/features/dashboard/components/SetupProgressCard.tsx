@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Circle, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, ChevronUp, Circle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toLocaleDigits } from "@/lib/format";
 
@@ -76,22 +76,22 @@ export function SetupProgressCard({ defaultExpanded = false }: SetupProgressCard
   const lang = i18n.language;
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-r from-primary/5 via-surface to-surface transition-all shadow-xs">
+    <Card className="border-border bg-surface transition-colors shadow-2xs">
       <CardHeader className="flex flex-row items-center justify-between py-2.5 px-4">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary text-white">
-            <Sparkles className="h-3.5 w-3.5" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-canvas border border-border text-primary">
+            <CheckCircle2 className="h-3.5 w-3.5" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <CardTitle className="text-xs font-semibold text-ink">
                 {t("setup.progressTitle", "Institution Setup Checklist")}
               </CardTitle>
-              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+              <span className="rounded bg-primary-soft px-1.5 py-0.5 text-[10px] font-medium text-primary tabular-nums">
                 {toLocaleDigits(progressPercent, lang)}%
               </span>
             </div>
-            <p className="text-[10px] text-ink-muted truncate">
+            <p className="text-[10px] text-ink-muted truncate tabular-nums">
               {toLocaleDigits(completedCount, lang)} {t("setup.of", "of")}{" "}
               {toLocaleDigits(steps.length, lang)} {t("setup.completed", "milestones completed")}
             </p>

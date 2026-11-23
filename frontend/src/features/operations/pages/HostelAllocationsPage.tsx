@@ -110,7 +110,7 @@ export const HostelAllocationsPage: React.FC = () => {
       case "returned":
         return <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Checked In</span>;
       case "overdue":
-        return <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 animate-pulse">Curfew Breach</span>;
+        return <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Curfew Breach</span>;
       case "pending":
       default:
         return <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Pending Warden</span>;

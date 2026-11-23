@@ -5,7 +5,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from apps.core.models import BaseModel, TenantOwnedModel
+from apps.core.models import BaseModel, SoftDeleteMixin, TenantOwnedModel
 
 
 class MPOStatus(models.TextChoices):
@@ -165,7 +165,7 @@ class Institution(BaseModel):
         return ", ".join([p for p in parts if p])
 
 
-class Branch(TenantOwnedModel):
+class Branch(TenantOwnedModel, SoftDeleteMixin):
     """Campuses/branches belonging to an institution."""
 
     name = models.CharField(max_length=255)
@@ -198,6 +198,7 @@ class Branch(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["institution", "code"],
+                condition=models.Q(is_deleted=False),
                 name="unique_branch_code_per_institution",
             )
         ]
@@ -206,7 +207,7 @@ class Branch(TenantOwnedModel):
         return f"{self.name} ({self.code})"
 
 
-class Shift(TenantOwnedModel):
+class Shift(TenantOwnedModel, SoftDeleteMixin):
     """Operational shifts within a branch (e.g. Morning, Day)."""
 
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, related_name="shifts")
@@ -221,6 +222,7 @@ class Shift(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["branch", "name"],
+                condition=models.Q(is_deleted=False),
                 name="unique_shift_name_per_branch",
             )
         ]
@@ -233,7 +235,7 @@ class Shift(TenantOwnedModel):
             raise ValidationError("Shift start time must be before end time.")
 
 
-class AcademicSession(TenantOwnedModel):
+class AcademicSession(TenantOwnedModel, SoftDeleteMixin):
     """Academic year/session (e.g. 2026). Exactly one session can be current per institution."""
 
     name = models.CharField(max_length=100, help_text="Session name (e.g. 2026)")
@@ -254,11 +256,12 @@ class AcademicSession(TenantOwnedModel):
             # Ensure at most one current session per institution
             models.UniqueConstraint(
                 fields=["institution"],
-                condition=models.Q(is_current=True),
+                condition=models.Q(is_current=True, is_deleted=False),
                 name="unique_current_session_per_institution",
             ),
             models.UniqueConstraint(
                 fields=["institution", "name"],
+                condition=models.Q(is_deleted=False),
                 name="unique_session_name_per_institution",
             ),
         ]
@@ -272,7 +275,7 @@ class AcademicSession(TenantOwnedModel):
             raise ValidationError("Session start date must be strictly before end date.")
 
 
-class Term(TenantOwnedModel):
+class Term(TenantOwnedModel, SoftDeleteMixin):
     """Terms/semesters within an academic session (e.g. First Term, Half-Yearly, Annual)."""
 
     session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name="terms")
@@ -288,10 +291,12 @@ class Term(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["session", "name"],
+                condition=models.Q(is_deleted=False),
                 name="unique_term_name_per_session",
             ),
             models.UniqueConstraint(
                 fields=["session", "order"],
+                condition=models.Q(is_deleted=False),
                 name="unique_term_order_per_session",
             ),
         ]
@@ -309,7 +314,7 @@ class Term(TenantOwnedModel):
                 )
 
 
-class Holiday(TenantOwnedModel):
+class Holiday(TenantOwnedModel, SoftDeleteMixin):
     """Institutional or government holidays used for academic calendars and attendance calculation."""
 
     name = models.CharField(max_length=255)

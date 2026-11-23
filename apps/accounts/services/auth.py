@@ -189,6 +189,34 @@ def issue_tokens_for_user(
 
     access_token = getattr(refresh, "access_token", refresh)
 
+    active_session_name = ""
+    is_enrolled_in_active_session = True
+    if user.institution_id:
+        try:
+            from apps.institutions.selectors import get_current_academic_session
+
+            current_session = get_current_academic_session(user.institution_id)
+            if current_session:
+                active_session_name = current_session.name
+                if user.user_type == "student":
+                    from apps.students.models import StudentEnrollment
+
+                    is_enrolled_in_active_session = StudentEnrollment.objects.filter(
+                        student__user_id=user.id,
+                        session_id=current_session.id,
+                        status="active",
+                    ).exists()
+                elif user.user_type == "guardian":
+                    from apps.students.models import StudentEnrollment
+
+                    is_enrolled_in_active_session = StudentEnrollment.objects.filter(
+                        student__guardians__guardian__user_id=user.id,
+                        session_id=current_session.id,
+                        status="active",
+                    ).exists()
+        except Exception:
+            pass
+
     return {
         "access": str(access_token),
         "refresh": str(refresh),
@@ -204,6 +232,8 @@ def issue_tokens_for_user(
             "permissions": perms,
             "must_change_password": user.must_change_password,
             "language_preference": user.language_preference,
+            "is_enrolled_in_active_session": is_enrolled_in_active_session,
+            "active_session_name": active_session_name,
         },
     }
 

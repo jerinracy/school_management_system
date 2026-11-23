@@ -5,9 +5,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
 
-from apps.core.models import TenantOwnedModel
+from apps.core.models import SoftDeleteMixin, TenantOwnedModel
 
 
 class MediumType(models.TextChoices):
@@ -42,7 +41,7 @@ class Weekday(models.IntegerChoices):
     FRIDAY = 6, "Friday"
 
 
-class ClassLevel(TenantOwnedModel):
+class ClassLevel(TenantOwnedModel, SoftDeleteMixin):
     """Represents an academic grade or level (e.g. Play, Class 1, Class 9, Class 12)."""
 
     name = models.CharField(
@@ -94,10 +93,12 @@ class ClassLevel(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["institution", "code"],
+                condition=models.Q(is_deleted=False),
                 name="unique_class_code_per_institution",
             ),
             models.UniqueConstraint(
                 fields=["institution", "medium", "order"],
+                condition=models.Q(is_deleted=False),
                 name="unique_class_order_per_medium_institution",
             ),
         ]
@@ -106,7 +107,7 @@ class ClassLevel(TenantOwnedModel):
         return f"{self.name} ({self.get_medium_display()})"
 
 
-class Group(TenantOwnedModel):
+class Group(TenantOwnedModel, SoftDeleteMixin):
     """Academic stream/group (e.g. Science, Business Studies, Humanities)."""
 
     name = models.CharField(max_length=64, help_text="Group name (e.g. Science, বিজ্ঞান)")
@@ -119,6 +120,7 @@ class Group(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["institution", "code"],
+                condition=models.Q(is_deleted=False),
                 name="unique_group_code_per_institution",
             ),
         ]
@@ -127,7 +129,7 @@ class Group(TenantOwnedModel):
         return self.name
 
 
-class Section(TenantOwnedModel):
+class Section(TenantOwnedModel, SoftDeleteMixin):
     """A classroom section within a class level, shift, and academic session."""
 
     class_level = models.ForeignKey(
@@ -179,17 +181,18 @@ class Section(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["class_level", "shift", "session", "name"],
+                condition=models.Q(is_deleted=False),
                 name="unique_section_per_class_shift_session",
             ),
             models.UniqueConstraint(
                 fields=["session", "teacher_user"],
-                condition=models.Q(teacher_user__isnull=False),
+                condition=models.Q(teacher_user__isnull=False, is_deleted=False),
                 name="unique_class_teacher_user_per_session",
                 violation_error_message="This teacher is already assigned as Class Teacher to another section in this academic session.",
             ),
             models.UniqueConstraint(
                 fields=["session", "teacher_staff"],
-                condition=models.Q(teacher_staff__isnull=False),
+                condition=models.Q(teacher_staff__isnull=False, is_deleted=False),
                 name="unique_class_teacher_staff_per_session",
                 violation_error_message="This teacher is already assigned as Class Teacher to another section in this academic session.",
             ),
@@ -268,7 +271,7 @@ class Section(TenantOwnedModel):
         self._sync_and_validate_teachers()
 
 
-class Subject(TenantOwnedModel):
+class Subject(TenantOwnedModel, SoftDeleteMixin):
     """Subject catalog entry for an institution."""
 
     code = models.CharField(
@@ -308,6 +311,7 @@ class Subject(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["institution", "code"],
+                condition=models.Q(is_deleted=False),
                 name="unique_subject_code_per_institution",
             ),
         ]
@@ -316,7 +320,7 @@ class Subject(TenantOwnedModel):
         return f"{self.code} - {self.name_en} ({self.name_bn})"
 
 
-class ClassSubject(TenantOwnedModel):
+class ClassSubject(TenantOwnedModel, SoftDeleteMixin):
     """Subject offering assigned to a class level, academic stream, and session."""
 
     class_level = models.ForeignKey(
@@ -371,6 +375,7 @@ class ClassSubject(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["class_level", "group", "session", "subject"],
+                condition=models.Q(is_deleted=False),
                 name="unique_subject_per_class_group_session",
             ),
         ]
@@ -401,7 +406,7 @@ class ClassSubject(TenantOwnedModel):
             pass
 
 
-class Room(TenantOwnedModel):
+class Room(TenantOwnedModel, SoftDeleteMixin):
     """Physical room or hall for class teaching or activities."""
 
     branch = models.ForeignKey(
@@ -430,6 +435,7 @@ class Room(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["institution", "branch", "name"],
+                condition=models.Q(is_deleted=False),
                 name="unique_room_per_branch",
             ),
         ]
@@ -439,7 +445,7 @@ class Room(TenantOwnedModel):
         return f"{self.name}{branch_name}"
 
 
-class Period(TenantOwnedModel):
+class Period(TenantOwnedModel, SoftDeleteMixin):
     """Class timetable period definition per shift."""
 
     shift = models.ForeignKey(
@@ -460,6 +466,7 @@ class Period(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["shift", "order"],
+                condition=models.Q(is_deleted=False),
                 name="unique_period_order_per_shift",
             ),
         ]
@@ -475,7 +482,7 @@ class Period(TenantOwnedModel):
             raise ValidationError({"end_time": "Period end_time must be after start_time."})
 
 
-class RoutineSlot(TenantOwnedModel):
+class RoutineSlot(TenantOwnedModel, SoftDeleteMixin):
     """Weekly class routine / timetable slot."""
 
     section = models.ForeignKey(
@@ -529,17 +536,23 @@ class RoutineSlot(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["section", "weekday", "period"],
+                condition=models.Q(is_deleted=False),
                 name="unique_slot_per_section_weekday_period",
             ),
             models.UniqueConstraint(
                 fields=["room", "weekday", "period"],
-                condition=Q(room__isnull=False),
+                condition=models.Q(room__isnull=False, is_deleted=False),
                 name="unique_slot_per_room_weekday_period",
             ),
             models.UniqueConstraint(
                 fields=["teacher_user", "weekday", "period"],
-                condition=Q(teacher_user__isnull=False),
+                condition=models.Q(teacher_user__isnull=False, is_deleted=False),
                 name="unique_slot_per_teacher_weekday_period",
+            ),
+            models.UniqueConstraint(
+                fields=["teacher_staff", "weekday", "period"],
+                condition=models.Q(teacher_staff__isnull=False, is_deleted=False),
+                name="unique_slot_per_teacher_staff_weekday_period",
             ),
         ]
 
@@ -568,7 +581,7 @@ class RoutineSlot(TenantOwnedModel):
             )
 
 
-class SubstituteAssignment(TenantOwnedModel):
+class SubstituteAssignment(TenantOwnedModel, SoftDeleteMixin):
     """Temporary teacher substitution for a specific date's routine slot."""
 
     routine_slot = models.ForeignKey(
@@ -614,6 +627,7 @@ class SubstituteAssignment(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["routine_slot", "slot_date"],
+                condition=models.Q(is_deleted=False),
                 name="unique_substitution_per_slot_date",
             ),
         ]

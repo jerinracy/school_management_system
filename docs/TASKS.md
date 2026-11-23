@@ -34,6 +34,10 @@ Legend:
 | **Task 24** | Audit Logging & Activity Tracking | DONE | Task 03 | 2026-11-12 |
 | **Task 25** | Reporting Engine & Data Exports | DONE | Task 06, Task 10, Task 13, Task 15 | 2026-11-12 |
 | **Task 26** | Hardening, Backup & Production Readiness | TODO | All Tasks | - |
+| **Task 27** | Academic Session Lifecycle, Session-Scoped Communications & Soft-Delete Mixin | DONE | Task 02, Task 04, Task 16 | 2026-11-23 |
+| **Task 28** | Dynamic Session Scoping for Students/Guardians, Copy Wizard Rollover Fix & Mobile Option A Sync | DONE | Task 06, Task 07, Task 27 | 2026-11-23 |
+| **Task 29** | Active Session Scoping for MyChildren, Mobile Not-Enrolled Warning Banner & Navigation De-duplication | DONE | Task 07, Task 28 | 2026-11-23 |
+| **Task 30** | Unenrolled Session Access Lock & Full Routine/Teacher/Chat Isolation | DONE | Task 07, Task 28, Task 29 | 2026-11-23 |
 
 ---
 
@@ -60,3 +64,6 @@ Legend:
 | **Task F17** | Edit, Update & Delete Lifecycle Management (Students, Teachers, Guardians, Staff) | DONE | Task F06, Task F07, Task F16 | 2026-11-19 |
 | **Task F18** | Class Teacher Assignment & Supervision Integration in Routine Builder | DONE | Task F04, Task F08, Task F17 | 2026-11-19 |
 | **Task F19** | Professional Operational Overview Dashboard Redesign (Headcount KPIs, Shifts, Faculty, Quick Actions, Compact Setup Banner) | DONE | Task F01, Task F14, Task F18 | 2026-11-22 |
+| **Task F20** | Full Admin Dashboard Unslopping (Surface Gradients, Looping Animations, Tracking, Emoji Removal, Neutral Chrome) | DONE | Task F19 | 2026-11-22 |
+| **Task F21** | Academic Session Management & Comprehensive Edit/Delete Modals (Sessions, Classes, Sections, Subjects, Offerings, Periods, Rooms) | DONE | Task F04, Task F17, Backend Task 27 | 2026-11-23 |
+| **Task F22** | Academic Context Automatic Cache Invalidation, Copy Structure Wizard Redesign & Session Empty States | DONE | Task F06, Task F21, Backend Task 28 | 2026-11-23 |

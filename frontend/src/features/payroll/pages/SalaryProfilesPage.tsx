@@ -382,8 +382,8 @@ export default function SalaryProfilesPage() {
             className="h-10 px-3 rounded-md border text-sm bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 shrink-0"
           >
             <option value="all">{t("payroll.allStructures", "All Structures")}</option>
-            <option value="missing">{t("payroll.missingStructure", "⚠️ No Structure Assigned")}</option>
-            <option value="assigned">{t("payroll.hasStructure", "✓ Has Structure")}</option>
+            <option value="missing">{t("payroll.missingStructure", "No Structure Assigned")}</option>
+            <option value="assigned">{t("payroll.hasStructure", "Has Structure")}</option>
             {structures.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name} ({s.code})

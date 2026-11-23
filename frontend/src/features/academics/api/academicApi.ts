@@ -20,14 +20,27 @@ export interface RoutineValidationResult {
 }
 
 export interface CopySessionResult {
-  success: boolean;
+  success?: boolean;
   dry_run: boolean;
-  source_session: string;
-  target_session: string;
-  sections_created: number;
-  sections_skipped: number;
-  class_subjects_created: number;
-  class_subjects_skipped: number;
+  source_session_id?: string;
+  target_session_id?: string;
+  source_session?: string;
+  target_session?: string;
+  sections_count?: number;
+  sections_created?: number;
+  sections_skipped?: number;
+  skipped_sections_count?: number;
+  class_subjects_count?: number;
+  class_subjects_created?: number;
+  class_subjects_skipped?: number;
+  skipped_subjects_count?: number;
+  routine_slots_count?: number;
+  routine_slots_created?: number;
+  preview?: {
+    sections?: string[];
+    class_subjects?: string[];
+    routine_slots?: string[];
+  };
 }
 
 function checkResponse<T>(res: { data?: T; error?: unknown; response: Response }): T {
@@ -58,6 +71,21 @@ export const academicApi = {
     return checkResponse(res);
   },
 
+  async updateClass(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/academics/classes/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteClass(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/classes/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
+  },
+
   async getGroups() {
     const res = await apiClient.GET("/api/v1/academics/groups/");
     return checkResponse(res).results ?? [];
@@ -84,6 +112,13 @@ export const academicApi = {
       body: payload as never,
     });
     return checkResponse(res);
+  },
+
+  async deleteSection(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/sections/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
   },
 
   async assignClassTeacher(sectionId: string, payload: { teacher_staff_id?: string | null; teacher_user_id?: string | null }) {
@@ -123,6 +158,21 @@ export const academicApi = {
     return checkResponse(res);
   },
 
+  async updateSubject(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/academics/subjects/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteSubject(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/subjects/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
+  },
+
   async getClassSubjects(classId?: string) {
     const res = await apiClient.GET("/api/v1/academics/class-subjects/", {
       params: classId ? { query: { class_level: classId } } : undefined,
@@ -135,6 +185,21 @@ export const academicApi = {
       body: payload as never,
     });
     return checkResponse(res);
+  },
+
+  async updateClassSubject(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/academics/class-subjects/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteClassSubject(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/class-subjects/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
   },
 
   async getPeriods(params?: { shift?: string }) {
@@ -151,6 +216,21 @@ export const academicApi = {
     return checkResponse(res);
   },
 
+  async updatePeriod(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/academics/periods/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deletePeriod(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/periods/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
+  },
+
   async getRooms(params?: { branch?: string }) {
     const res = await apiClient.GET("/api/v1/academics/rooms/", {
       params: params ? { query: params as never } : undefined,
@@ -163,6 +243,21 @@ export const academicApi = {
       body: payload as never,
     });
     return checkResponse(res);
+  },
+
+  async updateRoom(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/academics/rooms/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteRoom(id: string) {
+    const res = await apiClient.DELETE("/api/v1/academics/rooms/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
   },
 
   async getRoutine(params?: string | { section?: string; weekday?: number }) {

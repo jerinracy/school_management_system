@@ -56,6 +56,9 @@ class InstitutionPublicBrandingSerializer(serializers.ModelSerializer):
 class InstitutionSerializer(serializers.ModelSerializer):
     """Serializer for Institution profile read and update."""
 
+    logo_url = serializers.SerializerMethodField()
+    login_background_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Institution
         fields = [
@@ -74,9 +77,11 @@ class InstitutionSerializer(serializers.ModelSerializer):
             "email",
             "website",
             "logo",
+            "logo_url",
             "seal",
             "signature",
             "login_background",
+            "login_background_url",
             "timezone",
             "currency",
             "weekend_days",
@@ -85,7 +90,23 @@ class InstitutionSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at", "logo_url", "login_background_url"]
+
+    def get_logo_url(self, obj: Institution) -> str | None:
+        if not obj.logo:
+            return None
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(obj.logo.url)
+        return obj.logo.url
+
+    def get_login_background_url(self, obj: Institution) -> str | None:
+        if not obj.login_background:
+            return None
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(obj.login_background.url)
+        return obj.login_background.url
 
     def validate_settings(self, value: dict[str, Any]) -> dict[str, Any]:
         return validate_institution_settings(value)

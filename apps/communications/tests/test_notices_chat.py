@@ -294,6 +294,110 @@ class TestTeacherGuardianChat:
         assert resp3.status_code == status.HTTP_201_CREATED
         assert resp3.data["student_roll"] == "12"
 
+    def test_teacher_student_thread_separation_and_student_visibility(self, chat_setup):
+        from datetime import date
+
+        from apps.students.models import Student
+
+        inst, teacher_staff, guardian, teacher_user, guardian_user = chat_setup
+
+        student_user = User.objects.create_user(
+            username="student_user_test",
+            phone="+8801942635599",
+            password="testpassword",
+            user_type="student",
+            institution=inst,
+        )
+        student = Student.objects.create(
+            institution=inst,
+            student_id="STU-2026-TEST",
+            name_en="Tanvir Hossain",
+            dob=date(2011, 5, 12),
+            gender="male",
+            admission_date=date(2026, 1, 1),
+            phone="+8801942635599",
+            user=student_user,
+        )
+
+        teacher_client = APIClient()
+        teacher_client.force_authenticate(user=teacher_user)
+
+        # 1. Teacher starts chat with Student (thread_type='teacher_student')
+        resp_student_thread = teacher_client.post(
+            "/api/v1/communications/chat/threads/",
+            {
+                "teacher": str(teacher_staff.id),
+                "student": str(student.id),
+                "thread_type": "teacher_student",
+                "subject": "Academics",
+            },
+            format="json",
+        )
+        assert resp_student_thread.status_code == status.HTTP_201_CREATED
+        student_thread_id = resp_student_thread.data["id"]
+        assert resp_student_thread.data["thread_type"] == "teacher_student"
+        assert resp_student_thread.data["guardian"] is None
+
+        # 2. Teacher starts chat with Guardian regarding the same student
+        resp_guardian_thread = teacher_client.post(
+            "/api/v1/communications/chat/threads/",
+            {
+                "teacher": str(teacher_staff.id),
+                "student": str(student.id),
+                "guardian": str(guardian.id),
+                "thread_type": "teacher_guardian",
+                "subject": "Behavior",
+            },
+            format="json",
+        )
+        assert resp_guardian_thread.status_code == status.HTTP_201_CREATED
+        guardian_thread_id = resp_guardian_thread.data["id"]
+        assert resp_guardian_thread.data["thread_type"] == "teacher_guardian"
+        assert resp_guardian_thread.data["guardian"] == guardian.id
+
+        # 3. Threads are completely separated
+        assert student_thread_id != guardian_thread_id
+
+        # 4. Teacher sends message to student
+        msg_resp = teacher_client.post(
+            f"/api/v1/communications/chat/threads/{student_thread_id}/messages/",
+            {"content": "Please complete your homework for tomorrow."},
+            format="json",
+        )
+        assert msg_resp.status_code == status.HTTP_201_CREATED
+
+        # 5. Student queries threads list: MUST see the student thread, MUST NOT see the guardian thread
+        student_client = APIClient()
+        student_client.force_authenticate(user=student_user)
+
+        list_resp = student_client.get("/api/v1/communications/chat/threads/")
+        assert list_resp.status_code == status.HTTP_200_OK
+        results = list_resp.data["results"] if "results" in list_resp.data else list_resp.data
+        thread_ids = [t["id"] for t in results]
+        assert student_thread_id in thread_ids
+        assert guardian_thread_id not in thread_ids
+
+        # 6. Student reads messages in their thread
+        msgs_resp = student_client.get(
+            f"/api/v1/communications/chat/threads/{student_thread_id}/messages/"
+        )
+        assert msgs_resp.status_code == status.HTTP_200_OK
+        assert len(msgs_resp.data) == 1
+        assert msgs_resp.data[0]["content"] == "Please complete your homework for tomorrow."
+
+        # 7. Student replies to teacher
+        reply_resp = student_client.post(
+            f"/api/v1/communications/chat/threads/{student_thread_id}/messages/",
+            {"content": "Yes Sir, I am almost done."},
+            format="json",
+        )
+        assert reply_resp.status_code == status.HTTP_201_CREATED
+
+        # 8. Webhook endpoint verification
+        webhook_resp = student_client.get("/api/v1/communications/chat/threads/webhook/")
+        assert webhook_resp.status_code == status.HTTP_200_OK
+        assert webhook_resp.data["status"] == "ok"
+
 
 @pytest.mark.django_db
 class TestEmergencyAlerts:

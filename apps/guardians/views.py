@@ -39,7 +39,7 @@ from apps.guardians.services import (
     unlink_student_guardian,
     verify_pickup_otp,
 )
-from apps.institutions.models import Institution
+from apps.institutions.models import AcademicSession, Institution
 from apps.students.models import Student
 
 
@@ -82,6 +82,30 @@ class GuardianViewSet(TenantScopedMixin, viewsets.ModelViewSet):
         if self.action == "my_children":
             return MyChildrenSerializer
         return GuardianSerializer
+
+    def get_queryset(self) -> Any:
+        qs = super().get_queryset()
+        if self.action in ["link_student", "unlink_student", "merge_duplicates"]:
+            return qs
+
+        session_id = self.request.query_params.get("session") or self.request.headers.get(
+            "X-Academic-Session"
+        )
+        if not session_id:
+            inst = _get_request_institution(self.request)
+            active_session = AcademicSession.objects.filter(
+                institution=inst, is_current=True, is_deleted=False
+            ).first()
+            if active_session:
+                session_id = str(active_session.id)
+
+        if session_id and session_id != "all":
+            qs = qs.filter(
+                student_relations__student__enrollments__session_id=session_id,
+                student_relations__student__enrollments__status="active",
+                student_relations__student__enrollments__is_deleted=False,
+            ).distinct()
+        return qs
 
     def perform_destroy(self, instance: Guardian) -> None:
         if instance.user:
@@ -227,7 +251,7 @@ class GuardianViewSet(TenantScopedMixin, viewsets.ModelViewSet):
                 }
             )
 
-        serializer = MyChildrenSerializer(results, many=True)
+        serializer = MyChildrenSerializer(results, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(request=MergeGuardianActionSerializer, responses={200: GuardianDetailSerializer})

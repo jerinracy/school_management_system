@@ -69,3 +69,36 @@ class TenantScopedMixin:
         """Inject tenant context into created instances."""
         institution = get_request_institution(self.request)
         serializer.save(institution=institution)
+
+
+class AcademicSessionScopedMixin:
+    """Mixin for DRF ViewSets to scope academic records to active/requested session.
+
+    When session query param or header 'X-Academic-Session' is provided, filters by that session.
+    When not provided (and not explicitly 'all'), filters by the institution's current active session.
+    """
+
+    session_field_name: str = "session"
+
+    def get_session_queryset(self, queryset: QuerySet) -> QuerySet:
+        request = getattr(self, "request", None)
+        if not request:
+            return queryset
+
+        params = getattr(request, "query_params", getattr(request, "GET", {}))
+        session_id = params.get("session") or request.headers.get("X-Academic-Session")
+        if session_id == "all":
+            return queryset
+        if session_id:
+            return queryset.filter(**{f"{self.session_field_name}_id": session_id})
+
+        user = getattr(request, "user", None)
+        inst_id = getattr(user, "institution_id", None)
+        if inst_id:
+            from apps.institutions.selectors import get_current_academic_session
+
+            curr = get_current_academic_session(inst_id)
+            if curr:
+                return queryset.filter(**{f"{self.session_field_name}_id": curr.id})
+
+        return queryset

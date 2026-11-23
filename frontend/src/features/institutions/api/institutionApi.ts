@@ -95,6 +95,21 @@ export const institutionApi = {
     return checkResponse(res);
   },
 
+  async updateSession(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/institutions/sessions/{id}/", {
+      params: { path: { id } },
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async deleteSession(id: string) {
+    const res = await apiClient.DELETE("/api/v1/institutions/sessions/{id}/", {
+      params: { path: { id } },
+    });
+    checkVoid(res);
+  },
+
   async activateSession(id: string) {
     const res = await apiClient.POST("/api/v1/institutions/sessions/{id}/activate/", {
       params: { path: { id } },
@@ -119,6 +134,14 @@ export const institutionApi = {
 
   async createTerm(payload: Record<string, unknown>) {
     const res = await apiClient.POST("/api/v1/institutions/terms/", {
+      body: payload as never,
+    });
+    return checkResponse(res);
+  },
+
+  async updateTerm(id: string, payload: Record<string, unknown>) {
+    const res = await apiClient.PATCH("/api/v1/institutions/terms/{id}/", {
+      params: { path: { id } },
       body: payload as never,
     });
     return checkResponse(res);

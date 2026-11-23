@@ -321,25 +321,84 @@ class MyChildrenSerializer(serializers.Serializer):
     receives_sms = serializers.BooleanField()
     financial_responsible = serializers.BooleanField()
     enrollment = serializers.SerializerMethodField()
+    is_enrolled_in_active_session = serializers.SerializerMethodField()
+    active_session_name = serializers.SerializerMethodField()
+    previous_session_name = serializers.SerializerMethodField()
+
+    def _resolve_scoped_enrollment(self, obj: Any) -> tuple[Any, bool, str | None, str | None]:
+        student: Student = obj["student"]
+        request = self.context.get("request")
+        session_id = None
+        if request:
+            session_id = request.query_params.get("session") or request.headers.get(
+                "X-Academic-Session"
+            )
+
+        from apps.institutions.models import AcademicSession
+
+        active_session = None
+        if hasattr(student, "institution") and student.institution:
+            active_session = AcademicSession.objects.filter(
+                institution=student.institution,
+                is_current=True,
+                is_deleted=False,
+            ).first()
+
+        qs = student.enrollments.filter(
+            status="active",
+            is_deleted=False,
+        ).select_related("session", "class_level", "section")
+
+        # Resolve active session enrollment
+        target_session_id = session_id or (str(active_session.id) if active_session else None)
+        active_enrollment = None
+        if target_session_id and target_session_id != "all":
+            active_enrollment = qs.filter(session_id=target_session_id).first()
+
+        # Find previous/latest enrollment across all sessions
+        latest_historical = qs.order_by("-session__start_date").first()
+        prev_session_name = (
+            latest_historical.session.name
+            if latest_historical and latest_historical.session
+            else None
+        )
+
+        is_enrolled = active_enrollment is not None
+        active_session_name = (
+            active_session.name
+            if active_session
+            else (
+                active_enrollment.session.name
+                if active_enrollment and active_enrollment.session
+                else None
+            )
+        )
+        return active_enrollment, is_enrolled, active_session_name, prev_session_name
 
     def get_enrollment(self, obj: Any) -> dict[str, Any] | None:
-        student: Student = obj["student"]
-        latest = (
-            student.enrollments.filter(status="active")
-            .select_related("session", "class_level", "section")
-            .order_by("-session__start_date")
-            .first()
-        )
-        if latest:
-            return {
-                "session_name": latest.session.name,
-                "class_name": latest.class_level.name,
-                "class_level_id": str(latest.class_level.id) if latest.class_level else None,
-                "section_name": latest.section.name,
-                "section_id": str(latest.section.id) if latest.section else None,
-                "roll_no": latest.roll_no,
-            }
-        return None
+        enrollment, is_enrolled, _, _ = self._resolve_scoped_enrollment(obj)
+        if not enrollment:
+            return None
+        return {
+            "session_name": enrollment.session.name if enrollment.session else "",
+            "class_name": enrollment.class_level.name if enrollment.class_level else "",
+            "class_level_id": str(enrollment.class_level.id) if enrollment.class_level else None,
+            "section_name": enrollment.section.name if enrollment.section else "",
+            "section_id": str(enrollment.section.id) if enrollment.section else None,
+            "roll_no": enrollment.roll_no,
+        }
+
+    def get_is_enrolled_in_active_session(self, obj: Any) -> bool:
+        _, is_enrolled, _, _ = self._resolve_scoped_enrollment(obj)
+        return is_enrolled
+
+    def get_active_session_name(self, obj: Any) -> str | None:
+        _, _, active_session_name, _ = self._resolve_scoped_enrollment(obj)
+        return active_session_name
+
+    def get_previous_session_name(self, obj: Any) -> str | None:
+        _, _, _, prev_session_name = self._resolve_scoped_enrollment(obj)
+        return prev_session_name
 
 
 class GuardianAssignLoginSerializer(serializers.Serializer):

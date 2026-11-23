@@ -588,6 +588,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/academics/sections/{id}/teachers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List teachers assigned to routine slots for this section
+         * @description Mixin for DRF ViewSets ensuring strict tenant data isolation.
+         *
+         *     1. Filters get_queryset() to only return objects belonging to the current user's institution.
+         *     2. Automatically assigns request.user.institution on perform_create().
+         */
+        get: operations["academics_sections_teachers_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/academics/sections/{id}/timetable/": {
         parameters: {
             query?: never;
@@ -628,6 +651,29 @@ export interface paths {
          *     2. Automatically assigns request.user.institution on perform_create().
          */
         post: operations["academics_sections_bulk_create_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/academics/sections/my-teachers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List teachers assigned to routine slots for current student's section
+         * @description Mixin for DRF ViewSets ensuring strict tenant data isolation.
+         *
+         *     1. Filters get_queryset() to only return objects belonging to the current user's institution.
+         *     2. Automatically assigns request.user.institution on perform_create().
+         */
+        get: operations["academics_sections_my_teachers_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2958,13 +3004,13 @@ export interface paths {
         };
         /**
          * List Teacher-Guardian Chat Threads
-         * @description Manage 1-on-1 dialogue threads between teachers and guardians.
+         * @description Manage 1-on-1 dialogue threads between teachers, guardians, and students.
          */
         get: operations["communications_chat_threads_list"];
         put?: never;
         /**
          * Initiate Chat Thread
-         * @description Manage 1-on-1 dialogue threads between teachers and guardians.
+         * @description Manage 1-on-1 dialogue threads between teachers, guardians, and students.
          */
         post: operations["communications_chat_threads_create"];
         delete?: never;
@@ -2982,7 +3028,7 @@ export interface paths {
         };
         /**
          * Retrieve Chat Thread Details
-         * @description Manage 1-on-1 dialogue threads between teachers and guardians.
+         * @description Manage 1-on-1 dialogue threads between teachers, guardians, and students.
          */
         get: operations["communications_chat_threads_retrieve"];
         put?: never;
@@ -3004,7 +3050,7 @@ export interface paths {
         put?: never;
         /**
          * Mark Thread Messages as Read
-         * @description Manage 1-on-1 dialogue threads between teachers and guardians.
+         * @description Manage 1-on-1 dialogue threads between teachers, guardians, and students.
          */
         post: operations["communications_chat_threads_mark_read_create"];
         delete?: never;
@@ -3022,15 +3068,39 @@ export interface paths {
         };
         /**
          * List or Send Messages in Thread
-         * @description Manage 1-on-1 dialogue threads between teachers and guardians.
+         * @description Manage 1-on-1 dialogue threads between teachers, guardians, and students.
          */
         get: operations["communications_chat_threads_messages_list"];
         put?: never;
         /**
          * List or Send Messages in Thread
-         * @description Manage 1-on-1 dialogue threads between teachers and guardians.
+         * @description Manage 1-on-1 dialogue threads between teachers, guardians, and students.
          */
         post: operations["communications_chat_threads_messages_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/communications/chat/threads/webhook/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Real-time Chat Webhook Intake and Dispatch Status
+         * @description Webhook endpoint for real-time external chat integration / sync callbacks.
+         */
+        get: operations["communications_chat_threads_webhook_retrieve"];
+        put?: never;
+        /**
+         * Real-time Chat Webhook Intake and Dispatch Status
+         * @description Webhook endpoint for real-time external chat integration / sync callbacks.
+         */
+        post: operations["communications_chat_threads_webhook_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4884,6 +4954,23 @@ export interface paths {
         put?: never;
         /** @description Lock an ExamSubject to freeze teacher submissions. */
         post: operations["exams_mark_entries_lock_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/exams/mark-entries/section_sheet/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Fetch exam subject config and student mark rows for a specific section. */
+        get: operations["exams_mark_entries_section_sheet_retrieve"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -10672,14 +10759,21 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Retrieve profile of the currently authenticated staff member. */
+        /**
+         * Retrieve profile of the currently authenticated staff member
+         * @description Retrieve or update profile of the currently authenticated staff member.
+         */
         get: operations["staff_staff_me_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update profile or upload photo of the currently authenticated staff member
+         * @description Retrieve or update profile of the currently authenticated staff member.
+         */
+        patch: operations["staff_staff_me_partial_update"];
         trace?: never;
     };
     "/api/v1/staff/staff/summary/": {
@@ -10965,6 +11059,26 @@ export interface paths {
          * @description Endpoints for student lifecycle management.
          */
         get: operations["students_export_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/students/me/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve logged-in student profile
+         * @description Endpoints for student lifecycle management.
+         */
+        get: operations["students_me_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -13621,36 +13735,55 @@ export interface components {
             is_flagged_for_moderation?: boolean;
             moderation_note?: string;
         };
-        /** @description Serializer for Teacher ↔ Guardian chat threads. */
+        /** @description Serializer for Teacher ↔ Guardian and Teacher ↔ Student chat threads. */
         ChatThread: {
             /** Format: uuid */
             readonly id: string;
+            thread_type?: components["schemas"]["ThreadTypeEnum"];
             /** Format: uuid */
             teacher: string;
             readonly teacher_name: string;
+            readonly teacher_name_bn: string;
+            readonly teacher_designation: string;
             /** Format: uuid */
-            guardian: string;
+            guardian?: string | null;
             readonly guardian_name: string;
             /** Format: uuid */
             student?: string | null;
             readonly student_name: string;
+            readonly student_roll: string;
+            readonly class_name: string;
+            readonly section_name: string;
+            readonly section_id: string;
             subject?: string;
+            /**
+             * Format: uuid
+             * @description Academic session in which this chat conversation takes place
+             */
+            session?: string | null;
             is_closed?: boolean;
             /** Format: date-time */
             readonly last_message_at: string;
+            readonly last_message: string;
             readonly unread_count: number;
             /** Format: date-time */
             readonly created_at: string;
         };
-        /** @description Serializer for Teacher ↔ Guardian chat threads. */
+        /** @description Serializer for Teacher ↔ Guardian and Teacher ↔ Student chat threads. */
         ChatThreadRequest: {
+            thread_type?: components["schemas"]["ThreadTypeEnum"];
             /** Format: uuid */
             teacher: string;
             /** Format: uuid */
-            guardian: string;
+            guardian?: string | null;
             /** Format: uuid */
             student?: string | null;
             subject?: string;
+            /**
+             * Format: uuid
+             * @description Academic session in which this chat conversation takes place
+             */
+            session?: string | null;
             is_closed?: boolean;
         };
         ClassLevel: {
@@ -16063,6 +16196,7 @@ export interface components {
             website?: string;
             /** Format: uri */
             logo?: string | null;
+            readonly logo_url: string | null;
             /** Format: uri */
             seal?: string | null;
             /** Format: uri */
@@ -16073,6 +16207,7 @@ export interface components {
              * @description School building or campus photograph displayed on the login page.
              */
             login_background?: string | null;
+            readonly login_background_url: string | null;
             timezone?: string;
             currency?: string;
             weekend_days?: unknown;
@@ -21608,6 +21743,11 @@ export interface components {
             /** Format: uuid */
             approved_by?: string | null;
         };
+        /** @description Serializer for updating staff profile photo. */
+        PatchedStaffPhotoUploadRequest: {
+            /** Format: binary */
+            photo?: string;
+        };
         /** @description Serializer for per-employee salary component overrides. */
         PatchedStaffSalaryOverrideRequest: {
             /** Format: uuid */
@@ -23364,8 +23504,10 @@ export interface components {
              */
             weekday: components["schemas"]["WeekdayEnum"];
             readonly weekday_display: string;
+            readonly day_of_week: number;
             /** Format: uuid */
             period: string;
+            readonly period_number: number;
             readonly period_name: string;
             /** Format: time */
             readonly period_start: string;
@@ -23375,6 +23517,8 @@ export interface components {
             subject: string;
             readonly subject_code: string;
             readonly subject_name_en: string;
+            /** @default  */
+            readonly subject_name_bn: string;
             /** Format: uuid */
             teacher_user?: string | null;
             /** Format: uuid */
@@ -23905,6 +24049,7 @@ export interface components {
             readonly username: string;
             readonly user_type: string;
             readonly has_portal_access: boolean;
+            readonly shift_name: string | null;
             readonly educations: components["schemas"]["StaffEducation"][];
             readonly documents: components["schemas"]["StaffDocument"][];
             readonly id_cards: components["schemas"]["StaffIDCard"][];
@@ -24412,6 +24557,11 @@ export interface components {
             emergency_contact_name?: string;
             emergency_contact_phone?: string;
             readonly enrollments: components["schemas"]["StudentEnrollmentBrief"][];
+            readonly active_enrollment: {
+                [key: string]: unknown;
+            } | null;
+            readonly is_enrolled_in_active_session: boolean;
+            readonly active_session_name: string | null;
             readonly previous_school: components["schemas"]["PreviousSchool"];
             readonly documents: components["schemas"]["StudentDocument"][];
             readonly id_cards: components["schemas"]["StudentIDCard"][];
@@ -24818,7 +24968,7 @@ export interface components {
             readonly guardian_id: string;
             readonly name_en: string;
             readonly name_bn: string;
-            readonly relation: components["schemas"]["RelationEnum"];
+            relation?: components["schemas"]["RelationEnum"];
             readonly phone: string;
             readonly alt_phone: string;
             /** Format: email */
@@ -24829,15 +24979,27 @@ export interface components {
             /** Format: uri */
             readonly photo: string;
             /** @description Indicates primary contact receiving report cards and primary calls */
-            readonly is_primary: boolean;
+            is_primary?: boolean;
             /** @description Authorized to collect the student from school premises */
-            readonly can_pickup: boolean;
+            can_pickup?: boolean;
             /** @description Receives automated attendance and notification SMS */
-            readonly receives_sms: boolean;
+            receives_sms?: boolean;
             /** @description Responsible for paying academic fees and dues */
-            readonly financial_responsible: boolean;
+            financial_responsible?: boolean;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer for a guardian linked to a student with demographic details. */
+        StudentLinkedGuardianRequest: {
+            relation?: components["schemas"]["RelationEnum"];
+            /** @description Indicates primary contact receiving report cards and primary calls */
+            is_primary?: boolean;
+            /** @description Authorized to collect the student from school premises */
+            can_pickup?: boolean;
+            /** @description Receives automated attendance and notification SMS */
+            receives_sms?: boolean;
+            /** @description Responsible for paying academic fees and dues */
+            financial_responsible?: boolean;
         };
         StudentList: {
             /** Format: uuid */
@@ -24850,6 +25012,8 @@ export interface components {
             name_bn: string;
             /** @description Student's mobile number for app login (+8801XXXXXXXXX). */
             phone?: string | null;
+            /** Format: uri */
+            photo?: string | null;
             gender: components["schemas"]["GenderEnum"];
             blood_group?: components["schemas"]["BloodGroup9d3Enum"];
             religion?: components["schemas"]["ReligionEnum"];
@@ -24859,9 +25023,12 @@ export interface components {
             readonly active_enrollment: {
                 [key: string]: unknown;
             } | null;
+            readonly is_enrolled_in_active_session: boolean;
+            readonly active_session_name: string | null;
             readonly has_app_account: boolean;
             /** Format: uuid */
             readonly user_id: string;
+            readonly guardians: components["schemas"]["StudentLinkedGuardian"][];
         };
         StudentOptionalSubject: {
             /** Format: uuid */
@@ -25464,6 +25631,12 @@ export interface components {
             gpa: string;
             character?: string;
         };
+        /**
+         * @description * `teacher_guardian` - Teacher-Guardian
+         *     * `teacher_student` - Teacher-Student
+         * @enum {string}
+         */
+        ThreadTypeEnum: "teacher_guardian" | "teacher_student";
         TokenRefresh: {
             readonly access: string;
             refresh: string;
@@ -27224,6 +27397,30 @@ export interface operations {
             };
         };
     };
+    academics_sections_teachers_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Section. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     academics_sections_timetable_retrieve: {
         parameters: {
             query?: never;
@@ -27279,6 +27476,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedSectionList"];
+                };
+            };
+        };
+    };
+    academics_sections_my_teachers_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
@@ -32167,6 +32385,54 @@ export interface operations {
             };
         };
     };
+    communications_chat_threads_webhook_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    communications_chat_threads_webhook_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatThreadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChatThreadRequest"];
+                "multipart/form-data": components["schemas"]["ChatThreadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     communications_deliveries_list: {
         parameters: {
             query?: {
@@ -36608,6 +36874,25 @@ export interface operations {
                 "multipart/form-data": components["schemas"]["MarkEntryRequest"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkEntry"];
+                };
+            };
+        };
+    };
+    exams_mark_entries_section_sheet_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -50004,6 +50289,31 @@ export interface operations {
             };
         };
     };
+    staff_staff_me_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedStaffPhotoUploadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStaffPhotoUploadRequest"];
+                "multipart/form-data": components["schemas"]["PatchedStaffPhotoUploadRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffDetail"];
+                };
+            };
+        };
+    };
     staff_staff_summary_retrieve: {
         parameters: {
             query?: never;
@@ -50685,6 +50995,25 @@ export interface operations {
         };
     };
     students_export_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentDetail"];
+                };
+            };
+        };
+    };
+    students_me_retrieve: {
         parameters: {
             query?: never;
             header?: never;

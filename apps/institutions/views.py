@@ -1,5 +1,7 @@
 """DRF ViewSets and Views for institutions module."""
 
+from typing import Any
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
@@ -135,7 +137,7 @@ class InstitutionProfileView(APIView):
     )
     def get(self, request: Request) -> Response:
         institution = self._get_institution(request)
-        serializer = InstitutionSerializer(institution)
+        serializer = InstitutionSerializer(institution, context={"request": request})
         return Response(serializer.data)
 
     @extend_schema(
@@ -145,7 +147,9 @@ class InstitutionProfileView(APIView):
     )
     def patch(self, request: Request) -> Response:
         institution = self._get_institution(request)
-        serializer = InstitutionSerializer(institution, data=request.data, partial=True)
+        serializer = InstitutionSerializer(
+            institution, data=request.data, partial=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -208,6 +212,15 @@ class AcademicSessionViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     filterset_fields = ["is_current", "status"]
     search_fields = ["name"]
     ordering_fields = ["start_date", "name"]
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        session = self.get_object()
+        if session.is_current:
+            raise ValidationError(
+                detail="Cannot delete the currently active academic session. Activate another session first."
+            )
+        session.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
         summary="Activate Academic Session",

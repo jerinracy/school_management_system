@@ -26,7 +26,41 @@ def HasModulePermission(permission_codename: str) -> type[BasePermission]:
                 return True
 
             short_code = permission_codename.split(".")[-1]
-            return user.user_roles.filter(role__permissions__codename=short_code).exists()
+            if user.user_roles.filter(role__permissions__codename=short_code).exists():
+                return True
+
+            if (
+                getattr(user, "user_type", None) == "teacher"
+                or user.user_roles.filter(role__name__icontains="Teacher").exists()
+            ):
+                teacher_allowed = {
+                    "view_classlevel",
+                    "view_section",
+                    "view_subject",
+                    "view_routineslot",
+                    "view_student",
+                    "view_studentenrollment",
+                    "view_exam",
+                    "view_examtype",
+                    "view_examsubject",
+                    "view_markentry",
+                    "enter_marks",
+                    "view_homework",
+                    "add_homework",
+                    "change_homework",
+                    "view_studymaterial",
+                    "add_studymaterial",
+                    "change_studymaterial",
+                    "delete_studymaterial",
+                    "view",
+                }
+                if (
+                    short_code in teacher_allowed
+                    or permission_codename.replace(".", "_") in teacher_allowed
+                ):
+                    return True
+
+            return False
 
     return ModulePermission
 

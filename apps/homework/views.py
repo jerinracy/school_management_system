@@ -181,6 +181,19 @@ class HomeworkViewSet(TenantScopedMixin, viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet[Homework]:
         qs = super().get_queryset()
+        session_id = self.request.query_params.get("session") or self.request.headers.get(
+            "X-Academic-Session"
+        )
+        if session_id and session_id != "all":
+            qs = qs.filter(session_id=session_id)
+        elif not session_id:
+            institution = getattr(self.request.user, "institution", None)
+            if institution:
+                from apps.institutions.selectors import get_current_academic_session
+
+                curr = get_current_academic_session(institution.id)
+                if curr:
+                    qs = qs.filter(session_id=curr.id)
         return _filter_learning_queryset_by_role(
             qs,
             self.request,
@@ -468,11 +481,34 @@ class StudyMaterialViewSet(TenantScopedMixin, viewsets.ModelViewSet):
     def get_permissions(self) -> list[BasePermission]:
         if self.action in ("list", "retrieve"):
             return [IsAuthenticated(), CanReadLearningContent()]
-        return [IsAuthenticated(), CanManageHomework()]
+        return [IsAuthenticated(), CanManageHomeworkOrTeacher()]
+
+    def perform_create(self, serializer: Any) -> None:
+        from apps.core.mixins import get_request_institution
+
+        institution = get_request_institution(self.request)
+        serializer.save(
+            institution=institution,
+            uploaded_by=self.request.user if self.request.user.is_authenticated else None,
+        )
 
     def get_queryset(self) -> QuerySet[StudyMaterial]:
+        qs = super().get_queryset()
+        session_id = self.request.query_params.get("session") or self.request.headers.get(
+            "X-Academic-Session"
+        )
+        if session_id and session_id != "all":
+            qs = qs.filter(session_id=session_id)
+        elif not session_id:
+            institution = getattr(self.request.user, "institution", None)
+            if institution:
+                from apps.institutions.selectors import get_current_academic_session
+
+                curr = get_current_academic_session(institution.id)
+                if curr:
+                    qs = qs.filter(session_id=curr.id)
         return _filter_learning_queryset_by_role(
-            super().get_queryset(),
+            qs,
             self.request,
             self,
             published_q=Q(is_published=True),

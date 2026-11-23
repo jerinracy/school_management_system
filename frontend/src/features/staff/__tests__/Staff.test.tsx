@@ -261,6 +261,7 @@ describe("StaffIDCardPreview", () => {
     present_address: "Dhanmondi, Dhaka",
     permanent_address: "Comilla",
     photo: null,
+    shift_name: null,
     joining_date: "2020-01-15",
     confirmation_date: "2021-01-15",
     department: "dept-1",

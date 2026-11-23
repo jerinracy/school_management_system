@@ -51,9 +51,9 @@ export function KpiCard({
   }
 
   return (
-    <article className="animate-data-fade rounded-lg border border-border bg-surface px-3.5 py-3 shadow-[0_1px_2px_rgba(17,24,39,0.03)] transition-colors hover:border-border-strong">
+    <article className="animate-data-fade rounded-lg border border-border bg-surface px-3.5 py-3 shadow-2xs transition-colors hover:border-border-strong">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-ink-subtle">
+        <span className="text-xs font-medium text-ink-muted">
           {label}
         </span>
         <span
